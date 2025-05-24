@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0xHeart - Tỏ Tình Cùng Em</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    body {
+      background: #0d0d1a;
+      color: #e0e0e0;
+      overflow: hidden;
+      font-family: 'Courier New', monospace;
+    }
+    #particles-js {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+    .heart {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: #ff5e62;
+      transform: rotate(45deg);
+      animation: fall 5s linear infinite;
+      opacity: 0.7;
+    }
+    .heart::before,
+    .heart::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: #ff5e62;
+      border-radius: 50%;
+    }
+    .heart::before { top: -10px; left: 0; }
+    .heart::after { top: 0; left: -10px; }
+    @keyframes fall {
+      0% { transform: translateY(-100vh) rotate(45deg) scale(1); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(45deg) scale(0.5); opacity: 0; }
+    }
+    .typing {
+      display: inline-block;
+      white-space: nowrap;
+      overflow: hidden;
+      border-right: 3px solid #00ff88;
+      animation: blink 0.75s step-end infinite;
+    }
+    @keyframes blink {
+      50% { border-color: transparent; }
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .modal.show {
+      opacity: 1;
+    }
+    .modal-content {
+      animation: fadeIn 0.5s ease-out;
+      background: #16213e;
+      border: 2px solid #00ff88;
+      box-shadow: 0 0 30px rgba(0, 255, 136, 0.6);
+    }
+    @keyframes fadeIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .glitch {
+      position: relative;
+      color: #00ff88;
+      animation: glitch 1s linear infinite;
+    }
+    .glitch::before,
+    .glitch::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .glitch::before {
+      color: #ff00ff;
+      animation: glitch-top 1s linear infinite;
+      clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+    }
+    .glitch::after {
+      color: #00ffff;
+      animation: glitch-bottom 1.5s linear infinite;
+      clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%);
+    }
+    @keyframes glitch {
+      2%, 64% { transform: translate(2px, 0) skew(0deg); }
+      4%, 60% { transform: translate(-2px, 0) skew(0deg); }
+      62% { transform: translate(0, 0) skew(5deg); }
+    }
+    @keyframes glitch-top {
+      2%, 64% { transform: translate(2px, -2px); }
+      4%, 60% { transform: translate(-2px, 2px); }
+      62% { transform: translate(0, 0) skew(-5deg); }
+    }
+    @keyframes glitch-bottom {
+      2%, 64% { transform: translate(-2px, 2px); }
+      4%, 60% { transform: translate(2px, -2px); }
+      62% { transform: translate(0, 0) skew(5deg); }
+    }
+    .parallax {
+      transform: perspective(500px) translateZ(0);
+      transition: transform 0.3s ease;
+    }
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -2;
+      opacity: 0.3;
+    }
+    @media (max-width: 640px) {
+      .modal-content {
+        max-width: 90%;
+      }
+      .glitch {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen text-center">
+  <canvas id="heart-canvas"></canvas>
+  <div id="particles-js"></div>
+  <div id="heart-container"></div>
+  <div class="p-8 max-w-lg mx-auto bg-gray-900 bg-opacity-80 rounded-xl shadow-2xl border border-green-400 parallax">
+    <h1 id="title" class="text-4xl font-bold mb-6 glitch" data-text="0xHeart - Gửi Em">0xHeart - Gửi Em</h1>
+    <p id="typing-text" class="text-green-400 text-lg mb-6 typing"></p>
+    <button id="reveal-btn" class="bg-gradient-to-r from-green-500 to-cyan-500 text-black px-8 py-3 rounded-lg hover:from-green-600 hover:to-cyan-600 transition duration-300 transform hover:scale-110">
+      Execute Love Protocol
+    </button>
+    <div class="mt-4 flex justify-center items-center">
+      <button id="toggle-music" class="text-green-400 hover:text-green-600">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal Tỏ Tình -->
+  <div id="modal" class="modal">
+    <div class="modal-content p-8 rounded-xl max-w-md mx-auto text-center">
+      <h2 class="text-2xl font-bold text-green- itle" data-text="Lời Tỏ Tình...">Lời Tỏ Tình...</h2>
+      <p id="love-message" class="text-gray-300 mb-6"></p>
+      <div class="flex flex-col gap-4 mb-6">
+        <button id="accept-btn" class="bg-green-500 text-black px-6 py-2 rounded-lg hover:bg-green-600 transition duration-300">Chấp Nhận ❤️</button>
+        <button id="wait-btn" class="bg-yellow-500 text-black px-6 py-2 rounded-lg hover:bg-yellow-600 transition duration-300">Để Anh Chờ Thêm Nhé 😉</button>
+        <button id="reject-btn" class="bg-red-500 text-black px-6 py-2 rounded-lg hover:bg-red-600 transition duration-300">Từ Chối 😔</button>
+      </div>
+      <button id="close-modal" class="mt-4 bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition duration-300">Thoát</button>
+    </div>
+  </div>
+
+  <!-- Modal Phản Hồi -->
+  <div id="response-modal" class="modal">
+    <div class="modal-content p-8 rounded-xl max-w-md mx-auto text-center">
+      <h2 class="text-2xl font-bold text-green-400 mb-4 glitch" data-text="Phản Hồi Từ Em">Phản Hồi Từ Em</h2>
+      <p id="response-message" class="text-gray-300 mb-6"></p>
+      <button id="copy-response" class="bg-blue-500 text-black px-6 py-2 rounded-lg hover:bg-blue-600 transition duration-300">Sao Chép Phản Hồi</button>
+      <button id="close-response-modal" class="mt-4 bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition duration-300">Đóng</button>
+    </div>
+  </div>
+
+  <audio id="background-music" loop>
+    <source src="https://www.bensound.com/bensound-music/bensound-sweet.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="click-sound" src="https://www.soundjay.com/buttons/beep-01a.mp3"></audio>
+
+  <script>
+    // Lấy tên crush từ query parameter hoặc mặc định
+    const urlParams = new URLSearchParams(window.location.search);
+    const crushName = urlParams.get('name') || 'Em'; // Thay 'Em' bằng tên crush nếu không dùng query
+
+    // Cập nhật tiêu đề
+    document.getElementById('title').setAttribute('data-text', `0xHeart - Gửi ${crushName}`);
+    document.getElementById('title').textContent = `0xHeart - Gửi ${crushName}`;
+
+    // Particles.js
+    particlesJS('particles-js', {
+      particles: {
+        number: { value: 150, density: { enable: true, value_area: 800 } },
+        color: { value: ['#00ff88', '#ff5e62', '#00ffff'] },
+        shape: { type: 'circle' },
+        opacity: { value: 0.6, random: true },
+        size: { value: 4, random: true },
+        line_linked: { enable: true, distance: 120, color: '#00ff88', opacity: 0.4, width: 1 },
+        move: { enable: true, speed: 3, direction: 'none', random: true }
+      },
+      interactivity: {
+        detect_on: 'canvas',
+        events: { onhover: { enable: true, mode: 'grab' }, onclick: { enable: true, mode: 'push' } },
+        modes: { grab: { distance: 140 }, push: { particles_nb: 4 } }
+      }
+    });
+
+    // Trái tim rơi
+    function createHeart() {
+      const heart = document.createElement('div');
+      heart.classList.add('heart');
+      heart.style.left = Math.random() * 100 + 'vw';
+      heart.style.animationDuration = Math.random() * 3 + 4 + 's';
+      document.getElementById('heart-container').appendChild(heart);
+      setTimeout(() => heart.remove(), 6000);
+    }
+    setInterval(createHeart, 300);
+
+    // Canvas vẽ trái tim
+    const canvas = document.getElementById('heart-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    let t = 0;
+    function drawHeart() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
+      for (let i = 0; i < Math.PI * 2; i += 0.01) {
+        const x = 16 * Math.pow(Math.sin(i), 3);
+        const y = 13 * Math.cos(i) - 5 * Math.cos(2 * i) - 2 * Math.cos(3 * i) - Math.cos(4 * i);
+        ctx.lineTo(canvas.width / 2 + x * 10 * Math.sin(t), canvas.height / 2 - y * 10);
+      }
+      ctx.fillStyle = 'rgba(255, 94, 98, 0.5)';
+      ctx.fill();
+      t += 0.02;
+      requestAnimationFrame(drawHeart);
+    }
+    drawHeart();
+
+    // Hiệu ứng gõ chữ
+    const text = `Booting love system for ${crushName}...`;
+    let index = 0;
+    const typingText = document.getElementById('typing-text');
+    function type() {
+      if (index < text.length) {
+        typingText.textContent += text.charAt(index);
+        index++;
+        setTimeout(type, 80);
+      }
+    }
+    window.onload = type;
+
+    // Hiệu ứng parallax
+    document.addEventListener('mousemove', (e) => {
+      const parallax = document.querySelector('.parallax');
+      const x = (e.clientX / window.innerWidth - 0.5) * 20;
+      const y = (e.clientY / window.innerHeight - 0.5) * 20;
+      parallax.style.transform = `perspective(500px) translate3d(${x}px, ${y}px, 0)`;
+    });
+
+    // Xử lý logic
+    const modal = document.getElementById('modal');
+    const responseModal = document.getElementById('response-modal');
+    const revealBtn = document.getElementById('reveal-btn');
+    const closeModal = document.getElementById('close-modal');
+    const acceptBtn = document.getElementById('accept-btn');
+    const waitBtn = document.getElementById('wait-btn');
+    const rejectBtn = document.getElementById('reject-btn');
+    const copyResponse = document.getElementById('copy-response');
+    const closeResponseModal = document.getElementById('close-response-modal');
+    const loveMessage = document.getElementById('love-message');
+    const responseMessage = document.getElementById('response-message');
+    const music = document.getElementById('background-music');
+    const clickSound = document.getElementById('click-sound');
+    let isMusicPlaying = false;
+
+    revealBtn.addEventListener('click', () => {
+      loveMessage.textContent = `${crushName} à, trong source code của anh, em là constant duy nhất không bao giờ thay đổi. Mỗi nụ cười của em là một API call khiến trái tim anh response 200 OK. Anh không hứa sẽ hack cả universe, nhưng anh hứa sẽ dedicate cả CPU của mình để yêu thương và bảo vệ em. Em có đồng ý làm "commit" lớn nhất trong repo của anh không? 💾`;
+      modal.style.display = 'flex';
+      modal.classList.add('show');
+      if (isMusicPlaying) music.play();
+      clickSound.play();
+      revealBtn.classList.add('hidden');
+    });
+
+    closeModal.addEventListener('click', () => {
+      modal.classList.remove('show');
+      setTimeout(() => { modal.style.display = 'none'; }, 500);
+      music.pause();
+      clickSound.play();
+      revealBtn.classList.remove('hidden');
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.remove('show');
+        setTimeout(() => { modal.style.display = 'none'; }, 500);
+        music.pause();
+        clickSound.play();
+        revealBtn.classList.remove('hidden');
+      }
+    });
+
+    function showResponseModal(choice, message) {
+      modal.classList.remove('show');
+      setTimeout(() => {
+        modal.style.display = 'none';
+        responseMessage.textContent = `${message}`;
+        responseModal.style.display = 'flex';
+        responseModal.classList.add('show');
+      }, 500);
+      clickSound.play();
+    }
+
+    acceptBtn.addEventListener('click', () => {
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      showResponseModal('Chấp Nhận ❤️', `${crushName} đã chấp nhận! 🎉 Trái tim anh đang overload vì hạnh phúc! Em chính là "merge" hoàn hảo cho branch cuộc đời anh! ❤️`);
+    });
+
+    waitBtn.addEventListener('click', () => {
+      showResponseModal('Để Anh Chờ Thêm Nhé 😉', `Okay, ${crushName}! Anh sẽ kiên nhẫn như một async function chờ resolve. Hãy cho anh cơ hội nhé! 😉`);
+    });
+
+    rejectBtn.addEventListener('click', () => {
+      showResponseModal('Từ Chối 😔', `Ôi, ${crushName}... Trái tim anh vừa gặp lỗi 404: Love Not Found. 😔 Nhưng anh vẫn sẽ debug và thử lại, vì em xứng đáng!`);
+    });
+
+    copyResponse.addEventListener('click', () => {
+      navigator.clipboard.writeText(responseMessage.textContent).then(() => {
+        alert('Đã sao chép phản hồi! Gửi cho anh để biết cảm xúc của em nhé!');
+      });
+      clickSound.play();
+    });
+
+    closeResponseModal.addEventListener('click', () => {
+      responseModal.classList.remove('show');
+      setTimeout(() => {
+        responseModal.style.display = 'none';
+        revealBtn.classList.remove('hidden');
+      }, 500);
+      music.pause();
+      clickSound.play();
+    });
+
+    responseModal.addEventListener('click', (e) => {
+      if (e.target === responseModal) {
+        responseModal.classList.remove('show');
+        setTimeout(() => {
+          responseModal.style.display = 'none';
+          revealBtn.classList.remove('hidden');
+        }, 500);
+        music.pause();
+        clickSound.play();
+      }
+    });
+
+    document.getElementById('toggle-music').addEventListener('click', () => {
+      isMusicPlaying = !isMusicPlaying;
+      if (isMusicPlaying) {
+        music.play();
+        document.getElementById('toggle-music').innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>`;
+      } else {
+        music.pause();
+        document.getElementById('toggle-music').innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zm10.414-2l4-4m0 4l-4-4"></path></svg>`;
+      }
+      clickSound.play();
+    });
+  </script>
+</body>
+</html>
