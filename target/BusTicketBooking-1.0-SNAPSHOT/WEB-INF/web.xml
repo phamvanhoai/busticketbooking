@@ -5,16 +5,16 @@
         <servlet-class>busticket.controller.AdminDashboardServlet</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>AdminAccountsServlet</servlet-name>
-        <servlet-class>busticket.controller.AdminAccountsServlet</servlet-class>
+        <servlet-name>AdminUsersServlet</servlet-name>
+        <servlet-class>busticket.controller.AdminUsersServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
         <url-pattern>/admin/dashboard</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>AdminAccountsServlet</servlet-name>
-        <url-pattern>/admin/accounts</url-pattern>
+        <servlet-name>AdminUsersServlet</servlet-name>
+        <url-pattern>/admin/users</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
