@@ -13,15 +13,20 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import busticket.model.AdminUsers;
 import busticket.db.DBContext;
+import java.sql.Timestamp;
+import java.time.Instant;
 
 /**
  *
  * @author Pham Van Hoai - CE181744
  */
 public class AdminUsersDAO extends DBContext {
+
     /**
      * Retrieves a paginated list of users with optional search by username.
-     * @param searchQuery The search term to filter users by username (nullable).
+     *
+     * @param searchQuery The search term to filter users by username
+     * (nullable).
      * @param offset The starting point for pagination.
      * @param limit The number of users to retrieve per page.
      * @return A list of AdminUser objects matching the search criteria.
@@ -30,7 +35,7 @@ public class AdminUsersDAO extends DBContext {
         List<AdminUsers> users = new ArrayList<>();
         // Base SQL query to fetch user details
         StringBuilder query = new StringBuilder(
-            "SELECT user_id, name, email, phone, role, status, created_at FROM Users WHERE 1=1"
+                "SELECT user_id, name, email, phone, role, status, created_at FROM Users WHERE 1=1"
         );
 
         // Add search condition if a search query is provided
@@ -41,7 +46,7 @@ public class AdminUsersDAO extends DBContext {
         // Add pagination and sorting by user_id
         query.append(" ORDER BY user_id ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
 
-        try (PreparedStatement ps = getConnection().prepareStatement(query.toString())) {
+        try ( PreparedStatement ps = getConnection().prepareStatement(query.toString())) {
             int paramIndex = 1;
 
             // Set the search parameter if applicable
@@ -57,13 +62,13 @@ public class AdminUsersDAO extends DBContext {
             while (rs.next()) {
                 // Create AdminUser object from result set and add to list
                 users.add(new AdminUsers(
-                    rs.getInt("user_id"),
-                    rs.getString("name"),
-                    rs.getString("email"),
-                    rs.getString("phone"),
-                    rs.getString("role"),
-                    rs.getString("status"),
-                    rs.getTimestamp("created_at")
+                        rs.getInt("user_id"),
+                        rs.getString("name"),
+                        rs.getString("email"),
+                        rs.getString("phone"),
+                        rs.getString("role"),
+                        rs.getString("status"),
+                        rs.getTimestamp("created_at")
                 ));
             }
         } catch (SQLException ex) {
@@ -72,9 +77,102 @@ public class AdminUsersDAO extends DBContext {
         return users;
     }
 
+    // Method to update an existing user in the database
+    public void updateUser(AdminUsers user) {
+        String query = "UPDATE Users SET name = ?, email = ?, phone = ?, role = ?, status = ?, "
+                + "gender = ?, birthdate = ?, address = ? WHERE user_id = ?";
+
+        try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
+            // Set the parameters in the PreparedStatement
+            ps.setString(1, user.getName());        // Set name
+            ps.setString(2, user.getEmail());       // Set email
+            ps.setString(3, user.getPhone());       // Set phone number
+            ps.setString(4, user.getRole());        // Set role
+            ps.setString(5, user.getStatus());      // Set status
+            ps.setString(6, user.getGender());      // Set gender
+            ps.setTimestamp(7, user.getBirthdate());  // Set birthdate (as Timestamp)
+            ps.setString(8, user.getAddress());     // Set address
+            ps.setInt(9, user.getUser_id());        // Set user_id (to update the correct record)
+
+            // Execute the update
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(AdminUsersDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    // Method to add a new user to the database
+    public void addUser(AdminUsers user) {
+        // Query để thêm người dùng vào cơ sở dữ liệu
+        String query = "INSERT INTO Users (name, email, password, phone, role, status, gender, birthdate, address, created_at) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
+            // Gán giá trị cho các tham số trong PreparedStatement
+            ps.setString(1, user.getName());        // Set name
+            ps.setString(2, user.getEmail());       // Set email
+            ps.setString(3, user.getPassword());    // Set password
+            ps.setString(4, user.getPhone());       // Set phone number
+            ps.setString(5, user.getRole());        // Set role
+            ps.setString(6, user.getStatus());      // Set status
+            ps.setString(7, user.getGender());      // Set gender
+            ps.setTimestamp(8, user.getBirthdate()); // Set birthdate (as Timestamp)
+            ps.setString(9, user.getAddress());     // Set address
+
+            // Set created_at - nếu null thì dùng thời gian hiện tại
+            if (user.getCreated_at() == null) {
+                ps.setTimestamp(10, Timestamp.from(Instant.now()));  // Nếu created_at là null, gán thời gian hiện tại
+            } else {
+                ps.setTimestamp(10, user.getCreated_at());  // Nếu đã có giá trị created_at, sử dụng nó
+            }
+
+            // Thực thi câu lệnh UPDATE
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            // Log error nếu có lỗi trong quá trình thực thi câu lệnh SQL
+            Logger.getLogger(AdminUsersDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public AdminUsers getUserById(int userId) {
+        AdminUsers user = null;
+        String query = "SELECT * FROM Users WHERE user_id = ?";
+
+        try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
+            // Set the user_id parameter for the query
+            ps.setInt(1, userId);
+
+            // Execute the query and retrieve the result
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                // Map the result set to the AdminUsers object
+                user = new AdminUsers(
+                        rs.getInt("user_id"), // user_id
+                        rs.getString("name"), // name
+                        rs.getString("email"), // email
+                        rs.getString("password"), // password
+                        rs.getString("phone"), // phone
+                        rs.getString("role"), // role
+                        rs.getString("status"), // status
+                        rs.getTimestamp("birthdate"), // birthdate
+                        rs.getString("gender"), // gender
+                        rs.getString("address"), // address
+                        rs.getTimestamp("created_at") // created_at
+                );
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(AdminUsersDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return user;
+    }
+
     /**
      * Counts the total number of users matching the search query.
-     * @param searchQuery The search term to filter users by username (nullable).
+     *
+     * @param searchQuery The search term to filter users by username
+     * (nullable).
      * @return The total count of users, or 0 if an error occurs.
      */
     public int countUsersByFilter(String searchQuery) {
@@ -86,7 +184,7 @@ public class AdminUsersDAO extends DBContext {
             query.append(" AND name LIKE ?");
         }
 
-        try (PreparedStatement ps = getConnection().prepareStatement(query.toString())) {
+        try ( PreparedStatement ps = getConnection().prepareStatement(query.toString())) {
             // Set the search parameter if applicable
             if (searchQuery != null && !searchQuery.trim().isEmpty()) {
                 ps.setString(1, "%" + searchQuery.trim() + "%");

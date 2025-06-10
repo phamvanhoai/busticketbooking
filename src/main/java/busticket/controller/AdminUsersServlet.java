@@ -2,7 +2,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
-
 package busticket.controller;
 
 import busticket.DAO.AdminUsersDAO;
@@ -13,17 +12,21 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
+import static javax.ws.rs.core.Response.status;
 
 /**
  *
  * @author Pham Van Hoai - CE181744
  */
 public class AdminUsersServlet extends HttpServlet {
-   
+
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /** 
+    /**
      * Handles the HTTP <code>GET</code> method.
+     *
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
@@ -31,8 +34,8 @@ public class AdminUsersServlet extends HttpServlet {
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        
+            throws ServletException, IOException {
+
         AdminUsersDAO adminUserDAO = new AdminUsersDAO();
 
         // Check if the user is an admin; redirect to home if not
@@ -40,6 +43,34 @@ public class AdminUsersServlet extends HttpServlet {
 //            response.sendRedirect(request.getContextPath() + "/pages/home.jsp");
 //            return;
 //        }
+        // Handle request to display the add coupon form
+        if (request.getParameter("add") != null) {
+            request.getRequestDispatcher("/WEB-INF/admin/add-user.jsp").forward(request, response);
+            return;
+        }
+        // Handle request to edit a specific user
+        String editId = request.getParameter("editId");
+        if (editId != null) {
+            try {
+                int userId = Integer.parseInt(editId);
+                AdminUsers user = adminUserDAO.getUserById(userId);
+
+                // Redirect to 404 page if the user is not found
+                if (user == null) {
+                    response.sendRedirect(request.getContextPath() + "/pages/404.jsp");
+                    return;
+                }
+
+                // Set user data and forward to edit page
+                request.setAttribute("user", user);
+                request.getRequestDispatcher("/WEB-INF/admin/edit-user.jsp").forward(request, response);
+                return;
+            } catch (NumberFormatException e) {
+                // Redirect to user list if editId is invalid
+                response.sendRedirect(request.getContextPath() + "/admin/users");
+                return;
+            }
+        }
 
         // Retrieve search query parameter
         String searchQuery = request.getParameter("search");
@@ -74,11 +105,12 @@ public class AdminUsersServlet extends HttpServlet {
 
         // Forward request to the users JSP page
         request.getRequestDispatcher("/WEB-INF/admin/users.jsp").forward(request, response);
-        
-    } 
 
-    /** 
+    }
+
+    /**
      * Handles the HTTP <code>POST</code> method.
+     *
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
@@ -86,12 +118,107 @@ public class AdminUsersServlet extends HttpServlet {
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        
+            throws ServletException, IOException {
+        String action = request.getParameter("action");
+        AdminUsersDAO adminUsersDAO = new AdminUsersDAO();  // Sử dụng AdminUsersDAO thay cho AdminCouponsDAO
+
+        try {
+            if ("add".equals(action)) {
+                // Add a new user
+                String name = request.getParameter("name");
+                String email = request.getParameter("email");
+                String password = request.getParameter("password");
+                String phone = request.getParameter("phone");
+                String role = request.getParameter("role");
+                String gender = request.getParameter("gender");
+                String birthdate = request.getParameter("birthdate");  // Date picker input
+                String address = request.getParameter("address");
+                String status = request.getParameter("status");  // Thêm cột status
+
+                // Validate input data
+                if (name == null || name.isEmpty() || email == null || email.isEmpty()
+                        || password == null || password.isEmpty() || phone == null || phone.isEmpty()
+                        || role == null || role.isEmpty() || gender == null || gender.isEmpty()
+                        || birthdate.isEmpty() || address == null || address.isEmpty() || status == null || status.isEmpty()) {
+
+                    request.setAttribute("error", "Please enter valid information!");
+                    response.sendRedirect(request.getContextPath() + "/admin/add-user");
+                    return;
+                }
+
+                // Convert birthdate from String to Date (or Timestamp)
+                Timestamp birthdateTimestamp = null;
+                if (birthdate != null && !birthdate.isEmpty()) {
+                    try {
+                        // Convert birthdate string (yyyy-MM-dd) into a Timestamp without time component
+                        birthdateTimestamp = Timestamp.valueOf(birthdate + " 00:00:00");  // We use midnight as the time
+                    } catch (IllegalArgumentException e) {
+                        // If invalid date format, return error
+                        request.setAttribute("error", "Invalid birthdate format!");
+                        response.sendRedirect(request.getContextPath() + "/admin/add-user");
+                        return;
+                    }
+                }
+
+                // Set created_at to the current time if it's null
+                Timestamp createdAt = Timestamp.from(Instant.now());
+                AdminUsers user = new AdminUsers(0, name, email, password, phone, role, status, birthdateTimestamp, gender, address, createdAt);
+
+                adminUsersDAO.addUser(user);
+            } else if ("edit".equals(action)) {
+                // Edit an existing user
+                int userId = Integer.parseInt(request.getParameter("userId"));
+                String name = request.getParameter("name");
+                String email = request.getParameter("email");
+                String phone = request.getParameter("phone");
+                String role = request.getParameter("role");
+                String gender = request.getParameter("gender");
+                String birthdate = request.getParameter("birthdate");  // Get birthdate
+                String address = request.getParameter("address");
+                String status = request.getParameter("status");  // Include status
+
+                // Validate input data
+                if (name == null || name.isEmpty() || email == null || email.isEmpty()
+                        || phone == null || phone.isEmpty()
+                        || role == null || role.isEmpty() || gender == null || gender.isEmpty()
+                        || birthdate.isEmpty() || address == null || address.isEmpty() || status == null || status.isEmpty()) {
+
+                    request.setAttribute("error", "Please enter valid information!");
+                    request.getRequestDispatcher("/WEB-INF/admin/edit-user.jsp").forward(request, response);
+                    return;
+                }
+
+                // Convert birthdate from String to Timestamp (or Date if you prefer)
+                Timestamp birthdateTimestamp = null;
+                if (birthdate != null && !birthdate.isEmpty()) {
+                    try {
+                        // Convert the birthdate to a Timestamp (using "yyyy-MM-dd" format)
+                        birthdateTimestamp = Timestamp.valueOf(birthdate + " 00:00:00");  // Set default time to midnight
+                    } catch (IllegalArgumentException e) {
+                        // If the date format is invalid, show error
+                        request.setAttribute("error", "Invalid birthdate format!");
+                        request.getRequestDispatcher("/WEB-INF/admin/edit-user.jsp").forward(request, response);
+                        return;
+                    }
+                }
+
+                // Create and update the user
+                AdminUsers user = new AdminUsers(userId, name, email, phone, role, status, birthdateTimestamp, gender, address);
+                adminUsersDAO.updateUser(user);
+            }
+
+        } catch (Exception e) {
+            // Handle any exceptions during processing
+            request.setAttribute("error", "Error occurred during processing!");
+        }
+
+        // Redirect to the user list page after processing
+        response.sendRedirect(request.getContextPath() + "/admin/users");
     }
 
-    /** 
+    /**
      * Returns a short description of the servlet.
+     *
      * @return a String containing servlet description
      */
     @Override

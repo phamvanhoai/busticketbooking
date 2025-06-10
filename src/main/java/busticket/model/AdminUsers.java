@@ -20,7 +20,7 @@ public class AdminUsers {
     private String phone;
     private String role;
     private String status;
-    private Date birthdate;
+    private Timestamp birthdate;
     private String gender;
     private String address;
     private Timestamp created_at;
@@ -28,7 +28,7 @@ public class AdminUsers {
     public AdminUsers() {
     }
 
-    public AdminUsers(int user_id, String name, String email, String password, String phone, String role, String status, Date birthdate, String gender, String address, Timestamp created_at) {
+    public AdminUsers(int user_id, String name, String email, String password, String phone, String role, String status, Timestamp birthdate, String gender, String address, Timestamp created_at) {
         this.user_id = user_id;
         this.name = name;
         this.email = email;
@@ -42,6 +42,32 @@ public class AdminUsers {
         this.created_at = created_at;
     }
 
+    public AdminUsers(String name, String email, String password, String phone, String role, String status, Timestamp birthdate, String gender, String address, Timestamp created_at) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.phone = phone;
+        this.role = role;
+        this.status = status;
+        this.birthdate = birthdate;
+        this.gender = gender;
+        this.address = address;
+        this.created_at = created_at;
+    }
+    
+    public AdminUsers(String name, String email, String phone, String role, String status, Timestamp birthdate, String gender, String address) {
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+        this.role = role;
+        this.status = status;
+        this.birthdate = birthdate;
+        this.gender = gender;
+        this.address = address;
+    }
+    
+    
+
     public AdminUsers(int user_id, String name, String email, String phone, String role, String status, Timestamp created_at) {
         this.user_id = user_id;
         this.name = name;
@@ -51,6 +77,26 @@ public class AdminUsers {
         this.status = status;
         this.created_at = created_at;
     }
+
+    public AdminUsers(int user_id, String name, String email, String phone, String role, String status, Timestamp birthdate, String gender, String address) {
+        this.user_id = user_id;
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+        this.role = role;
+        this.status = status;
+        this.birthdate = birthdate;
+        this.gender = gender;
+        this.address = address;
+    }
+
+    
+
+    
+
+    
+    
+    
 
     public int getUser_id() {
         return user_id;
@@ -108,11 +154,11 @@ public class AdminUsers {
         this.status = status;
     }
 
-    public Date getBirthdate() {
+    public Timestamp getBirthdate() {
         return birthdate;
     }
 
-    public void setBirthdate(Date birthdate) {
+    public void setBirthdate(Timestamp birthdate) {
         this.birthdate = birthdate;
     }
 
