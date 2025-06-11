@@ -6,7 +6,6 @@
 package busticket.controller;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -40,7 +39,7 @@ public class AdminDashboardServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
         // Forward to the game list page
-        request.getRequestDispatcher("../WEB-INF/admin/dashboard.jsp")
+        request.getRequestDispatcher("/WEB-INF/admin/statistics/dashboard.jsp")
                 .forward(request, response);
     } 
 

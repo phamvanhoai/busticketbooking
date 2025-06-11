@@ -15,7 +15,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
-import static javax.ws.rs.core.Response.status;
 
 /**
  *
@@ -45,7 +44,7 @@ public class AdminUsersServlet extends HttpServlet {
 //        }
         // Handle request to display the add coupon form
         if (request.getParameter("add") != null) {
-            request.getRequestDispatcher("/WEB-INF/admin/add-user.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/admin/users/add-user.jsp").forward(request, response);
             return;
         }
         // Handle request to edit a specific user
@@ -63,7 +62,7 @@ public class AdminUsersServlet extends HttpServlet {
 
                 // Set user data and forward to edit page
                 request.setAttribute("user", user);
-                request.getRequestDispatcher("/WEB-INF/admin/edit-user.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp").forward(request, response);
                 return;
             } catch (NumberFormatException e) {
                 // Redirect to user list if editId is invalid
@@ -104,7 +103,7 @@ public class AdminUsersServlet extends HttpServlet {
         request.setAttribute("currentTotalUsers", currentTotalUsers); // Current total users displayed
 
         // Forward request to the users JSP page
-        request.getRequestDispatcher("/WEB-INF/admin/users.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/admin/users/users.jsp").forward(request, response);
 
     }
 
