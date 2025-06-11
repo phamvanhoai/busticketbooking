@@ -36,6 +36,10 @@
         <servlet-name>ForgotPasswordServlet</servlet-name>
         <servlet-class>busticket.controller.ForgotPasswordServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>Error404Servlet</servlet-name>
+        <servlet-class>busticket.controller.Error404Servlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
         <url-pattern>/admin/dashboard</url-pattern>
@@ -71,6 +75,10 @@
     <servlet-mapping>
         <servlet-name>ForgotPasswordServlet</servlet-name>
         <url-pattern>/forgot-password</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Error404Servlet</servlet-name>
+        <url-pattern>/404</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
