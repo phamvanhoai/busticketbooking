@@ -40,6 +40,22 @@
         <servlet-name>Error404Servlet</servlet-name>
         <servlet-class>busticket.controller.Error404Servlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>HomeServlet</servlet-name>
+        <servlet-class>busticket.controller.HomeServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>AuthServlet</servlet-name>
+        <servlet-class>busticket.controller.AuthServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ResetPasswordServlet</servlet-name>
+        <servlet-class>busticket.controller.ResetPasswordServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>LogoutServlet</servlet-name>
+        <servlet-class>busticket.controller.LogoutServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
         <url-pattern>/admin/dashboard</url-pattern>
@@ -79,6 +95,22 @@
     <servlet-mapping>
         <servlet-name>Error404Servlet</servlet-name>
         <url-pattern>/404</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>HomeServlet</servlet-name>
+        <url-pattern>/home</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AuthServlet</servlet-name>
+        <url-pattern>/auth</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ResetPasswordServlet</servlet-name>
+        <url-pattern>/reset-password</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>LogoutServlet</servlet-name>
+        <url-pattern>/logout</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

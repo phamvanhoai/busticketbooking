@@ -17,7 +17,8 @@ public class Users {
     private String email;
     private String password;
     private String phone;
-    private String role;
+    private String role = "Customer";
+    private String status = "Active";
     private Timestamp birthdate;
     private String gender;
     private String address;
@@ -38,6 +39,15 @@ public class Users {
         this.address = address;
         this.created_at = created_at;
     }
+    
+    //FOR SIGNUP
+    public Users(String name, String email, String password) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+    }
+    
+    
 
     public int getUser_id() {
         return user_id;
@@ -85,6 +95,14 @@ public class Users {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public Timestamp getBirthdate() {
