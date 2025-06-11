@@ -10,7 +10,6 @@ busticket\controller\SignupServlet.class
 busticket\controller\ResetPasswordServlet.class
 busticket\model\Buses.class
 busticket\controller\ForgotPasswordServlet.class
-busticket\util\GmailOAuth2.class
 busticket\model\Routes.class
 busticket\util\InputValidator.class
 busticket\DAO\UsersDAO.class

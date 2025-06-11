@@ -34,6 +34,12 @@
 
                     <c:choose>
                         <c:when test="${not empty user}">
+                            <!-- Nếu user là admin, hiển thị thêm nút Admin Panel -->
+                            <c:if test="${user.role eq 'Admin'}">
+                                <a href="${pageContext.servletContext.contextPath}/admin/dashboard" class="hover:underline">
+                                    <span>Admin Panel</span>
+                                </a>
+                            </c:if>
                             <!-- Nếu user đã đăng nhập, hiển thị menu dropdown -->
                             <div class="relative">
                                 <button id="dropdown-button" class="flex items-center gap-2 text-white">

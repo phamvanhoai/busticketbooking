@@ -51,7 +51,6 @@ public class SignupServlet extends HttpServlet {
             throws ServletException, IOException {
 
         UsersDAO uDAO = new UsersDAO();
-        // For debug, creating a whole new account (BCrypt password cant be insert manually in SQL)
         String name = request.getParameter("name");
         String email = request.getParameter("email");
         String password = request.getParameter("password");
@@ -88,6 +87,7 @@ public class SignupServlet extends HttpServlet {
 
         // If there are errors, return
         if (!errorMessages.isEmpty()) {
+            // Set the error messages as a request attribute to show on the signup page
             request.setAttribute("errors", errorMessages);
             request.getRequestDispatcher("/WEB-INF/pages/auth/signup.jsp").forward(request, response);
             return;
@@ -96,11 +96,15 @@ public class SignupServlet extends HttpServlet {
         // Hash the password before storing it
         String hashedPassword = PasswordUtils.hashPassword(password); // Hash the password before storing it
 
+        // Try signing up the user
         if (uDAO.signup(new Users(name, email, hashedPassword)) > 0) { // Signup successful
-            response.sendRedirect(request.getContextPath() + "/login");
+            // Set a success message for the user and redirect to login
+            request.setAttribute("message", "Account created successfully! Please log in.");
+            request.getRequestDispatcher("/WEB-INF/pages/auth/login.jsp").forward(request, response);
         } else {
-            // Signup failed, redirect to the signup page
-            response.sendRedirect(request.getContextPath() + "/signup");
+            // Signup failed, set error message and redirect back to signup page
+            request.setAttribute("error", "Signup failed. Please try again.");
+            request.getRequestDispatcher("/WEB-INF/pages/auth/signup.jsp").forward(request, response);
         }
     }
 

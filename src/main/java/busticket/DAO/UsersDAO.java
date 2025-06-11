@@ -26,22 +26,28 @@ public class UsersDAO extends DBContext {
         String query = "UPDATE Users SET password = ? WHERE user_id = ?";
 
         try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
-            ps.setString(1, newPassword);  // Set new password (hashed)
-            ps.setInt(2, userId);  // Set user_id
+            // Đảm bảo mật khẩu được mã hóa trước khi lưu vào cơ sở dữ liệu
+            ps.setString(1, newPassword);  // Mật khẩu đã mã hóa
+            ps.setInt(2, userId);  // ID người dùng cần cập nhật mật khẩu
 
-            ps.executeUpdate();  // Update password in the database
+            // Thực thi câu lệnh cập nhật
+            int rowsUpdated = ps.executeUpdate();  // Kiểm tra xem có bản ghi nào được cập nhật không
+            if (rowsUpdated > 0) {
+                System.out.println("Password updated successfully.");
+            } else {
+                System.out.println("No user found with this ID.");
+            }
         } catch (SQLException ex) {
             Logger.getLogger(UsersDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     public void markTokenAsUsed(String token) {
-        String query = "UPDATE Password_Reset_Tokens SET used = true WHERE token = ?";
+        String query = "UPDATE Password_Reset_Tokens SET used = 1 WHERE token = ?";
 
         try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
-            ps.setString(1, token);  // Set token
-
-            ps.executeUpdate();  // Mark the token as used
+            ps.setString(1, token);  // Set token value to mark it as used
+            ps.executeUpdate();  // Cập nhật token là đã sử dụng
         } catch (SQLException ex) {
             Logger.getLogger(UsersDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -50,13 +56,13 @@ public class UsersDAO extends DBContext {
     public Users getUserByResetToken(String token) {
         String query = "SELECT * FROM Users u "
                 + "JOIN Password_Reset_Tokens prt ON u.user_id = prt.user_id "
-                + "WHERE prt.token = ? AND prt.used = false AND prt.expires_at > ?"; // Kiểm tra nếu token còn hiệu lực
+                + "WHERE prt.token = ? AND prt.used = 0 AND prt.expires_at > ?";  // Dùng 0 thay vì 'false'
 
-        Timestamp currentTime = Timestamp.from(Instant.now());  // Thời gian hiện tại
+        Timestamp currentTime = Timestamp.from(Instant.now());  // Lấy thời gian hiện tại
 
         try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
-            ps.setString(1, token);  // Thêm token vào câu lệnh SQL
-            ps.setTimestamp(2, currentTime);  // So sánh với thời gian hiện tại
+            ps.setString(1, token);  // Token từ URL
+            ps.setTimestamp(2, currentTime);  // Kiểm tra xem token có hết hạn không
 
             ResultSet rs = ps.executeQuery();
 
@@ -78,7 +84,7 @@ public class UsersDAO extends DBContext {
             Logger.getLogger(UsersDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        return null;  // Trả về null nếu không tìm thấy người dùng hoặc token hết hạn
+        return null;  // Nếu không tìm thấy người dùng hợp lệ
     }
 
     public void storeResetToken(int userId, String resetToken) {

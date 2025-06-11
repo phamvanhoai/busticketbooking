@@ -16,14 +16,17 @@
         <h2 class="text-2xl font-bold text-center mb-6 text-[#111]">
             Log in account
         </h2>
-
-
-
-        <c:if test="${not empty requestScope.error}">
-            <div style="color: red;">
-                <p>${requestScope.error}</p>
-            </div>
-        </c:if>
+        
+        
+        <!-- Hiển thị thông báo nếu có -->
+        <c:choose>
+            <c:when test="${not empty message}">
+                <div style="color: green;">${message}</div>
+            </c:when>
+            <c:when test="${not empty error}">
+                <div style="color: red;">${error}</div>
+            </c:when>
+        </c:choose>
 
         <!-- Tabs -->
         <div class="flex justify-center mb-8 border-b border-gray-200">
