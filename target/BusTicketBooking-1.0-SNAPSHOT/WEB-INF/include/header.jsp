@@ -25,7 +25,7 @@
                     <img src="your-logo.png" alt="FUTA Bus Lines" class="h-10 inline-block">
                 </div>
                 <nav class="flex gap-6 text-sm font-medium">
-                    <a href="#" class="hover:underline">Home</a>
+                    <a href="${pageContext.servletContext.contextPath}/" class="hover:underline">Home</a>
                     <a href="#" class="hover:underline">Schedule</a>
                     <a href="#" class="hover:underline">Manage Booking</a>
                     <a href="#" class="hover:underline">News</a>

@@ -49,33 +49,32 @@ public class ForgotPasswordServlet extends HttpServlet {
             throws ServletException, IOException {
         String email = request.getParameter("email");
 
-        // Create an instance of UsersDAO
-        UsersDAO usersDAO = new UsersDAO();
-
-        // Check if the user exists with the given email
-        Users user = usersDAO.getUserByEmail(email);
+        // Kiểm tra xem email có tồn tại không
+        UsersDAO uDAO = new UsersDAO();
+        Users user = uDAO.getUserByEmail(email);  // Lấy đối tượng User từ email
 
         if (user != null) {
-            // Generate a reset token
-            String resetToken = UUID.randomUUID().toString(); // Create a unique token
-            usersDAO.storeResetToken(user.getUser_id(), resetToken); // Store the token in the DB
+            // Tạo token reset mật khẩu
+            String token = UUID.randomUUID().toString();  // Tạo token duy nhất
+            uDAO.storeResetToken(user.getUser_id(), token);  // Lưu token vào cơ sở dữ liệu
 
-            // Send email with reset link
-            String resetLink = request.getRequestURL().toString().replace(request.getServletPath(), "") + "/reset-password?token=" + resetToken;
-            String subject = "Reset your password";
-            String body = "Click the link to reset your password: " + resetLink;
+            // Tạo link reset mật khẩu
+            String resetLink = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + 
+                               request.getContextPath() + "/reset-password?token=" + token;
 
-            boolean emailSent = EmailUtils.sendEmail(user.getEmail(), subject, body);
-
-            if (emailSent) {
+            // Gửi email chứa link reset mật khẩu
+            try {
+                // Truyền tên người dùng, email và link reset mật khẩu
+                EmailUtils.sendResetPasswordEmail(email, user.getName(), resetLink);
                 request.setAttribute("message", "Password reset link has been sent to your email.");
-            } else {
-                request.setAttribute("error", "Failed to send the reset link. Please try again.");
+            } catch (Exception e) {
+                request.setAttribute("error", "Error occurred while sending the email.");
             }
         } else {
-            request.setAttribute("error", "Email not found.");
+            request.setAttribute("error", "No account found with this email.");
         }
 
+        // Forward tới trang quên mật khẩu
         request.getRequestDispatcher("/WEB-INF/pages/auth/forgot-password.jsp").forward(request, response);
     }
 
