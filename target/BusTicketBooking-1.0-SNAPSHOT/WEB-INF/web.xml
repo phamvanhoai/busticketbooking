@@ -45,16 +45,16 @@
         <servlet-class>busticket.controller.HomeServlet</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>AuthServlet</servlet-name>
-        <servlet-class>busticket.controller.AuthServlet</servlet-class>
-    </servlet>
-    <servlet>
         <servlet-name>ResetPasswordServlet</servlet-name>
         <servlet-class>busticket.controller.ResetPasswordServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>LogoutServlet</servlet-name>
         <servlet-class>busticket.controller.LogoutServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>BookTicketServlet</servlet-name>
+        <servlet-class>busticket.controller.BookTicketServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
@@ -78,7 +78,7 @@
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>AdminBusTypesServlet</servlet-name>
-        <url-pattern>/admin/bustypes</url-pattern>
+        <url-pattern>/admin/bus-types</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>SignupServlet</servlet-name>
@@ -98,11 +98,7 @@
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>HomeServlet</servlet-name>
-        <url-pattern></url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>AuthServlet</servlet-name>
-        <url-pattern>/auth</url-pattern>
+        <url-pattern/>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>ResetPasswordServlet</servlet-name>
@@ -111,6 +107,10 @@
     <servlet-mapping>
         <servlet-name>LogoutServlet</servlet-name>
         <url-pattern>/logout</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>BookTicketServlet</servlet-name>
+        <url-pattern>/book-ticket</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

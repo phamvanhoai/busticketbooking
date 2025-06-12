@@ -136,9 +136,9 @@
           <!-- Price + Button -->
           <div class="text-right flex flex-col items-end flex-shrink-0">
             <p class="text-xl font-bold text-[#ef5222] mb-2">120,000 VND</p>
-            <button class="px-6 py-2 bg-[#ef5222] text-white font-semibold rounded-full hover:bg-[#fc7b4c] transition">
+            <a href="${pageContext.servletContext.contextPath}/book-ticket"><button class="px-6 py-2 bg-[#ef5222] text-white font-semibold rounded-full hover:bg-[#fc7b4c] transition">
               View Details
-            </button>
+            </button></a>
           </div>
         </div>
       </div>
