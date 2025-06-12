@@ -35,12 +35,12 @@ public class AdminUsersDAO extends DBContext {
         List<AdminUsers> users = new ArrayList<>();
         // Base SQL query to fetch user details
         StringBuilder query = new StringBuilder(
-                "SELECT user_id, name, email, phone, role, status, created_at FROM Users WHERE 1=1"
+                "SELECT user_id, user_name, user_email, user_phone, role, user_status, user_created_at FROM Users WHERE 1=1"
         );
 
         // Add search condition if a search query is provided
         if (searchQuery != null && !searchQuery.trim().isEmpty()) {
-            query.append(" AND name LIKE ?");
+            query.append(" AND user_email LIKE ?");
         }
 
         // Add pagination and sorting by user_id
@@ -63,12 +63,12 @@ public class AdminUsersDAO extends DBContext {
                 // Create AdminUser object from result set and add to list
                 users.add(new AdminUsers(
                         rs.getInt("user_id"),
-                        rs.getString("name"),
-                        rs.getString("email"),
-                        rs.getString("phone"),
+                        rs.getString("user_name"),
+                        rs.getString("user_email"),
+                        rs.getString("user_phone"),
                         rs.getString("role"),
-                        rs.getString("status"),
-                        rs.getTimestamp("created_at")
+                        rs.getString("user_status"),
+                        rs.getTimestamp("user_created_at")
                 ));
             }
         } catch (SQLException ex) {
@@ -79,8 +79,8 @@ public class AdminUsersDAO extends DBContext {
 
     // Method to update an existing user in the database
     public void updateUser(AdminUsers user) {
-        String query = "UPDATE Users SET name = ?, email = ?, phone = ?, role = ?, status = ?, "
-                + "gender = ?, birthdate = ?, address = ? WHERE user_id = ?";
+        String query = "UPDATE Users SET user_name = ?, user_email = ?, user_phone = ?, role = ?, user_status = ?, "
+                + "gender = ?, birthdate = ?, user_address = ? WHERE user_id = ?";
 
         try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
             // Set the parameters in the PreparedStatement
@@ -104,7 +104,7 @@ public class AdminUsersDAO extends DBContext {
     // Method to add a new user to the database
     public void addUser(AdminUsers user) {
         // Query để thêm người dùng vào cơ sở dữ liệu
-        String query = "INSERT INTO Users (name, email, password, phone, role, status, gender, birthdate, address, created_at) "
+        String query = "INSERT INTO Users (user_name, user_email, password, user_phone, role, user_status, gender, birthdate, user_address, user_created_at) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
@@ -149,16 +149,16 @@ public class AdminUsersDAO extends DBContext {
                 // Map the result set to the AdminUsers object
                 user = new AdminUsers(
                         rs.getInt("user_id"), // user_id
-                        rs.getString("name"), // name
-                        rs.getString("email"), // email
+                        rs.getString("user_name"), // name
+                        rs.getString("user_email"), // email
                         rs.getString("password"), // password
-                        rs.getString("phone"), // phone
+                        rs.getString("user_phone"), // phone
                         rs.getString("role"), // role
-                        rs.getString("status"), // status
+                        rs.getString("user_status"), // status
                         rs.getTimestamp("birthdate"), // birthdate
                         rs.getString("gender"), // gender
-                        rs.getString("address"), // address
-                        rs.getTimestamp("created_at") // created_at
+                        rs.getString("user_address"), // address
+                        rs.getTimestamp("user_created_at") // created_at
                 );
             }
         } catch (SQLException ex) {
@@ -181,7 +181,7 @@ public class AdminUsersDAO extends DBContext {
 
         // Add search condition if a search query is provided
         if (searchQuery != null && !searchQuery.trim().isEmpty()) {
-            query.append(" AND name LIKE ?");
+            query.append(" AND user_email LIKE ?");
         }
 
         try ( PreparedStatement ps = getConnection().prepareStatement(query.toString())) {

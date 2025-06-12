@@ -77,7 +77,7 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("currentEmail", user.getEmail());
             // Set session timeout - *prevent Session Hijacking
             session.setMaxInactiveInterval(30 * 60); // 30 minutes without interacting
-            response.sendRedirect(request.getContextPath() + "/home");
+            response.sendRedirect(request.getContextPath() + "/");
         }
     }
 

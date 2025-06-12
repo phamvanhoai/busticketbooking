@@ -21,7 +21,11 @@ import java.util.logging.Logger;
  * @author Pham Van Hoai - CE181744
  */
 public class UsersDAO extends DBContext {
-
+    /**
+     * 
+     * @param userId
+     * @param newPassword 
+     */
     public void updatePassword(int userId, String newPassword) {
         String query = "UPDATE Users SET password = ? WHERE user_id = ?";
 
@@ -43,7 +47,7 @@ public class UsersDAO extends DBContext {
     }
 
     public void markTokenAsUsed(String token) {
-        String query = "UPDATE Password_Reset_Tokens SET used = 1 WHERE token = ?";
+        String query = "UPDATE Password_Reset_Tokens SET token_used = 1 WHERE token = ?";
 
         try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
             ps.setString(1, token);  // Set token value to mark it as used
@@ -56,7 +60,7 @@ public class UsersDAO extends DBContext {
     public Users getUserByResetToken(String token) {
         String query = "SELECT * FROM Users u "
                 + "JOIN Password_Reset_Tokens prt ON u.user_id = prt.user_id "
-                + "WHERE prt.token = ? AND prt.used = 0 AND prt.expires_at > ?";  // Dùng 0 thay vì 'false'
+                + "WHERE prt.token = ? AND prt.token_used = 0 AND prt.token_expires_at > ?";  // Dùng 0 thay vì 'false'
 
         Timestamp currentTime = Timestamp.from(Instant.now());  // Lấy thời gian hiện tại
 
@@ -69,15 +73,15 @@ public class UsersDAO extends DBContext {
             if (rs.next()) {
                 return new Users(
                         rs.getInt("user_id"),
-                        rs.getString("name"),
-                        rs.getString("email"),
+                        rs.getString("user_name"),
+                        rs.getString("user_email"),
                         rs.getString("password"),
-                        rs.getString("phone"),
+                        rs.getString("user_phone"),
                         rs.getString("role"),
                         rs.getTimestamp("birthdate"),
                         rs.getString("gender"),
-                        rs.getString("address"),
-                        rs.getTimestamp("created_at")
+                        rs.getString("user_address"),
+                        rs.getTimestamp("user_created_at")
                 );
             }
         } catch (SQLException ex) {
@@ -88,7 +92,7 @@ public class UsersDAO extends DBContext {
     }
 
     public void storeResetToken(int userId, String resetToken) {
-        String query = "INSERT INTO Password_Reset_Tokens (user_id, token, created_at, expires_at, used) VALUES (?, ?, ?, ?, ?)";
+        String query = "INSERT INTO Password_Reset_Tokens (user_id, token, token_created_at, token_expires_at, token_used) VALUES (?, ?, ?, ?, ?)";
 
         // Set expiration time (1 hour from now)
         Timestamp createdAt = Timestamp.from(Instant.now());  // Current time
@@ -108,7 +112,7 @@ public class UsersDAO extends DBContext {
     }
 
     public Users getUserByEmail(String email) {
-        String query = "SELECT * FROM Users WHERE email = ?";  // Query to find the user by email
+        String query = "SELECT * FROM Users WHERE user_email = ?";  // Query to find the user by email
         try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
             // Set the email parameter in the query
             ps.setString(1, email);
@@ -120,15 +124,15 @@ public class UsersDAO extends DBContext {
             if (rs.next()) {
                 return new Users(
                         rs.getInt("user_id"),
-                        rs.getString("name"),
-                        rs.getString("email"),
+                        rs.getString("user_name"),
+                        rs.getString("user_email"),
                         rs.getString("password"),
-                        rs.getString("phone"),
+                        rs.getString("user_phone"),
                         rs.getString("role"),
                         rs.getTimestamp("birthdate"),
                         rs.getString("gender"),
-                        rs.getString("address"),
-                        rs.getTimestamp("created_at")
+                        rs.getString("user_address"),
+                        rs.getTimestamp("user_created_at")
                 );
             }
         } catch (SQLException ex) {
@@ -144,7 +148,7 @@ public class UsersDAO extends DBContext {
      * @return
      */
     public boolean isEmailExists(String email) {
-        String query = "SELECT COUNT(user_id) FROM Users WHERE email = ?;";
+        String query = "SELECT COUNT(user_id) FROM Users WHERE user_email = ?;";
         try ( ResultSet rs = execSelectQuery(query, new Object[]{email})) {
             return rs.next() && rs.getInt(1) > 0;
         } catch (SQLException ex) {
@@ -162,7 +166,7 @@ public class UsersDAO extends DBContext {
      */
     public Users login(String email, String password) {
         try {
-            String query = "SELECT * FROM Users u WHERE u.email = ?;";
+            String query = "SELECT * FROM Users u WHERE u.user_email = ?;";
             Object[] params = {email};
             ResultSet rs = execSelectQuery(query, params); // Execute the query
 
@@ -179,15 +183,15 @@ public class UsersDAO extends DBContext {
                 // Return user if everything is fine
                 return new Users(
                         rs.getInt("user_id"),
-                        rs.getString("name"),
-                        rs.getString("email"),
+                        rs.getString("user_name"),
+                        rs.getString("user_email"),
                         rs.getString("password"),
-                        rs.getString("phone"),
+                        rs.getString("user_phone"),
                         rs.getString("role"),
                         rs.getTimestamp("birthdate"),
                         rs.getString("gender"),
-                        rs.getString("address"),
-                        rs.getTimestamp("created_at")
+                        rs.getString("user_address"),
+                        rs.getTimestamp("user_created_at")
                 );
             }
         } catch (SQLException ex) {
@@ -206,7 +210,7 @@ public class UsersDAO extends DBContext {
     public int signup(Users user) {
         try {
             // Cập nhật câu lệnh SQL để phù hợp với các tham số
-            String query = "INSERT INTO Users (name, email, password, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?)";
+            String query = "INSERT INTO Users (user_name, user_email, password, role, user_status, user_created_at) VALUES (?, ?, ?, ?, ?, ?)";
 
             // Lấy thời gian hiện tại nếu `created_at` không được truyền từ phía người dùng
             Timestamp timestamp = Timestamp.from(Instant.now()); // Default created_at is the current time

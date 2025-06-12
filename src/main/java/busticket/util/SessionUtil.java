@@ -31,7 +31,7 @@ public class SessionUtil {
     public static String getLoggedInUsername(HttpServletRequest request) {
         HttpSession session = request.getSession(false); // Get session without creating a new one
         if (session != null) {
-            return (String) session.getAttribute("username"); // Return username from session, if present
+            return (String) session.getAttribute("user_name"); // Return username from session, if present
         }
         return null; // Return null if no session exists
     }
@@ -48,6 +48,6 @@ public class SessionUtil {
         }
 
         Users user = (Users) session.getAttribute("currentUser"); // Retrieve the current user object from session
-        return (user != null && "admin".equalsIgnoreCase(user.getRole())); // Return true if user exists and has "admin" role
+        return (user != null && "Admin".equalsIgnoreCase(user.getRole())); // Return true if user exists and has "admin" role
     }
 }

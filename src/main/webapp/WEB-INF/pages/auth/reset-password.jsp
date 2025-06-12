@@ -26,16 +26,6 @@
             </c:when>
         </c:choose>
 
-        <!-- Tabs -->
-        <div class="flex justify-center mb-8 border-b border-gray-200">
-            <a href="login" class="px-6 py-2 font-semibold text-sm border-b-2 text-gray-400 border-transparent">
-                LOG IN
-            </a>
-            <a href="signup" class="px-6 py-2 font-semibold text-sm border-b-2 text-gray-400 border-transparent">
-                REGISTER
-            </a>
-        </div>
-
         <!-- Reset Password Form -->
         <form action="${pageContext.request.contextPath}/reset-password" method="POST" class="space-y-5">
             <input type="hidden" name="token" value="${token}">
@@ -52,6 +42,11 @@
             <button type="submit" class="w-full bg-[#ef5222] hover:bg-[#fc7b4c] text-white font-bold py-3 rounded-full text-sm">
                 Reset Password
             </button>
+            <div class="text-right">
+                <a href="login" class="text-[#ef5222] text-sm font-medium hover:underline">
+                    Back to login
+                </a>
+            </div>
         </form>
     </div>
 
