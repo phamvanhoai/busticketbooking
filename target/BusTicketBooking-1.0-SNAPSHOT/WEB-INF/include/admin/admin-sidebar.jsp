@@ -5,6 +5,9 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<style>
+    
+</style>
 <!--begin::Body-->
 <body class="layout-fixed sidebar-expand-lg sidebar-mini bg-body-tertiary">
     <!--begin::App Wrapper-->

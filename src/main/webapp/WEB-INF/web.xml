@@ -64,6 +64,14 @@
         <servlet-name>ProfileManagementServlet</servlet-name>
         <servlet-class>busticket.controller.ProfileManagementServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>DriverDashboardServlet</servlet-name>
+        <servlet-class>busticket.controller.DriverDashboardServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>DriverTripChangeServlet</servlet-name>
+        <servlet-class>busticket.controller.DriverTripChangeServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
         <url-pattern>/admin/dashboard</url-pattern>
@@ -127,6 +135,14 @@
     <servlet-mapping>
         <servlet-name>ProfileManagementServlet</servlet-name>
         <url-pattern>/profile/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DriverDashboardServlet</servlet-name>
+        <url-pattern>/driver/dashboard</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DriverTripChangeServlet</servlet-name>
+        <url-pattern>/driver/trip-change</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

@@ -38,7 +38,6 @@ public class AdminDashboardServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        // Forward to the game list page
         request.getRequestDispatcher("/WEB-INF/admin/statistics/dashboard.jsp")
                 .forward(request, response);
     } 
