@@ -6,11 +6,14 @@ busticket\model\Users.class
 busticket\controller\LoginServlet.class
 busticket\model\Trips.class
 busticket\util\PasswordUtils.class
+busticket\controller\TicketManagementServlet.class
 busticket\controller\SignupServlet.class
 busticket\controller\ResetPasswordServlet.class
 busticket\model\Buses.class
 busticket\controller\ForgotPasswordServlet.class
+busticket\controller\ProfileManagementServlet.class
 busticket\model\Routes.class
+busticket\controller\BookTicketServlet.class
 busticket\util\InputValidator.class
 busticket\DAO\UsersDAO.class
 busticket\controller\AdminRoutesServlet.class

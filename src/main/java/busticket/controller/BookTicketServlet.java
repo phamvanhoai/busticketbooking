@@ -29,7 +29,7 @@ public class BookTicketServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        request.getRequestDispatcher("/WEB-INF/pages/book-ticket.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/pages/ticket-management/book-ticket.jsp").forward(request, response);
     } 
 
     /** 

@@ -74,7 +74,7 @@
                 </nav>
             </div>
         </header>
-
+    </body>                
         <script>
             // Get the button and menu elements
             const dropdownButton = document.getElementById('dropdown-button');

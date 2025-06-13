@@ -34,7 +34,7 @@
 
           <!-- Switch icon -->
           <div class="absolute top-[60px] left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 rotate-180">
-            <img src="/images/icons/switch_location.svg" alt="switch" class="w-12 h-12" />
+            <img src="<%= getServletContext().getContextPath()%>/assets/images/icons/switch_location.svg" alt="switch" class="w-12 h-12" />
           </div>
 
           <!-- Destination -->
@@ -73,7 +73,7 @@
                 <option value="8">8</option>
               </select>
               <span class="absolute top-1/2 right-3 -translate-y-1/2 pointer-events-none">
-                <img src="/images/icons/arrow_down_select.svg" alt="dropdown" class="w-8 h-8" />
+                <img src="<%= getServletContext().getContextPath()%>/assets/images/icons/arrow_down_select.svg" alt="dropdown" class="w-8 h-8" />
               </span>
             </div>
           </div>
@@ -103,7 +103,7 @@
           <!-- More destinations here -->
         </select>
         <span class="absolute top-1/2 right-3 -translate-y-1/2 pointer-events-none">
-          <img src="/images/icons/arrow_down_select.svg" alt="dropdown" class="w-6 h-6" />
+          <img src="<%= getServletContext().getContextPath()%>/assets/images/icons/arrow_down_select.svg" alt="dropdown" class="w-6 h-6" />
         </span>
       </div>
     </div>
@@ -115,7 +115,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <!-- Trip Info -->
           <div class="flex items-center gap-4 flex-1">
-            <img src="/images/icons/bus_icon.svg" alt="bus" class="text-[#ef5222] w-8 h-8 flex-shrink-0 drop-shadow-sm" />
+            <img src="<%= getServletContext().getContextPath()%>/assets/images/icons/bus_icon.svg" alt="bus" class="text-[#ef5222] w-8 h-8 flex-shrink-0 drop-shadow-sm" />
             <div class="flex flex-col">
               <p class="text-lg font-bold text-gray-800">Bus Trip No. 1</p>
               <p class="text-sm text-gray-500">Ho Chi Minh → Long An</p>

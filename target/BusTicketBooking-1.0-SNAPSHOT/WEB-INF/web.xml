@@ -56,6 +56,14 @@
         <servlet-name>BookTicketServlet</servlet-name>
         <servlet-class>busticket.controller.BookTicketServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>TicketManagementServlet</servlet-name>
+        <servlet-class>busticket.controller.TicketManagementServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ProfileManagementServlet</servlet-name>
+        <servlet-class>busticket.controller.ProfileManagementServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
         <url-pattern>/admin/dashboard</url-pattern>
@@ -111,6 +119,14 @@
     <servlet-mapping>
         <servlet-name>BookTicketServlet</servlet-name>
         <url-pattern>/book-ticket</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TicketManagementServlet</servlet-name>
+        <url-pattern>/ticket-management/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ProfileManagementServlet</servlet-name>
+        <url-pattern>/profile/*</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
