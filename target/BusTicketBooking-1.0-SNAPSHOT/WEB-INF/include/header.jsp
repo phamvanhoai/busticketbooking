@@ -50,13 +50,13 @@
                                 
                                 <!-- Dropdown Menu -->
                                 <div id="dropdown-menu" class="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md z-50 hidden">
-                                    <a href="${pageContext.servletContext.contextPath}/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <a href="${pageContext.servletContext.contextPath}/profile/view" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                         <i class="fas fa-user-circle text-yellow-500 mr-2"></i> Account Information
                                     </a>
-                                    <a href="${pageContext.servletContext.contextPath}/ticket-history" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                        <i class="fas fa-history text-blue-500 mr-2"></i> Ticket Purchase History
+                                    <a href="${pageContext.servletContext.contextPath}/ticket-management/view-bookings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <i class="fas fa-history text-blue-500 mr-2"></i> View Bookings
                                     </a>
-                                    <a href="${pageContext.servletContext.contextPath}/reset-password" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <a href="${pageContext.servletContext.contextPath}/profile/change-password" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                         <i class="fas fa-key text-orange-500 mr-2"></i> Reset Password
                                     </a>
                                     <a href="${pageContext.servletContext.contextPath}/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">

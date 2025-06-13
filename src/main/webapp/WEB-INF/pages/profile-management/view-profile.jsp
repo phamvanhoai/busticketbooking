@@ -99,9 +99,9 @@
 
         <!-- Update Button -->
         <div class="mt-10 flex justify-center">
-            <button class="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-10 rounded-full shadow-lg transition">
-                Update
-            </button>
+            <a href="${pageContext.servletContext.contextPath}/profile/update"><button class="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-10 rounded-full shadow-lg transition">
+                Edit
+                </button></a>
         </div>
     </div>
     <%-- CONTENT HERE--%>
