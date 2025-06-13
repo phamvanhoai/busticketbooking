@@ -72,6 +72,10 @@
         <servlet-name>DriverTripChangeServlet</servlet-name>
         <servlet-class>busticket.controller.DriverTripChangeServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>DriverAssignedTripsServlet</servlet-name>
+        <servlet-class>busticket.controller.DriverAssignedTripsServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
         <url-pattern>/admin/dashboard</url-pattern>
@@ -143,6 +147,10 @@
     <servlet-mapping>
         <servlet-name>DriverTripChangeServlet</servlet-name>
         <url-pattern>/driver/trip-change</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DriverAssignedTripsServlet</servlet-name>
+        <url-pattern>/driver/assigned-trips</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

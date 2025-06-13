@@ -65,13 +65,13 @@
         <!-- Quick Actions -->
         <div class="flex flex-col md:flex-row gap-4">
             <a
-                href="/assigned-trips"
+                href="${pageContext.servletContext.contextPath}/driver/assigned-trips"
                 class="flex-1 bg-orange-500 text-white text-center py-3 rounded-lg font-semibold hover:bg-orange-600 transition"
             >
                 View Assigned Trips
             </a>
             <a
-                href="/request-trip-change"
+                href="${pageContext.servletContext.contextPath}/driver/trip-change"
                 class="flex-1 bg-gray-100 text-orange-600 text-center py-3 rounded-lg font-semibold hover:bg-orange-200 transition border"
             >
                 Request Trip Change
