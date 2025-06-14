@@ -29,7 +29,7 @@ public class StaffAssignDriverTripServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        request.getRequestDispatcher("/WEB-INF/staff/driver/assign-driver-to-trip.jsp")
+        request.getRequestDispatcher("/WEB-INF/staff/driver-trip/assign-driver-to-trip.jsp")
                 .forward(request, response);
     } 
 

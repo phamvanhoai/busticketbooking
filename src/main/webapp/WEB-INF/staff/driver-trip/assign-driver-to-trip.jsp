@@ -65,7 +65,7 @@
                         </td>
                         <td class="py-2 px-4">—</td>
                         <td class="py-2 px-4">
-                            <button class="text-blue-600 hover:underline flex items-center gap-1">
+                            <button class="text-blue-600 hover:underline flex items-center gap-1" onclick="openAssignModal('TRIP1000')">
                                 <span>👤</span> Assign
                             </button>
                         </td>
@@ -81,7 +81,7 @@
                         </td>
                         <td class="py-2 px-4">Driver 2</td>
                         <td class="py-2 px-4">
-                            <button class="text-blue-600 hover:underline flex items-center gap-1">
+                            <button class="text-blue-600 hover:underline flex items-center gap-1" onclick="openAssignModal('TRIP1001')">
                                 <span>👤</span> Assign
                             </button>
                         </td>
@@ -97,7 +97,7 @@
                         </td>
                         <td class="py-2 px-4">Driver 3</td>
                         <td class="py-2 px-4">
-                            <button class="text-blue-600 hover:underline flex items-center gap-1">
+                            <button class="text-blue-600 hover:underline flex items-center gap-1" onclick="openAssignModal('TRIP1002')">
                                 <span>👤</span> Assign
                             </button>
                         </td>
@@ -117,9 +117,9 @@
         <!-- Modal for Assign Driver -->
         <div id="assign-modal" class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50" style="display: none;">
             <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-md relative">
-                <h3 class="text-lg font-bold mb-4">Assign Driver to TRIP1000</h3>
+                <h3 class="text-lg font-bold mb-4" id="modal-title">Assign Driver to Trip</h3>
                 <label class="block mb-2 text-sm font-medium">Available Drivers</label>
-                <select class="w-full border px-4 py-2 rounded-lg mb-4">
+                <select id="driver-select" class="w-full border px-4 py-2 rounded-lg mb-4">
                     <option value="">-- Select Driver --</option>
                     <option value="Driver 1">Driver 1</option>
                     <option value="Driver 2">Driver 2</option>
@@ -135,22 +135,29 @@
                 </div>
             </div>
         </div>
+
     </div>
 
     <script>
-        // Simulate modal opening for Assign Driver
+        // Function to open the modal and load the trip info
         function openAssignModal(tripId) {
             document.getElementById('assign-modal').style.display = 'flex';
+            document.getElementById('modal-title').innerText = `Assign Driver to ${tripId}`;
         }
 
-        // Close the modal
+        // Function to close the modal
         function closeModal() {
             document.getElementById('assign-modal').style.display = 'none';
         }
 
-        // Confirm assignment
+        // Function to confirm the driver assignment
         function confirmAssignment() {
-            alert('Driver assigned successfully!');
+            const driver = document.getElementById('driver-select').value;
+            if (driver) {
+                alert(`Driver ${driver} has been assigned!`);
+            } else {
+                alert('Please select a driver.');
+            }
             closeModal();
         }
     </script>
