@@ -29,6 +29,23 @@ public class AdminBusesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
+        if (request.getParameter("add") != null) {
+            request.getRequestDispatcher("/WEB-INF/admin/buses/add-bus.jsp").forward(request, response);
+            return;
+        }
+        
+        if (request.getParameter("delete") != null) {
+            request.getRequestDispatcher("/WEB-INF/admin/buses/delete-bus.jsp").forward(request, response);
+            return;
+        }
+        
+        if (request.getParameter("editId") != null) {
+            request.getRequestDispatcher("/WEB-INF/admin/buses/edit-bus.jsp").forward(request, response);
+            return;
+        }
+        
+        request.getRequestDispatcher("/WEB-INF/admin/buses/buses.jsp")
+                .forward(request, response);
         
     } 
 

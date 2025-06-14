@@ -33,6 +33,11 @@ public class AdminRoutesServlet extends HttpServlet {
             return;
         }
         
+        if (request.getParameter("delete") != null) {
+            request.getRequestDispatcher("/WEB-INF/admin/routes/delete-route.jsp").forward(request, response);
+            return;
+        }
+        
         if (request.getParameter("editId") != null) {
             request.getRequestDispatcher("/WEB-INF/admin/routes/edit-route.jsp").forward(request, response);
             return;

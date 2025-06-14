@@ -57,9 +57,9 @@
                 <a href="${pageContext.servletContext.contextPath}/admin/routes?editId=1"><button class="flex items-center gap-1 text-yellow-600 hover:text-yellow-800 text-sm">
                   <i class="fas fa-edit"></i> Edit
                     </button></a>
-                <button class="flex items-center gap-1 text-red-600 hover:text-red-800 text-sm">
+                <a href="${pageContext.servletContext.contextPath}/admin/routes?delete=1"><button class="flex items-center gap-1 text-red-600 hover:text-red-800 text-sm">
                   <i class="fas fa-trash"></i> Delete
-                </button>
+                    </button></a>
               </div>
             </td>
           </tr>
@@ -85,9 +85,9 @@
                 <a href="${pageContext.servletContext.contextPath}/admin/routes?editId=1"><button class="flex items-center gap-1 text-yellow-600 hover:text-yellow-800 text-sm">
                   <i class="fas fa-edit"></i> Edit
                     </button></a>
-                <button class="flex items-center gap-1 text-red-600 hover:text-red-800 text-sm">
+                <a href="${pageContext.servletContext.contextPath}/admin/routes?delete=1"><button class="flex items-center gap-1 text-red-600 hover:text-red-800 text-sm">
                   <i class="fas fa-trash"></i> Delete
-                </button>
+                    </button></a>
               </div>
             </td>
           </tr>
