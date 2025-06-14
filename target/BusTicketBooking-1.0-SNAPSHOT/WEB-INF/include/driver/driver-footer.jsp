@@ -12,5 +12,16 @@
     <p>© 2025 Your Company. All rights reserved.</p>
 </footer>
 </main>
+
+<!-<!-- SELECT PANNEL -->
+<script>
+  document.getElementById('panelSelector')
+    .addEventListener('change', function() {
+      if (this.value) {
+        window.location.href = this.value;
+      }
+    });
+</script>
+
 </body>
 </html>

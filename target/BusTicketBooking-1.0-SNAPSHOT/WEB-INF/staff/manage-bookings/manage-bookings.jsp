@@ -5,9 +5,9 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@include file="/WEB-INF/include/header.jsp" %>
+<%@include file="/WEB-INF/include/staff/staff-header.jsp" %>
 
-<%@include file="/WEB-INF/include/banner.jsp" %>
+
 
 <body class="bg-[#f9fafb]">
 
@@ -117,4 +117,4 @@
     
 <%-- CONTENT HERE--%>
 
-<%@include file="/WEB-INF/include/footer.jsp" %>
+<%@include file="/WEB-INF/include/staff/staff-footer.jsp" %>

@@ -45,7 +45,7 @@ public class AdminUsersServlet extends HttpServlet {
 //            response.sendRedirect(request.getContextPath() + "/pages/home.jsp");
 //            return;
 //        }
-        // Handle request to display the add coupon form
+
         if (request.getParameter("add") != null) {
             request.getRequestDispatcher("/WEB-INF/admin/users/add-user.jsp").forward(request, response);
             return;

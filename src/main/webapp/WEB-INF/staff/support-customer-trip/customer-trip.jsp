@@ -5,13 +5,13 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@include file="/WEB-INF/include/header.jsp" %>
+<%@include file="/WEB-INF/include/staff/staff-header.jsp" %>
 
-<%@include file="/WEB-INF/include/banner.jsp" %>
+
 
 <body class="bg-[#f9fafb]">
 
-    <div class="max-w-7xl mx-auto p-6 space-y-6">
+    <div class="p-6 space-y-6">
         <h2 class="text-2xl font-bold text-orange-600">Support Change Trip for Customer</h2>
 
         <!-- Search & Filter -->
@@ -141,4 +141,4 @@
 
     <%-- CONTENT HERE--%>
 
-    <%@include file="/WEB-INF/include/footer.jsp" %>
+    <%@include file="/WEB-INF/include/staff/staff-footer.jsp" %>

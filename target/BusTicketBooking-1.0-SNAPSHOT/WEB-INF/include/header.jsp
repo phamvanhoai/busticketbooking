@@ -14,7 +14,9 @@
         <title>FUTA Bus Lines</title>
         <!-- Link tới CDN TailwindCSS -->
         <script src="https://cdn.tailwindcss.com"></script>
-        <script src="https://kit.fontawesome.com/a076d05399.js"></script> <!-- FontAwesome Icons -->
+        
+        <!-- Font Awesome -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
     </head>
     <body class="bg-[#fff6f3] min-h-screen">
 

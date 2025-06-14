@@ -13,7 +13,10 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Staff Dashboard</title>
+        <!-- Tailwind CSS -->
         <script src="https://cdn.tailwindcss.com"></script>
+        <!-- Font Awesome -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js">
         <style>
             /* Hide the dropdown by default */
@@ -52,8 +55,8 @@
                 <!-- Sidebar -->
                 <aside class="w-60 bg-gradient-to-b from-[#FF6A2F] to-[#FA601E] text-white px-4 pt-6 pb-10 rounded-3xl shadow-xl flex flex-col items-center">
                     <div class="mb-8 flex flex-col items-center">
-                        <div class="bg-[#F7F6F3] w-12 h-12 rounded-full flex items-center justify-center text-orange-500 font-bold text-xl shadow-md">7</div>
-                        <div class="text-xl font-bold mt-2">Data</div>
+                        <div class="bg-[#F7F6F3] w-12 h-12 rounded-full flex items-center justify-center text-orange-500 font-bold text-xl shadow-md">FBus</div>
+                        <div class="text-xl font-bold mt-2">Staff</div>
                     </div>
 
                     <div class="w-full space-y-6">
@@ -97,7 +100,7 @@
                     </div>
 
                     <div class="mt-auto text-[10px] text-white text-center px-2">
-                        This Dashboard is designed by Wicson Studio, based in Indonesia
+                        Designed by Group 1 - SE1817 - SWP391
                     </div>
                 </aside>
 
@@ -107,7 +110,7 @@
                     <header class="flex justify-between items-center bg-white p-6 rounded-2xl shadow h-[100px]">
                         <div class="flex items-center gap-4">
                             <div class="w-12 h-12 rounded-xl bg-[#F26647] flex items-center justify-center">
-                                <img src="/images/Images/u1.png" alt="avatar" class="w-8 h-8 rounded-full" />
+                                <img src="<%= getServletContext().getContextPath()%>/assets/images/avt/avatar.png" alt="avatar" class="w-8 h-8 rounded-full" />
                             </div>
                             <div>
                                 <h2 class="text-2xl font-bold text-[#1E1E1E]">Hello, Team</h2>
@@ -117,16 +120,17 @@
                         <!-- Dropdown for Panel and Profile -->
                         <div class="flex items-center gap-4">
                             <!-- Dropdown to switch Panel -->
-                            <select class="bg-[#F7F6F3] text-sm text-gray-600 placeholder:text-gray-400 px-4 py-3 rounded-xl shadow-sm border border-gray-300 focus:outline-none">
-                                <option value="admin">Admin Panel</option>
-                                <option value="staff">Staff Panel</option>
-                                <option value="driver">Driver Panel</option>
+                            <select id="panelSelector" class="bg-[#F7F6F3] text-sm text-gray-600 placeholder:text-gray-400 px-4 py-3 rounded-xl shadow-sm border border-gray-300 focus:outline-none">
+                                <option value="">Chọn Panel</option>
+                                <option value="${pageContext.servletContext.contextPath}/admin/dashboard">Admin Panel</option>
+                                <option value="${pageContext.servletContext.contextPath}/staff/dashboard">Staff Panel</option>
+                                <option value="${pageContext.servletContext.contextPath}/driver/dashboard">Driver Panel</option>
                             </select>
 
                             <!-- Profile Dropdown -->
                             <div class="relative dropdown">
                                 <button class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-xl text-sm text-gray-800 flex items-center gap-2">
-                                    <img src="/images/Images/u1.png" alt="avatar" class="w-6 h-6 rounded-full" />
+                                    <img src="<%= getServletContext().getContextPath()%>/assets/images/avt/avatar.png" alt="avatar" class="w-6 h-6 rounded-full" />
                                     <span class="text-gray-800">Profile</span>
                                     <i class="fas fa-chevron-down"></i>
                                 </button>

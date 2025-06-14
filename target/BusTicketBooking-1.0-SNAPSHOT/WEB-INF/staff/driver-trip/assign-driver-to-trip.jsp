@@ -5,13 +5,12 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@include file="/WEB-INF/include/header.jsp" %>
+<%@include file="/WEB-INF/include/staff/staff-header.jsp" %>
 
-<%@include file="/WEB-INF/include/banner.jsp" %>
 
 <body class="bg-[#f9fafb]">
 
-    <div class="max-w-6xl mx-auto px-4 mt-10">
+    <div class="px-4 mt-10">
         <h2 class="text-3xl font-bold text-orange-600 mb-6">Assign Driver to Trip</h2>
 
         <!-- Filters -->
@@ -163,4 +162,4 @@
     </script>
     <%-- CONTENT HERE--%>
 
-    <%@include file="/WEB-INF/include/footer.jsp" %>
+    <%@include file="/WEB-INF/include/staff/staff-footer.jsp" %>

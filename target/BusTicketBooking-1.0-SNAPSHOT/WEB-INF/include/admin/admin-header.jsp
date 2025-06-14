@@ -55,8 +55,8 @@
                 <!-- Sidebar -->
                 <aside class="w-60 bg-gradient-to-b from-[#FF6A2F] to-[#FA601E] text-white px-4 pt-6 pb-10 rounded-3xl shadow-xl flex flex-col items-center">
                     <div class="mb-8 flex flex-col items-center">
-                        <div class="bg-[#F7F6F3] w-12 h-12 rounded-full flex items-center justify-center text-orange-500 font-bold text-xl shadow-md">7</div>
-                        <div class="text-xl font-bold mt-2">Data</div>
+                        <div class="bg-[#F7F6F3] w-12 h-12 rounded-full flex items-center justify-center text-orange-500 font-bold text-xl shadow-md">FBus</div>
+                        <div class="text-xl font-bold mt-2">Admin</div>
                     </div>
 
                     <div class="w-full space-y-6">
@@ -98,6 +98,12 @@
                                     <span>Manage Bus Types</span>
                                 </a>
                             </div>
+                            <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("view-statistics.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
+                                <a href="${pageContext.servletContext.contextPath}/admin/statistics">
+                                    <span class="text-base"><i class="fas fa-table"></i></span>
+                                    <span>Statistic</span>
+                                </a>
+                            </div>
                         </div>
 
                         <div class="text-xs text-gray-200 px-2 mt-6 uppercase">Help</div>
@@ -118,7 +124,7 @@
                     </div>
 
                     <div class="mt-auto text-[10px] text-white text-center px-2">
-                        This Dashboard is designed by Wicson Studio, based in Indonesia
+                        Designed by Group 1 - SE1817 - SWP391
                     </div>
                 </aside>
 
@@ -138,10 +144,11 @@
                         <!-- Dropdown for Panel and Profile -->
                         <div class="flex items-center gap-4">
                             <!-- Dropdown to switch Panel -->
-                            <select class="bg-[#F7F6F3] text-sm text-gray-600 placeholder:text-gray-400 px-4 py-3 rounded-xl shadow-sm border border-gray-300 focus:outline-none">
-                                <option value="admin">Admin Panel</option>
-                                <option value="staff">Staff Panel</option>
-                                <option value="driver">Driver Panel</option>
+                            <select id="panelSelector" class="bg-[#F7F6F3] text-sm text-gray-600 placeholder:text-gray-400 px-4 py-3 rounded-xl shadow-sm border border-gray-300 focus:outline-none">
+                                <option value="">Chọn Panel</option>
+                                <option value="${pageContext.servletContext.contextPath}/admin/dashboard">Admin Panel</option>
+                                <option value="${pageContext.servletContext.contextPath}/staff/dashboard">Staff Panel</option>
+                                <option value="${pageContext.servletContext.contextPath}/driver/dashboard">Driver Panel</option>
                             </select>
 
                             <!-- Profile Dropdown -->

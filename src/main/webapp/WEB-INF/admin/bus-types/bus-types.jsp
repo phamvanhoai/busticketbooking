@@ -43,9 +43,9 @@
               <a href="${pageContext.servletContext.contextPath}/admin/bus-types?editId=1"><button class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm">
                 <i class="fas fa-edit"></i> Edit
                   </button></a>
-              <button class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 text-sm">
+              <a href="${pageContext.servletContext.contextPath}/admin/bus-types?delete=1"><button class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 text-sm">
                 <i class="fas fa-trash"></i> Delete
-              </button>
+                  </button></a>
             </td>
           </tr>
           <!-- Row 2 -->
@@ -57,9 +57,9 @@
               <a href="${pageContext.servletContext.contextPath}/admin/bus-types?editId=1"><button class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm">
                 <i class="fas fa-edit"></i> Edit
                   </button></a>
-              <button class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 text-sm">
+              <a href="${pageContext.servletContext.contextPath}/admin/bus-types?delete=1"><button class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 text-sm">
                 <i class="fas fa-trash"></i> Delete
-              </button>
+                  </button></a>
             </td>
           </tr>
           <!-- Row 3 -->
@@ -71,9 +71,9 @@
               <a href="${pageContext.servletContext.contextPath}/admin/bus-types?editId=1"><button class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm">
                 <i class="fas fa-edit"></i> Edit
                   </button></a>
-              <button class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 text-sm">
+              <a href="${pageContext.servletContext.contextPath}/admin/bus-types?delete=1"><button class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 text-sm">
                 <i class="fas fa-trash"></i> Delete
-              </button>
+                  </button></a>
             </td>
           </tr>
         </tbody>
