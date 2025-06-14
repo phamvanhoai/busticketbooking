@@ -11,6 +11,6 @@
 <footer class="bg-white shadow-md p-4 text-center text-gray-600">
     <p>© 2025 Your Company. All rights reserved.</p>
 </footer>
-
+</main>
 </body>
 </html>

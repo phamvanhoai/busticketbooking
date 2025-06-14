@@ -5,13 +5,11 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@include file="/WEB-INF/include/header.jsp" %>
-
-<%@include file="/WEB-INF/include/banner.jsp" %>
+<%@include file="/WEB-INF/include/driver/driver-header.jsp" %>
 
 <body class="bg-[#f9fafb]">
 
-    <div class="max-w-6xl mx-auto mt-12 px-4">
+    <div class="mt-12 px-4">
         <h2 class="text-3xl font-bold text-orange-600 mb-8">Assigned Trips</h2>
 
         <!-- Trip 1 -->
@@ -84,4 +82,4 @@
 
 <%-- CONTENT HERE--%>
 
-<%@include file="/WEB-INF/include/footer.jsp" %>
+<%@include file="/WEB-INF/include/driver/driver-footer.jsp" %>

@@ -9,7 +9,7 @@
 
 <body class="bg-[#f9fafb]">
 
-    <div class="max-w-6xl mx-auto mt-12 px-6">
+    <div class="mt-12 px-6">
         <!-- Header -->
         <div class="flex items-center gap-6 mb-10">
             <img

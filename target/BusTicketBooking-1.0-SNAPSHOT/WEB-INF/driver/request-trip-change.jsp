@@ -5,13 +5,11 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@include file="/WEB-INF/include/header.jsp" %>
-
-<%@include file="/WEB-INF/include/banner.jsp" %>
+<%@include file="/WEB-INF/include/driver/driver-header.jsp" %>
 
 <body class="bg-[#f9fafb]">
 
-    <div class="max-w-4xl mx-auto mt-10">
+    <div class="mt-10">
         <!-- Heading -->
         <h1 class="flex items-center justify-start text-3xl font-bold text-[#EF5222] mb-6">
             <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 text-[#EF5222]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -61,4 +59,4 @@
     </div>
     <%-- CONTENT HERE--%>
 
-    <%@include file="/WEB-INF/include/footer.jsp" %>
+    <%@include file="/WEB-INF/include/driver/driver-footer.jsp" %>

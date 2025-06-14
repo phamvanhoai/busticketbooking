@@ -1,8 +1,9 @@
 <%-- 
-    Document   : header
-    Created on : May 21, 2025, 3:20:18 PM
+    Document   : staff-header
+    Created on : Jun 14, 2025, 9:20:36 PM
     Author     : Pham Van Hoai - CE181744
 --%>
+
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <c:set var="user" value="${sessionScope.currentUser}"/>
