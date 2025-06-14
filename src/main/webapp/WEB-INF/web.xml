@@ -76,6 +76,18 @@
         <servlet-name>DriverAssignedTripsServlet</servlet-name>
         <servlet-class>busticket.controller.DriverAssignedTripsServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>StaffManageBookingsServlet</servlet-name>
+        <servlet-class>busticket.controller.StaffManageBookingsServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>StaffTripStatusServlet</servlet-name>
+        <servlet-class>busticket.controller.StaffTripStatusServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>StaffAssignDriverTripServlet</servlet-name>
+        <servlet-class>busticket.controller.StaffAssignDriverTripServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
         <url-pattern>/admin/dashboard</url-pattern>
@@ -151,6 +163,18 @@
     <servlet-mapping>
         <servlet-name>DriverAssignedTripsServlet</servlet-name>
         <url-pattern>/driver/assigned-trips</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>StaffManageBookingsServlet</servlet-name>
+        <url-pattern>/staff/manage-bookings</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>StaffTripStatusServlet</servlet-name>
+        <url-pattern>/staff/trip-status</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>StaffAssignDriverTripServlet</servlet-name>
+        <url-pattern>/staff/assign-driver-trip</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

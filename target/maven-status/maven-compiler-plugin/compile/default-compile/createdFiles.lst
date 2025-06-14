@@ -1,4 +1,6 @@
+busticket\controller\DriverTripChangeServlet.class
 busticket\controller\AdminUsersServlet.class
+busticket\controller\StaffManageBookinngsServlet.class
 busticket\controller\AdminDashboardServlet.class
 busticket\util\SessionUtil.class
 busticket\DAO\AdminUsersDAO.class
@@ -12,6 +14,7 @@ busticket\controller\ResetPasswordServlet.class
 busticket\model\Buses.class
 busticket\controller\ForgotPasswordServlet.class
 busticket\controller\ProfileManagementServlet.class
+busticket\controller\DriverAssignedTripsServlet.class
 busticket\model\Routes.class
 busticket\controller\BookTicketServlet.class
 busticket\util\InputValidator.class
