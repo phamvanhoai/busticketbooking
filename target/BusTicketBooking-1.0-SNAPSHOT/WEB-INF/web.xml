@@ -88,6 +88,14 @@
         <servlet-name>StaffAssignDriverTripServlet</servlet-name>
         <servlet-class>busticket.controller.StaffAssignDriverTripServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>StaffBookingStatisticsServlet</servlet-name>
+        <servlet-class>busticket.controller.StaffBookingStatisticsServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>StaffSupportCustomerTripServlet</servlet-name>
+        <servlet-class>busticket.controller.StaffSupportCustomerTripServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
         <url-pattern>/admin/dashboard</url-pattern>
@@ -175,6 +183,14 @@
     <servlet-mapping>
         <servlet-name>StaffAssignDriverTripServlet</servlet-name>
         <url-pattern>/staff/assign-driver-trip</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>StaffBookingStatisticsServlet</servlet-name>
+        <url-pattern>/staff/booking-statistics</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>StaffSupportCustomerTripServlet</servlet-name>
+        <url-pattern>/staff/support-customer-trip</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
