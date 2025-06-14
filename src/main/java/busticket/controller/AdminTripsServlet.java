@@ -35,7 +35,7 @@ public class AdminTripsServlet extends HttpServlet {
         }
         
         if (request.getParameter("editId") != null) {
-            request.getRequestDispatcher("/WEB-INF/admin/trips/add-trip.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/admin/trips/edit-trip.jsp").forward(request, response);
             return;
         }
         

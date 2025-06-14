@@ -29,6 +29,23 @@ public class AdminBusTypesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
+        if (request.getParameter("add") != null) {
+            request.getRequestDispatcher("/WEB-INF/admin/bus-types/add-bus-type.jsp").forward(request, response);
+            return;
+        }
+        
+        if (request.getParameter("delete") != null) {
+            request.getRequestDispatcher("/WEB-INF/admin/bus-types/delete-bus-type.jsp").forward(request, response);
+            return;
+        }
+        
+        if (request.getParameter("editId") != null) {
+            request.getRequestDispatcher("/WEB-INF/admin/bus-types/edit-bus-type.jsp").forward(request, response);
+            return;
+        }
+        
+        request.getRequestDispatcher("/WEB-INF/admin/bus-types/bus-types.jsp")
+                .forward(request, response);
         
     } 
 
