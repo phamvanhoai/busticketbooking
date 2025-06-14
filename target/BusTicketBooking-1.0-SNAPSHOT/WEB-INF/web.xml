@@ -96,6 +96,10 @@
         <servlet-name>StaffSupportCustomerTripServlet</servlet-name>
         <servlet-class>busticket.controller.StaffSupportCustomerTripServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>StaffSupportDriverTripServlet</servlet-name>
+        <servlet-class>busticket.controller.StaffSupportDriverTripServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
         <url-pattern>/admin/dashboard</url-pattern>
@@ -191,6 +195,10 @@
     <servlet-mapping>
         <servlet-name>StaffSupportCustomerTripServlet</servlet-name>
         <url-pattern>/staff/support-customer-trip</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>StaffSupportDriverTripServlet</servlet-name>
+        <url-pattern>/staff/support-driver-trip</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
