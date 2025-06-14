@@ -28,6 +28,18 @@ public class AdminRoutesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
+        if (request.getParameter("add") != null) {
+            request.getRequestDispatcher("/WEB-INF/admin/routes/add-route.jsp").forward(request, response);
+            return;
+        }
+        
+        if (request.getParameter("editId") != null) {
+            request.getRequestDispatcher("/WEB-INF/admin/routes/edit-route.jsp").forward(request, response);
+            return;
+        }
+        
+        request.getRequestDispatcher("/WEB-INF/admin/routes/routes.jsp")
+                .forward(request, response);
         
     } 
 
