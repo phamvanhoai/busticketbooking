@@ -10,109 +10,137 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <%@include file="/WEB-INF/include/admin/admin-header.jsp" %>
-<%@include file="/WEB-INF/include/admin/admin-sidebar.jsp" %>
 
-<!--begin::App Main-->
-<main class="app-main">
-    <!--begin::App Content Header-->
-    <div class="app-content-header">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-sm-6"><h3 class="mb-0">Edit User</h3></div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-end">
-                        <li class="breadcrumb-item"><a href="<%= getServletContext().getContextPath()%>">Home</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Edit User</li>
-                    </ol>
+<body class="bg-[#f9fafb]">
+    <div class="p-8 bg-white rounded-xl shadow-xl mt-10">
+        <h2 class="text-3xl font-bold text-orange-600 mb-6">Update Account</h2>
+        
+        <!-- Hiển thị thông báo nếu có -->
+        <c:choose>
+            <c:when test="${not empty requestScope.message}">
+                <div style="color: green;">${message}</div>
+            </c:when>
+            <c:when test="${not empty requestScope.error}">
+                <div style="color: red;">${error}</div>
+            </c:when>
+        </c:choose>
+
+        <!-- Form -->
+        <form action="${pageContext.request.contextPath}/admin/users" method="post" class="space-y-6">
+            <input type="hidden" name="action" value="edit">
+            <input type="hidden" name="userId" value="${user.user_id}">
+
+            <!-- Full Name -->
+            <label class="block text-lg font-medium mb-2" for="fullName">Full Name</label>
+            <input
+                id="fullName"
+                name="name"
+                value="${user.name}"
+                class="w-full border rounded-md p-3 mb-8 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                placeholder="Enter full name"
+                required
+            />
+
+            <!-- Email -->
+            <label class="block text-lg font-medium mb-2" for="email">Email</label>
+            <input
+                id="email"
+                name="email"
+                type="email"
+                value="${user.email}"
+                class="w-full border rounded-md p-3 mb-8 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                placeholder="Enter email address"
+                required
+            />
+
+            <!-- Phone Number -->
+            <label class="block text-lg font-medium mb-2" for="phone">Phone Number</label>
+            <input
+                id="phone"
+                name="phone"
+                value="${user.phone}"
+                class="w-full border rounded-md p-3 mb-8 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                placeholder="Enter phone number"
+            />
+
+            <!-- Role & Status -->
+            <div class="grid sm:grid-cols-2 gap-6 mb-12">
+                <div>
+                    <label class="block text-lg font-medium mb-2" for="role">Role</label>
+                    <select
+                        id="role"
+                        name="role"
+                        class="w-full border rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                        required
+                    >
+                        <option value="">Select role</option>
+                        <option value="Admin" ${user.role == 'Admin' ? 'selected' : ''}>Admin</option>
+                        <option value="Staff" ${user.role == 'Staff' ? 'selected' : ''}>Staff</option>
+                        <option value="Driver" ${user.role == 'Driver' ? 'selected' : ''}>Driver</option>
+                        <option value="Customer" ${user.role == 'Customer' ? 'selected' : ''}>Customer</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-lg font-medium mb-2" for="status">Status</label>
+                    <select
+                        id="status"
+                        name="status"
+                        class="w-full border rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                        required
+                    >
+                        <option value="Active" ${user.status == 'Active' ? 'selected' : ''}>Active</option>
+                        <option value="Inactive" ${user.status == 'Inactive' ? 'selected' : ''}>Inactive</option>
+                    </select>
                 </div>
             </div>
-        </div>
-    </div>
-    <!--end::App Content Header-->
 
-    <!--begin::App Content-->
-    <div class="app-content">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-8 offset-md-2">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Edit User</h3>
-                        </div>
-                        <div class="card-body">
-                            <!-- Kiểm tra nếu user không tồn tại -->
-                            <c:choose>
-                                <c:when test="${empty user}">
-                                    <div class="alert alert-danger">User not found.</div>
-                                </c:when>
-                                <c:otherwise>
-                                    <form action="${pageContext.request.contextPath}/admin/users" method="post">
-                                        <input type="hidden" name="action" value="edit">
-                                        <input type="hidden" name="userId" value="${user.user_id}">
+            <!-- Gender -->
+            <label class="block text-lg font-medium mb-2" for="gender">Gender</label>
+            <select
+                id="gender"
+                name="gender"
+                class="w-full border rounded-md p-3 mb-8 focus:outline-none focus:ring-2 focus:ring-orange-400"
+            >
+                <option value="Male" ${user.gender == 'Male' ? 'selected' : ''}>Male</option>
+                <option value="Female" ${user.gender == 'Female' ? 'selected' : ''}>Female</option>
+                <option value="Other" ${user.gender == 'Other' ? 'selected' : ''}>Other</option>
+            </select>
 
-                                        <div class="mb-3">
-                                            <label for="name" class="form-label">Full Name</label>
-                                            <input type="text" class="form-control" id="name" name="name" value="${user.name}" required>
-                                        </div>
+            <!-- Birthdate -->
+            <label class="block text-lg font-medium mb-2" for="birthdate">Birthdate</label>
+            <input
+                type="date"
+                id="birthdate"
+                name="birthdate"
+                value="<fmt:formatDate value="${user.birthdate}" pattern="yyyy-MM-dd" />"
+                class="w-full border rounded-md p-3 mb-8 focus:outline-none focus:ring-2 focus:ring-orange-400"
+            />
 
-                                        <div class="mb-3">
-                                            <label for="email" class="form-label">Email</label>
-                                            <input type="email" class="form-control" id="email" name="email" value="${user.email}" required>
-                                        </div>
+            <!-- Address -->
+            <label class="block text-lg font-medium mb-2" for="address">Address</label>
+            <textarea
+                id="address"
+                name="address"
+                class="w-full border rounded-md p-3 mb-8 focus:outline-none focus:ring-2 focus:ring-orange-400"
+            >${user.address}</textarea>
 
-                                        <div class="mb-3">
-                                            <label for="phone" class="form-label">Phone Number</label>
-                                            <input type="text" class="form-control" id="phone" name="phone" value="${user.phone}" required>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label for="role" class="form-label">Role</label>
-                                            <select class="form-control" id="role" name="role" required>
-                                                <option value="Customer" ${user.role == 'Customer' ? 'selected' : ''}>Customer</option>
-                                                <option value="Admin" ${user.role == 'Admin' ? 'selected' : ''}>Admin</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label for="gender" class="form-label">Gender</label>
-                                            <select class="form-control" id="gender" name="gender" required>
-                                                <option value="Male" ${user.gender == 'Male' ? 'selected' : ''}>Male</option>
-                                                <option value="Female" ${user.gender == 'Female' ? 'selected' : ''}>Female</option>
-                                                <option value="Other" ${user.gender == 'Other' ? 'selected' : ''}>Other</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label for="birthdate" class="form-label">Birthdate</label>
-                                            <input type="date" class="form-control" id="birthdate" name="birthdate"
-                                                   value="<fmt:formatDate value="${user.birthdate}" pattern="yyyy-MM-dd" />" required>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label for="status" class="form-label">Status</label>
-                                            <select class="form-control" id="status" name="status" required>
-                                                <option value="Active" ${user.status == 'Active' ? 'selected' : ''}>Active</option>
-                                                <option value="Inactive" ${user.status == 'Inactive' ? 'selected' : ''}>Inactive</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label for="address" class="form-label">Address</label>
-                                            <textarea class="form-control" id="address" name="address" required>${user.address}</textarea>
-                                        </div>
-
-                                        <button type="submit" class="btn btn-primary">Update User</button>
-                                        <a href="${pageContext.request.contextPath}/admin/users" class="btn btn-secondary">Cancel</a>
-                                    </form>
-                                </c:otherwise>
-                            </c:choose>
-                        </div>
-                    </div>
-                </div>
+            <!-- Action Buttons -->
+            <div class="flex justify-end gap-4 pt-4">
+                <a href="${pageContext.servletContext.contextPath}/admin/users"><button
+                    type="button"
+                    class="bg-gray-300 text-gray-700 px-8 py-3 rounded-md hover:bg-gray-400"
+                >
+                    Cancel
+                    </button></a>
+                <button
+                    type="submit"
+                    class="bg-orange-500 text-white px-8 py-3 rounded-md hover:bg-orange-600"
+                >
+                    Update
+                </button>
             </div>
-        </div>
-    </div>      
-</main>
-<!--end::App Main-->
+        </form>
+    </div> 
 
 <%@include file="/WEB-INF/include/admin/admin-footer.jsp" %>

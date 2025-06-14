@@ -180,7 +180,6 @@ public class AdminUsersServlet extends HttpServlet {
                 String hashedPassword = PasswordUtils.hashPassword(password);
                 System.out.println("Hashed password: " + hashedPassword);
 
-
                 // Set created_at to the current time if it's null
                 Timestamp createdAt = Timestamp.from(Instant.now());
 
@@ -212,12 +211,23 @@ public class AdminUsersServlet extends HttpServlet {
 
                 // Validate input data
                 if (name == null || name.isEmpty() || email == null || email.isEmpty()
-                        || phone == null || phone.isEmpty()
-                        || role == null || role.isEmpty() || gender == null || gender.isEmpty()
-                        || birthdate.isEmpty() || address == null || address.isEmpty() || status == null || status.isEmpty()) {
+                        || role == null || role.isEmpty() || status == null || status.isEmpty()) {
 
+                    // Nếu có lỗi, trả về thông báo lỗi và không lưu
                     request.setAttribute("error", "Please enter valid information!");
-                    request.getRequestDispatcher("/WEB-INF/admin/edit-user.jsp").forward(request, response);
+
+                    // Gửi dữ liệu lại về form (bao gồm userId để tiếp tục chỉnh sửa)
+                    request.setAttribute("userId", userId);
+                    request.setAttribute("name", name);
+                    request.setAttribute("email", email);
+                    request.setAttribute("phone", phone);
+                    request.setAttribute("role", role);
+                    request.setAttribute("gender", gender);
+                    request.setAttribute("birthdate", birthdate);
+                    request.setAttribute("address", address);
+                    request.setAttribute("status", status);
+
+                    request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp?userId=" + userId).forward(request, response);
                     return;
                 }
 
@@ -230,7 +240,7 @@ public class AdminUsersServlet extends HttpServlet {
                     } catch (IllegalArgumentException e) {
                         // If the date format is invalid, show error
                         request.setAttribute("error", "Invalid birthdate format!");
-                        request.getRequestDispatcher("/WEB-INF/admin/edit-user.jsp").forward(request, response);
+                        request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp?userId=" + userId).forward(request, response);
                         return;
                     }
                 }
@@ -238,8 +248,11 @@ public class AdminUsersServlet extends HttpServlet {
                 // Create and update the user
                 AdminUsers user = new AdminUsers(userId, name, email, phone, role, status, birthdateTimestamp, gender, address);
                 adminUsersDAO.updateUser(user);
-            }
 
+                // Nếu update thành công, gửi thông báo thành công và chuyển hướng đến trang danh sách người dùng
+                request.setAttribute("message", "User updated successfully!");
+                request.getRequestDispatcher("/WEB-INF/admin/users/users.jsp").forward(request, response);
+            }
         } catch (Exception e) {
             // Handle any exceptions during processing
             request.setAttribute("error", "Error occurred during processing!");

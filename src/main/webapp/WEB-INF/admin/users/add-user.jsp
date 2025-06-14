@@ -9,10 +9,10 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<%@include file="/WEB-INF/include/header.jsp" %>
+<%@include file="/WEB-INF/include/admin/admin-header.jsp" %>
 
 <body class="bg-[#f9fafb]">
-    <div class="max-w-2xl mx-auto p-8 bg-white rounded-xl shadow-lg mt-10">
+    <div class="p-8 bg-white rounded-xl shadow-lg mt-10">
         <h2 class="text-3xl font-bold text-orange-600 mb-6">Create Account</h2>
         
         <!-- Hiển thị thông báo nếu có -->
@@ -123,4 +123,4 @@
         </form>
     </div> 
 
-<%@include file="/WEB-INF/include/footer.jsp" %>
+<%@include file="/WEB-INF/include/admin/admin-footer.jsp" %>

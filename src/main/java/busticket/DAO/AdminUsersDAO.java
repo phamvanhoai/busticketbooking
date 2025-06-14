@@ -78,7 +78,7 @@ public class AdminUsersDAO extends DBContext {
     }
 
     // Method to update an existing user in the database
-    public void updateUser(AdminUsers user) {
+    public int updateUser(AdminUsers user) {
         String query = "UPDATE Users SET user_name = ?, user_email = ?, user_phone = ?, role = ?, user_status = ?, "
                 + "gender = ?, birthdate = ?, user_address = ? WHERE user_id = ?";
 
@@ -99,6 +99,7 @@ public class AdminUsersDAO extends DBContext {
         } catch (SQLException ex) {
             Logger.getLogger(AdminUsersDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
+        return 0;
     }
 
     // Method to add a new user to the database
