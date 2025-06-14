@@ -9,107 +9,118 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<%@include file="/WEB-INF/include/admin/admin-header.jsp" %>
-<%@include file="/WEB-INF/include/admin/admin-sidebar.jsp" %>
+<%@include file="/WEB-INF/include/header.jsp" %>
 
-<!--begin::App Main-->
-<main class="app-main">
-    <!--begin::App Content Header-->
-    <div class="app-content-header">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-sm-6"><h3 class="mb-0">Add User</h3></div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-end">
-                        <li class="breadcrumb-item"><a href="<%= getServletContext().getContextPath()%>">Home</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Add User</li>
-                    </ol>
+<body class="bg-[#f9fafb]">
+    <div class="max-w-2xl mx-auto p-8 bg-white rounded-xl shadow-lg mt-10">
+        <h2 class="text-3xl font-bold text-orange-600 mb-6">Create Account</h2>
+        
+        <!-- Hiển thị thông báo nếu có -->
+        <c:choose>
+            <c:when test="${not empty requestScope.message}">
+                <div style="color: green;">${message}</div>
+            </c:when>
+            <c:when test="${not empty requestScope.error}">
+                <div style="color: red;">${error}</div>
+            </c:when>
+        </c:choose>
+                
+                <c:if test="${not empty requestScope.errors}">
+            <div style="color: red;">
+                <c:forEach var="error" items="${requestScope.errors}">
+                    <p>${error}</p>
+                </c:forEach>
+            </div>
+        </c:if>
+                
+        <form action="${pageContext.request.contextPath}/admin/users" method="post" class="space-y-6">
+            <input type="hidden" name="action" value="add">
+
+            <div>
+                <label class="block mb-1 font-medium">Full Name</label>
+                <input
+                    type="text"
+                    name="name"
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-orange-500"
+                    required
+                />
+            </div>
+
+            <div>
+                <label class="block mb-1 font-medium">Email</label>
+                <input
+                    type="email"
+                    name="email"
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-orange-500"
+                    required
+                />
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block mb-1 font-medium">Password</label>
+                    <input
+                        type="password"
+                        name="password"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-orange-500"
+                        required
+                    />
+                </div>
+
+                <div>
+                    <label class="block mb-1 font-medium">Confirm Password</label>
+                    <input
+                        type="password"
+                        name="confirmPassword"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-orange-500"
+                        required
+                    />
                 </div>
             </div>
-        </div>
-    </div>
-    <!--end::App Content Header-->
 
-    <!--begin::App Content-->
-    <div class="app-content">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-8 offset-md-2">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Add User</h3>
-                        </div>
-                        <div class="card-body">
-                            <!-- Form to add a new user -->
-                            <form action="${pageContext.request.contextPath}/admin/users" method="post">
-                                <input type="hidden" name="action" value="add">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block mb-1 font-medium">Role</label>
+                    <select
+                        name="role"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-orange-500"
+                        required
+                    >
+                        <option value="" disabled>Select role</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Staff">Staff</option>
+                        <option value="Driver">Driver</option>
+                        <option value="Customer">Customer</option>
+                    </select>
+                </div>
 
-                                <div class="mb-3">
-                                    <label for="name" class="form-label">Full Name</label>
-                                    <input type="text" class="form-control" id="name" name="name" required>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="email" class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="email" name="email" required>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="phone" class="form-label">Phone Number</label>
-                                    <input type="text" class="form-control" id="phone" name="phone" required>
-                                </div>
-
-                                <!-- Add Password field -->
-                                <div class="mb-3">
-                                    <label for="password" class="form-label">Password</label>
-                                    <input type="password" class="form-control" id="password" name="password" required>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="role" class="form-label">Role</label>
-                                    <select class="form-control" id="role" name="role" required>
-                                        <option value="Customer">Customer</option>
-                                        <option value="Admin">Admin</option>
-                                    </select>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="gender" class="form-label">Gender</label>
-                                    <select class="form-control" id="gender" name="gender" required>
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="birthdate" class="form-label">Birthdate</label>
-                                    <input type="date" class="form-control" id="birthdate" name="birthdate" required>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="status" class="form-label">Status</label>
-                                    <select class="form-control" id="status" name="status" required>
-                                        <option value="Active">Active</option>
-                                        <option value="Inactive">Inactive</option>
-                                    </select>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="address" class="form-label">Address</label>
-                                    <textarea class="form-control" id="address" name="address" required></textarea>
-                                </div>
-
-                                <button type="submit" class="btn btn-primary">Add User</button>
-                                <a href="${pageContext.request.contextPath}/admin/users" class="btn btn-secondary">Cancel</a>
-                            </form>
-                        </div>
-                    </div>
+                <div>
+                    <label class="block mb-1 font-medium">Status</label>
+                    <select
+                        name="status"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-orange-500"
+                    >
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
                 </div>
             </div>
-        </div>
-    </div>      
-</main>
-<!--end::App Main-->
 
-<%@include file="/WEB-INF/include/admin/admin-footer.jsp" %>
+            <div class="flex justify-end gap-4 pt-4">
+                <button
+                    type="button"
+                    class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold px-6 py-2 rounded-lg"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="submit"
+                    class="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2 rounded-lg"
+                >
+                    Submit
+                </button>
+            </div>
+        </form>
+    </div> 
+
+<%@include file="/WEB-INF/include/footer.jsp" %>

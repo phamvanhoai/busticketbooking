@@ -102,36 +102,48 @@ public class AdminUsersDAO extends DBContext {
     }
 
     // Method to add a new user to the database
-    public void addUser(AdminUsers user) {
-        // Query để thêm người dùng vào cơ sở dữ liệu
-        String query = "INSERT INTO Users (user_name, user_email, password, user_phone, role, user_status, gender, birthdate, user_address, user_created_at) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    public int addUser(AdminUsers user) {
+    String query = "INSERT INTO Users (user_name, user_email, password, role, user_status, user_created_at) "
+            + "VALUES (?, ?, ?, ?, ?, ?)";
 
-        try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
-            // Gán giá trị cho các tham số trong PreparedStatement
-            ps.setString(1, user.getName());        // Set name
-            ps.setString(2, user.getEmail());       // Set email
-            ps.setString(3, user.getPassword());    // Set password
-            ps.setString(4, user.getPhone());       // Set phone number
-            ps.setString(5, user.getRole());        // Set role
-            ps.setString(6, user.getStatus());      // Set status
-            ps.setString(7, user.getGender());      // Set gender
-            ps.setTimestamp(8, user.getBirthdate()); // Set birthdate (as Timestamp)
-            ps.setString(9, user.getAddress());     // Set address
+    try (PreparedStatement ps = getConnection().prepareStatement(query)) {
+        // Set values for each parameter in PreparedStatement
+        ps.setString(1, user.getName());        // Set name
+        ps.setString(2, user.getEmail());       // Set email
+        ps.setString(3, user.getPassword());    // Set password (hashed)
+        ps.setString(4, user.getRole());        // Set role
+        ps.setString(5, user.getStatus());      // Set status
 
-            // Set created_at - nếu null thì dùng thời gian hiện tại
-            if (user.getCreated_at() == null) {
-                ps.setTimestamp(10, Timestamp.from(Instant.now()));  // Nếu created_at là null, gán thời gian hiện tại
-            } else {
-                ps.setTimestamp(10, user.getCreated_at());  // Nếu đã có giá trị created_at, sử dụng nó
-            }
-
-            // Thực thi câu lệnh UPDATE
-            ps.executeUpdate();
-        } catch (SQLException ex) {
-            // Log error nếu có lỗi trong quá trình thực thi câu lệnh SQL
-            Logger.getLogger(AdminUsersDAO.class.getName()).log(Level.SEVERE, null, ex);
+        // Set created_at - if null, use the current time
+        if (user.getCreated_at() == null) {
+            ps.setTimestamp(6, Timestamp.from(Instant.now()));  // Use current timestamp if created_at is null
+        } else {
+            ps.setTimestamp(6, user.getCreated_at());  // Use provided created_at timestamp
         }
+
+        // Execute the INSERT operation and return the number of affected rows
+        return ps.executeUpdate();  // This will return the number of rows affected
+    } catch (SQLException ex) {
+        // Log the exception if there's an error during execution
+        Logger.getLogger(AdminUsersDAO.class.getName()).log(Level.SEVERE, null, ex);
+        throw new RuntimeException("Error while inserting user", ex);  // Throw runtime exception for debugging purposes
+    }
+}
+
+
+    /**
+     *
+     * @param email
+     * @return
+     */
+    public boolean isEmailExists(String email) {
+        String query = "SELECT COUNT(user_id) FROM Users WHERE user_email = ?;";
+        try ( ResultSet rs = execSelectQuery(query, new Object[]{email})) {
+            return rs.next() && rs.getInt(1) > 0;
+        } catch (SQLException ex) {
+            Logger.getLogger(UsersDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
     }
 
     public AdminUsers getUserById(int userId) {

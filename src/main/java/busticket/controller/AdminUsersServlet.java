@@ -6,6 +6,8 @@ package busticket.controller;
 
 import busticket.DAO.AdminUsersDAO;
 import busticket.model.AdminUsers;
+import busticket.util.InputValidator;
+import busticket.util.PasswordUtils;
 import busticket.util.SessionUtil;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -14,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -124,46 +127,77 @@ public class AdminUsersServlet extends HttpServlet {
         try {
             if ("add".equals(action)) {
                 // Add a new user
+                // Get user data from the form
                 String name = request.getParameter("name");
                 String email = request.getParameter("email");
                 String password = request.getParameter("password");
-                String phone = request.getParameter("phone");
+                String confirmPassword = request.getParameter("confirmPassword");
                 String role = request.getParameter("role");
-                String gender = request.getParameter("gender");
-                String birthdate = request.getParameter("birthdate");  // Date picker input
-                String address = request.getParameter("address");
-                String status = request.getParameter("status");  // Thêm cột status
+                String status = request.getParameter("status");
 
-                // Validate input data
-                if (name == null || name.isEmpty() || email == null || email.isEmpty()
-                        || password == null || password.isEmpty() || phone == null || phone.isEmpty()
-                        || role == null || role.isEmpty() || gender == null || gender.isEmpty()
-                        || birthdate.isEmpty() || address == null || address.isEmpty() || status == null || status.isEmpty()) {
+                List<String> errorMessages = new ArrayList<>();
 
-                    request.setAttribute("error", "Please enter valid information!");
-                    response.sendRedirect(request.getContextPath() + "/admin/add-user");
+                // Validate form input
+                if (name == null || name.isEmpty()) {
+                    errorMessages.add("Full Name is required.");
+                }
+                if (email == null || email.isEmpty()) {
+                    errorMessages.add("Email is required.");
+                }
+                if (password == null || password.isEmpty()) {
+                    errorMessages.add("Password is required.");
+                }
+                if (confirmPassword == null || confirmPassword.isEmpty()) {
+                    errorMessages.add("Confirm password is required.");
+                }
+                if (!password.equals(confirmPassword)) {
+                    errorMessages.add("Passwords do not match.");
+                }
+
+                // Check if email already exists
+                if (adminUsersDAO.isEmailExists(email)) {
+                    errorMessages.add("Email already exists!");
+                }
+
+                // Validate email format
+                if (!InputValidator.isEmailValid(email)) {
+                    errorMessages.add("Invalid email format. Example: user@example.com");
+                }
+
+                // Validate password strength
+                if (!InputValidator.isPasswordValid(password)) {
+                    errorMessages.add("Password must be at least 8 characters with 1 letter & 1 number.");
+                }
+
+                // If errors exist, forward back to add-user.jsp
+                if (!errorMessages.isEmpty()) {
+                    request.setAttribute("errors", errorMessages);
+                    request.getRequestDispatcher("/WEB-INF/admin/add-user.jsp").forward(request, response);
                     return;
                 }
 
-                // Convert birthdate from String to Date (or Timestamp)
-                Timestamp birthdateTimestamp = null;
-                if (birthdate != null && !birthdate.isEmpty()) {
-                    try {
-                        // Convert birthdate string (yyyy-MM-dd) into a Timestamp without time component
-                        birthdateTimestamp = Timestamp.valueOf(birthdate + " 00:00:00");  // We use midnight as the time
-                    } catch (IllegalArgumentException e) {
-                        // If invalid date format, return error
-                        request.setAttribute("error", "Invalid birthdate format!");
-                        response.sendRedirect(request.getContextPath() + "/admin/add-user");
-                        return;
-                    }
-                }
+                // Hash password before storing it
+                String hashedPassword = PasswordUtils.hashPassword(password);
+                System.out.println("Hashed password: " + hashedPassword);
+
 
                 // Set created_at to the current time if it's null
                 Timestamp createdAt = Timestamp.from(Instant.now());
-                AdminUsers user = new AdminUsers(0, name, email, password, phone, role, status, birthdateTimestamp, gender, address, createdAt);
 
-                adminUsersDAO.addUser(user);
+                // Create user object
+                AdminUsers user = new AdminUsers(0, name, email, hashedPassword, role, status, createdAt);
+
+                // Add user to the database
+                int isAdded = adminUsersDAO.addUser(user);
+
+                // If user added successfully, redirect to user list
+                if (isAdded > 0) {
+                    request.setAttribute("message", "Account created successfully!");
+                    request.getRequestDispatcher("/WEB-INF/admin/users/users.jsp").forward(request, response);
+                } else {
+                    request.setAttribute("error", "Add failed. Please try again.");
+                    request.getRequestDispatcher("/WEB-INF/admin/users/add-user.jsp").forward(request, response);
+                }
             } else if ("edit".equals(action)) {
                 // Edit an existing user
                 int userId = Integer.parseInt(request.getParameter("userId"));
