@@ -81,21 +81,7 @@
                             </div>
                         </div>
 
-                        <div class="text-xs text-gray-200 px-2 mt-6 uppercase">Help</div>
-                        <div class="flex flex-col gap-4">
-                            <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("driver-dashboard.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
-                                <a href="#settings">
-                                    <span class="text-base"><i class="fas fa-cogs"></i></span>
-                                    <span>Settings</span>
-                                </a>
-                            </div>
-                            <div class="flex items-center gap-3 cursor-pointer text-white hover:bg-orange-300/20 px-4 py-2">
-                                <a href="#support">
-                                    <span class="text-base"><i class="fas fa-phone-alt"></i></span>
-                                    <span>Support</span>
-                                </a>
-                            </div>
-                        </div>
+                        
                     </div>
 
                     <div class="mt-auto text-[10px] text-white text-center px-2">
