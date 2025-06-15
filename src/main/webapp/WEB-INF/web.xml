@@ -104,6 +104,10 @@
         <servlet-name>AdminViewStatisticsServlet</servlet-name>
         <servlet-class>busticket.controller.AdminViewStatisticsServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>HomeViewTripsServlet</servlet-name>
+        <servlet-class>busticket.controller.HomeViewTripsServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
         <url-pattern>/admin/dashboard</url-pattern>
@@ -207,6 +211,10 @@
     <servlet-mapping>
         <servlet-name>AdminViewStatisticsServlet</servlet-name>
         <url-pattern>/admin/statistics</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>HomeViewTripsServlet</servlet-name>
+        <url-pattern>/view-trips</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

@@ -2,6 +2,7 @@ busticket\controller\DriverTripChangeServlet.class
 busticket\controller\AdminUsersServlet.class
 busticket\controller\StaffSupportDriverTripServlet.class
 busticket\controller\AdminDashboardServlet.class
+busticket\model\AdminBusTypes.class
 busticket\util\SessionUtil.class
 busticket\DAO\AdminUsersDAO.class
 busticket\controller\StaffBookingStatisticsServlet.class
@@ -29,6 +30,7 @@ busticket\controller\HomeServlet.class
 busticket\customtags\AdminPaginationHandler.class
 busticket\util\EmailUtils.class
 busticket\controller\StaffTripStatusServlet.class
+busticket\controller\HomeViewTripsServlet.class
 busticket\util\EmailUtils$1.class
 busticket\db\DBContext.class
 busticket\controller\Error404Servlet.class
