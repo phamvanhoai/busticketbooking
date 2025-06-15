@@ -7,7 +7,7 @@
 <%@ page contentType="text/html" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%@ taglib prefix="neon" uri="/WEB-INF/tags/implicit.tld" %>
+<%@ taglib prefix="fbus" uri="/WEB-INF/tags/implicit.tld" %>
 <%@ include file="/WEB-INF/include/admin/admin-header.jsp" %>
 <c:set var="baseUrl" value="${pageContext.request.contextPath}/admin/users"/>
 
@@ -106,7 +106,7 @@
 
         <!-- Pagination -->
         <div class="flex justify-center space-x-2 mt-6">
-            <neon:adminpagination
+            <fbus:adminpagination
                 currentPage="${currentPage}"
                 totalPages="${numOfPages}"
                 url="${baseUrl}" />

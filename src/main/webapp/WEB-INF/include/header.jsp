@@ -18,7 +18,7 @@
         <!-- Font Awesome -->
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
     </head>
-<!--    <body class="bg-[#fff6f3] min-h-screen">-->
+    <body class="bg-[#fff6f3] min-h-screen">
 
         <!-- Header -->
         <header class="bg-gradient-to-b from-[#EF5222] to-[#ff7e38] shadow-md">
@@ -76,7 +76,7 @@
                 </nav>
             </div>
         </header>
-<!--    </body>                -->
+    </body>                
         <script>
             // Get the button and menu elements
             const dropdownButton = document.getElementById('dropdown-button');
