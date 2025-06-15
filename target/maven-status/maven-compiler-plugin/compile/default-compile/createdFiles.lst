@@ -23,6 +23,8 @@ busticket\util\InputValidator.class
 busticket\controller\StaffAssignDriverTripServlet.class
 busticket\DAO\UsersDAO.class
 busticket\controller\AdminRoutesServlet.class
+busticket\controller\StaffDashboardServlet.class
+busticket\controller\AdminViewStatisticsServlet.class
 busticket\controller\HomeServlet.class
 busticket\customtags\AdminPaginationHandler.class
 busticket\util\EmailUtils.class

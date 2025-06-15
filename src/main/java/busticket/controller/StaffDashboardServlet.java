@@ -31,7 +31,7 @@ public class StaffDashboardServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        request.getRequestDispatcher("/WEB-INF/staff/dashboard.jsp")
+        request.getRequestDispatcher("/WEB-INF/staff/staff-dashboard.jsp")
                 .forward(request, response);
     } 
 

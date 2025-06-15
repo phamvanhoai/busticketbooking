@@ -11,7 +11,7 @@
 
 <body class="bg-[#f9fafb]">
 
-    <div class="max-w-6xl mx-auto mt-12 px-4">
+    <div class="mt-12 px-4">
         <h2 class="text-3xl font-bold text-orange-600 mb-6">Manage Bookings</h2>
 
         <!-- Search and Filter -->

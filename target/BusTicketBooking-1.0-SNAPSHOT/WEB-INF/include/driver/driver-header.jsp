@@ -52,7 +52,7 @@
         <div class=" bg-[#F7F6F3] rounded-[30px] shadow-xl overflow-hidden">
             <div class="flex text-sm text-gray-800 min-h-screen">
                 <!-- Sidebar -->
-                <aside class="w-60 bg-gradient-to-b from-[#FF6A2F] to-[#FA601E] text-white px-4 pt-6 pb-10 rounded-3xl shadow-xl flex flex-col items-center">
+                <aside class="w-60 bg-gradient-to-b from-[#FF6A2F] to-[#FA601E] text-white px-4 pt-6 pb-10 shadow-xl flex flex-col items-center">
                     <div class="mb-8 flex flex-col items-center">
                         <div class="bg-[#F7F6F3] w-12 h-12 rounded-full flex items-center justify-center text-orange-500 font-bold text-xl shadow-md">FBus</div>
                         <div class="text-xl font-bold mt-2">Driver</div>
@@ -120,7 +120,8 @@
                         <div class="flex items-center gap-4">
                             <!-- Dropdown to switch Panel -->
                             <select id="panelSelector" class="bg-[#F7F6F3] text-sm text-gray-600 placeholder:text-gray-400 px-4 py-3 rounded-xl shadow-sm border border-gray-300 focus:outline-none">
-                                <option value="">Chọn Panel</option>
+                                <option value="">Select Panel</option>
+                                <option value="${pageContext.servletContext.contextPath}/">Home Panel</option>
                                 <option value="${pageContext.servletContext.contextPath}/admin/dashboard">Admin Panel</option>
                                 <option value="${pageContext.servletContext.contextPath}/staff/dashboard">Staff Panel</option>
                                 <option value="${pageContext.servletContext.contextPath}/driver/dashboard">Driver Panel</option>
@@ -134,9 +135,8 @@
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
                                 <div class="dropdown-content">
-                                    <a href="#">View Profile</a>
-                                    <a href="#">Settings</a>
-                                    <a href="#">Logout</a>
+                                    <a href="${pageContext.servletContext.contextPath}/profile/view">View Profile</a>
+                                    <a href="${pageContext.servletContext.contextPath}/logout">Logout</a>
                                 </div>
                             </div>
                         </div>

@@ -53,7 +53,7 @@
         <div class=" bg-[#F7F6F3] rounded-[30px] shadow-xl overflow-hidden">
             <div class="flex text-sm text-gray-800 min-h-screen">
                 <!-- Sidebar -->
-                <aside class="w-60 bg-gradient-to-b from-[#FF6A2F] to-[#FA601E] text-white px-4 pt-6 pb-10 rounded-3xl shadow-xl flex flex-col items-center">
+                <aside class="w-60 bg-gradient-to-b from-[#FF6A2F] to-[#FA601E] text-white px-4 pt-6 pb-10 shadow-xl flex flex-col items-center">
                     <div class="mb-8 flex flex-col items-center">
                         <div class="bg-[#F7F6F3] w-12 h-12 rounded-full flex items-center justify-center text-orange-500 font-bold text-xl shadow-md">FBus</div>
                         <div class="text-xl font-bold mt-2">Staff</div>
@@ -62,22 +62,46 @@
                     <div class="w-full space-y-6">
                         <div class="text-xs text-gray-200 px-2 uppercase">Main</div>
                         <div class="flex flex-col gap-4">
-                            <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("driver-dashboard.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
-                                <a href="${pageContext.servletContext.contextPath}/driver/dashboard">
+                            <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("staff-dashboard.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
+                                <a href="${pageContext.servletContext.contextPath}/staff/dashboard">
                                     <span class="text-base"><i class="fas fa-tachometer-alt"></i></span>
                                     <span>Dashboard</span>
                                 </a>
                             </div>
-                            <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("assigned-trips.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
-                                <a href="${pageContext.servletContext.contextPath}/driver/assigned-trips">
+                            <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("view-booking-statistics.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
+                                <a href="${pageContext.servletContext.contextPath}/staff/booking-statistics">
                                     <span class="text-base"><i class="fas fa-trophy"></i></span>
-                                    <span>Assign Trips</span>
+                                    <span>Booking Statistics</span>
                                 </a>
                             </div>
-                            <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("request-trip-change.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
-                                <a href="${pageContext.servletContext.contextPath}/driver/trip-change">
+                            <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("manage-bookings.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
+                                <a href="${pageContext.servletContext.contextPath}/staff/manage-bookings">
+                                    <span class="text-base"><i class="fas fa-trophy"></i></span>
+                                    <span>Manage Bookings</span>
+                                </a>
+                            </div>
+                            <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("view-trip-status.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
+                                <a href="${pageContext.servletContext.contextPath}/staff/trip-status">
+                                    <span class="text-base"><i class="fas fa-trophy"></i></span>
+                                    <span>Trip Status</span>
+                                </a>
+                            </div>
+                            <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("assign-driver-to-trip.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
+                                <a href="${pageContext.servletContext.contextPath}/staff/assign-driver-trip">
+                                    <span class="text-base"><i class="fas fa-trophy"></i></span>
+                                    <span>Assign Driver</span>
+                                </a>
+                            </div>
+                            <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("driver-trip.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
+                                <a href="${pageContext.servletContext.contextPath}/staff/support-driver-trip">
                                     <span class="text-base"><i class="fas fa-table"></i></span>
-                                    <span>Request Trip Change</span>
+                                    <span>Support Driver Trip</span>
+                                </a>
+                            </div>
+                            <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("customer-trip.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
+                                <a href="${pageContext.servletContext.contextPath}/staff/support-customer-trip">
+                                    <span class="text-base"><i class="fas fa-table"></i></span>
+                                    <span>Support Customer Trip</span>
                                 </a>
                             </div>
                         </div>
@@ -121,7 +145,8 @@
                         <div class="flex items-center gap-4">
                             <!-- Dropdown to switch Panel -->
                             <select id="panelSelector" class="bg-[#F7F6F3] text-sm text-gray-600 placeholder:text-gray-400 px-4 py-3 rounded-xl shadow-sm border border-gray-300 focus:outline-none">
-                                <option value="">Chọn Panel</option>
+                                <option value="">Select Panel</option>
+                                <option value="${pageContext.servletContext.contextPath}/">Home Panel</option>
                                 <option value="${pageContext.servletContext.contextPath}/admin/dashboard">Admin Panel</option>
                                 <option value="${pageContext.servletContext.contextPath}/staff/dashboard">Staff Panel</option>
                                 <option value="${pageContext.servletContext.contextPath}/driver/dashboard">Driver Panel</option>
@@ -135,9 +160,8 @@
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
                                 <div class="dropdown-content">
-                                    <a href="#">View Profile</a>
-                                    <a href="#">Settings</a>
-                                    <a href="#">Logout</a>
+                                    <a href="${pageContext.servletContext.contextPath}/profile/view">View Profile</a>
+                                    <a href="${pageContext.servletContext.contextPath}/logout">Logout</a>
                                 </div>
                             </div>
                         </div>
