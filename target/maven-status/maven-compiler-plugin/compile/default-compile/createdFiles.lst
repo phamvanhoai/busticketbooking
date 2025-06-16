@@ -40,5 +40,7 @@ busticket\controller\AdminBusesServlet.class
 busticket\controller\AdminTripsServlet.class
 busticket\controller\DriverDashboardServlet.class
 busticket\model\Tickets.class
+busticket\DAO\AdminTripsDAO.class
+busticket\model\AdminTrips.class
 busticket\controller\AdminBusTypesServlet.class
 busticket\controller\LogoutServlet.class

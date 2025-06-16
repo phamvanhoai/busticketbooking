@@ -14,10 +14,12 @@ D:\HOC TAP\SU25\SWP391\CODE\BusTicketBooking\src\main\java\busticket\controller\
 D:\HOC TAP\SU25\SWP391\CODE\BusTicketBooking\src\main\java\busticket\controller\StaffTripStatusServlet.java
 D:\HOC TAP\SU25\SWP391\CODE\BusTicketBooking\src\main\java\busticket\model\AdminBusTypes.java
 D:\HOC TAP\SU25\SWP391\CODE\BusTicketBooking\src\main\java\busticket\controller\ForgotPasswordServlet.java
+D:\HOC TAP\SU25\SWP391\CODE\BusTicketBooking\src\main\java\busticket\model\AdminTrips.java
 D:\HOC TAP\SU25\SWP391\CODE\BusTicketBooking\src\main\java\busticket\controller\StaffSupportCustomerTripServlet.java
 D:\HOC TAP\SU25\SWP391\CODE\BusTicketBooking\src\main\java\busticket\controller\AdminViewStatisticsServlet.java
 D:\HOC TAP\SU25\SWP391\CODE\BusTicketBooking\src\main\java\busticket\customtags\AdminPaginationHandler.java
 D:\HOC TAP\SU25\SWP391\CODE\BusTicketBooking\src\main\java\busticket\controller\AdminBusesServlet.java
+D:\HOC TAP\SU25\SWP391\CODE\BusTicketBooking\src\main\java\busticket\DAO\AdminTripsDAO.java
 D:\HOC TAP\SU25\SWP391\CODE\BusTicketBooking\src\main\java\busticket\controller\LogoutServlet.java
 D:\HOC TAP\SU25\SWP391\CODE\BusTicketBooking\src\main\java\busticket\controller\DriverTripChangeServlet.java
 D:\HOC TAP\SU25\SWP391\CODE\BusTicketBooking\src\main\java\busticket\controller\Error404Servlet.java

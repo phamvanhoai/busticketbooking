@@ -40,7 +40,7 @@
                     type="text"
                     name="search"
                     value="${fn:escapeXml(param.search)}"
-                    placeholder="Search by name or email"
+                    placeholder="Search by email"
                     class="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-300"
                     />
                 <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
