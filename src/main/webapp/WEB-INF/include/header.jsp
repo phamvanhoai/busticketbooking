@@ -24,7 +24,7 @@
         <header class="bg-gradient-to-b from-[#EF5222] to-[#ff7e38] shadow-md">
             <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center text-white">
                 <div class="font-bold text-lg">
-                    <img src="" alt="FBus Lines" class="h-10 inline-block">
+                    <img src="<%= getServletContext().getContextPath()%>/assets/images/logo.png" alt="FBus Lines" class="h-10 inline-block">
                 </div>
                 <nav class="flex gap-6 text-sm font-medium">
                     <a href="${pageContext.servletContext.contextPath}/" class="hover:underline">Home</a>

@@ -8,7 +8,7 @@
   <!-- Banner -->
   <div class="max-w-5xl mx-auto mt-6">
     <img
-      src="https://cdn.futabus.vn/futa-busline-web-cms-prod/2257_x_501_px_2ecaaa00d0/2257_x_501_px_2ecaaa00d0.png"
+      src="<%= getServletContext().getContextPath()%>/assets/images/banner.png"
       alt="Banner"
       class="w-full rounded-xl shadow-lg"
     />
