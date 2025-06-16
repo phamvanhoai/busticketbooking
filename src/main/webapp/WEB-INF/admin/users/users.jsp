@@ -23,6 +23,21 @@
 </c:if>
 
 <body class="bg-gray-50">
+    <c:if test="${param.message == 'updated'}">
+        <div class="flex items-center justify-between bg-green-100 border border-green-300 text-green-800 text-sm px-6 py-4 rounded-lg shadow mb-6">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" stroke-width="2"
+                     viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M5 13l4 4L19 7"/>
+                </svg>
+                <span><strong>Success:</strong> User updated successfully!</span>
+            </div>
+            <button onclick="this.parentElement.style.display = 'none'" class="text-green-500 hover:text-green-700 text-lg font-bold">&times;</button>
+        </div>
+    </c:if>
+
+
     <div class="px-4 py-8">
         <!-- Title + Filters -->
         <h1 class="text-3xl font-bold text-orange-600 mb-4">Manage Accounts</h1>

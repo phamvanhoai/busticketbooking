@@ -15,15 +15,30 @@
     <div class="p-8 bg-white rounded-xl shadow-xl mt-10">
         <h2 class="text-3xl font-bold text-orange-600 mb-6">Update Account</h2>
 
-        <!-- Show notifications if available -->
-        <c:choose>
-            <c:when test="${not empty requestScope.message}">
-                <div style="color: green;">${message}</div>
-            </c:when>
-            <c:when test="${not empty requestScope.error}">
-                <div style="color: red;">${error}</div>
-            </c:when>
-        </c:choose>
+        <!-- Show success message if redirected -->
+        <c:if test="${param.message == 'updated'}">
+            <div class="flex items-center justify-between bg-green-100 border border-green-300 text-green-800 text-sm px-6 py-4 rounded-lg shadow mb-6">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" stroke-width="2"
+                         viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <span><strong>Success:</strong> User updated successfully!</span>
+                </div>
+                <button onclick="this.parentElement.style.display = 'none'" class="text-green-500 hover:text-green-700 text-lg font-bold">&times;</button>
+            </div>
+        </c:if>
+
+
+        <!-- Show list of validation errors -->
+        <c:if test="${not empty requestScope.errors}">
+            <div style="color: red;">
+                <c:forEach var="error" items="${requestScope.errors}">
+                    <p>${error}</p>
+                </c:forEach>
+            </div>
+        </c:if>
 
         <!-- Form -->
         <form action="${pageContext.request.contextPath}/admin/users" method="post" class="space-y-6">

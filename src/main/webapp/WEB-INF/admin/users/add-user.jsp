@@ -15,23 +15,46 @@
     <div class="p-8 bg-white rounded-xl shadow-lg mt-10">
         <h2 class="text-3xl font-bold text-orange-600 mb-6">Create Account</h2>
 
-        <!-- Show notifications if available -->
-        <c:choose>
-            <c:when test="${not empty requestScope.message}">
-                <div style="color: green;">${message}</div>
-            </c:when>
-            <c:when test="${not empty requestScope.error}">
-                <div style="color: red;">${error}</div>
-            </c:when>
-        </c:choose>
-
-        <c:if test="${not empty requestScope.errors}">
-            <div style="color: red;">
-                <c:forEach var="error" items="${requestScope.errors}">
-                    <p>${error}</p>
-                </c:forEach>
+        <!-- Success message -->
+        <c:if test="${not empty requestScope.message}">
+            <div class="flex items-center justify-between bg-green-100 border border-green-300 text-green-800 text-sm px-6 py-4 rounded-lg shadow mb-6">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" stroke-width="2"
+                         viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <span><strong>Success:</strong> ${message}</span>
+                </div>
+                <button onclick="this.parentElement.style.display = 'none'" class="text-green-600 hover:text-green-800 text-lg font-bold">&times;</button>
             </div>
         </c:if>
+
+        <!-- Error message (single error) -->
+        <c:if test="${not empty requestScope.error}">
+            <div class="flex items-center justify-between bg-red-100 border border-red-300 text-red-800 text-sm px-6 py-4 rounded-lg shadow mb-6">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" stroke-width="2"
+                         viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    <span><strong>Error:</strong> ${error}</span>
+                </div>
+                <button onclick="this.parentElement.style.display = 'none'" class="text-red-600 hover:text-red-800 text-lg font-bold">&times;</button>
+            </div>
+        </c:if>
+
+        <!-- Validation errors list -->
+        <c:if test="${not empty requestScope.errors}">
+            <div class="bg-red-100 border border-red-300 text-red-800 text-sm px-6 py-4 rounded-lg shadow mb-6">
+                <strong class="block mb-2">Please fix the following errors:</strong>
+                <ul class="list-disc list-inside space-y-1">
+                    <c:forEach var="error" items="${requestScope.errors}">
+                        <li>${error}</li>
+                        </c:forEach>
+                </ul>
+            </div>
+        </c:if>
+
 
         <form action="${pageContext.request.contextPath}/admin/users" method="post" class="space-y-6">
             <input type="hidden" name="action" value="add">

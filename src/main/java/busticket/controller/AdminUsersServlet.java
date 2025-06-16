@@ -187,47 +187,61 @@ public class AdminUsersServlet extends HttpServlet {
 
                 // Handle account editing
             } else if ("edit".equals(action)) {
+                // Get form parameters
                 int userId = Integer.parseInt(request.getParameter("userId"));
                 String name = request.getParameter("name");
                 String email = request.getParameter("email");
                 String phone = request.getParameter("phone");
                 String role = request.getParameter("role");
                 String gender = request.getParameter("gender");
-                String birthdate = request.getParameter("birthdate");
+                String birthdateStr = request.getParameter("birthdate");
                 String address = request.getParameter("address");
                 String status = request.getParameter("status");
 
-                // Basic input validation
+                List<String> errorMessages = new ArrayList<>();
+
+                // Basic validation
                 if (name == null || name.isEmpty() || email == null || email.isEmpty()
                         || role == null || role.isEmpty() || status == null || status.isEmpty()) {
-                    request.setAttribute("error", "Please enter valid information!");
+                    errorMessages.add("Please enter all required fields.");
+                }
+
+                // Parse birthdate (input type="date" returns format yyyy-MM-dd)
+                Timestamp birthdateTimestamp = null;
+                if (birthdateStr != null && !birthdateStr.isEmpty()) {
+                    try {
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                        sdf.setLenient(false);
+                        Date parsedDate = sdf.parse(birthdateStr);
+                        birthdateTimestamp = new Timestamp(parsedDate.getTime());
+                    } catch (ParseException e) {
+                        errorMessages.add("Invalid birthdate format! Please use the date picker.");
+                    }
+                }
+
+                // If errors exist, return to edit form with error messages
+                if (!errorMessages.isEmpty()) {
+                    request.setAttribute("error", String.join("<br>", errorMessages));
                     request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp?userId=" + userId).forward(request, response);
                     redirected = true;
                     return;
                 }
 
-                // Convert birthdate to Timestamp (format: dd/MM/yyyy)
-                Timestamp birthdateTimestamp = null;
-                if (birthdate != null && !birthdate.isEmpty()) {
-                    try {
-                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-                        sdf.setLenient(false);
-                        Date parsedDate = sdf.parse(birthdate);
-                        birthdateTimestamp = new Timestamp(parsedDate.getTime());
-                    } catch (ParseException e) {
-                        request.setAttribute("error", "Invalid birthdate format! Please use dd/MM/yyyy.");
-                        request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp?userId=" + userId).forward(request, response);
-                        redirected = true;
-                        return;
-                    }
+                // Construct updated user object
+                AdminUsers user = new AdminUsers(userId, name, email, phone, role, status, birthdateTimestamp, gender, address);
+
+                // Update user in database
+                int result = adminUsersDAO.updateUser(user);
+
+                if (result > 0) {
+                    // Redirect to user list with success message
+                    response.sendRedirect(request.getContextPath() + "/admin/users?message=updated");
+                } else {
+                    // Forward back to edit page with failure message
+                    request.setAttribute("error", "Update failed. Please try again.");
+                    request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp?userId=" + userId).forward(request, response);
                 }
 
-                // Update user information
-                AdminUsers user = new AdminUsers(userId, name, email, phone, role, status, birthdateTimestamp, gender, address);
-                adminUsersDAO.updateUser(user);
-
-                request.setAttribute("message", "User updated successfully!");
-                request.getRequestDispatcher("/WEB-INF/admin/users/users.jsp").forward(request, response);
                 redirected = true;
             }
 

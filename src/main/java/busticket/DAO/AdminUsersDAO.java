@@ -35,7 +35,7 @@ public class AdminUsersDAO extends DBContext {
         List<AdminUsers> users = new ArrayList<>();
         // Base SQL query to fetch user details
         StringBuilder query = new StringBuilder(
-                "SELECT user_id, user_name, user_email, user_phone, role, user_status, user_created_at FROM Users WHERE 1=1"
+                "SELECT user_id, user_name, user_email, user_phone, role, user_status, birthdate, gender, user_address, user_created_at FROM Users WHERE 1=1"
         );
 
         // Add search condition if a search query is provided
@@ -79,55 +79,52 @@ public class AdminUsersDAO extends DBContext {
 
     // Method to update an existing user in the database
     public int updateUser(AdminUsers user) {
-        String query = "UPDATE Users SET user_name = ?, user_email = ?, user_phone = ?, role = ?, user_status = ?, "
-                + "gender = ?, birthdate = ?, user_address = ? WHERE user_id = ?";
 
-        try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
-            // Set the parameters in the PreparedStatement
-            ps.setString(1, user.getName());        // Set name
-            ps.setString(2, user.getEmail());       // Set email
-            ps.setString(3, user.getPhone());       // Set phone number
-            ps.setString(4, user.getRole());        // Set role
-            ps.setString(5, user.getStatus());      // Set status
-            ps.setString(6, user.getGender());      // Set gender
-            ps.setTimestamp(7, user.getBirthdate());  // Set birthdate (as Timestamp)
-            ps.setString(8, user.getAddress());     // Set address
-            ps.setInt(9, user.getUser_id());        // Set user_id (to update the correct record)
+        String sql = "UPDATE Users SET user_name = ?, user_email = ?, user_phone = ?, role = ?, user_status = ?, birthdate = ?, gender = ?, user_address = ? WHERE user_id = ?";
 
-            // Execute the update
-            ps.executeUpdate();
-        } catch (SQLException ex) {
-            Logger.getLogger(AdminUsersDAO.class.getName()).log(Level.SEVERE, null, ex);
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql)) {
+            // Set parameters based on user object
+            ps.setString(1, user.getName());
+            ps.setString(2, user.getEmail());
+            ps.setString(3, user.getPhone());
+            ps.setString(4, user.getRole());
+            ps.setString(5, user.getStatus());
+            ps.setTimestamp(6, user.getBirthdate());
+            ps.setString(7, user.getGender());
+            ps.setString(8, user.getAddress());
+            ps.setInt(9, user.getUser_id());
+
+            // Execute update query and return affected rows
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace(); // Log error for debugging
         }
-        return 0;
+
+        return 0; // Return 0 if update failed
     }
 
     // Method to add a new user to the database
     public int addUser(AdminUsers user) {
-        String query = "INSERT INTO Users (user_name, user_email, password, role, user_status, user_created_at) "
-                + "VALUES (?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO Users (user_name, user_email, password, user_phone, role, user_status, birthdate, gender, user_address, user_created_at) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
-            // Set values for each parameter in PreparedStatement
-            ps.setString(1, user.getName());        // Set name
-            ps.setString(2, user.getEmail());       // Set email
-            ps.setString(3, user.getPassword());    // Set password (hashed)
-            ps.setString(4, user.getRole());        // Set role
-            ps.setString(5, user.getStatus());      // Set status
+            ps.setString(1, user.getName());
+            ps.setString(2, user.getEmail());
+            ps.setString(3, user.getPassword());
+            ps.setString(4, user.getPhone());
+            ps.setString(5, user.getRole());
+            ps.setString(6, user.getStatus());
+            ps.setTimestamp(7, user.getBirthdate());
+            ps.setString(8, user.getGender());
+            ps.setString(9, user.getAddress());
 
-            // Set created_at - if null, use the current time
-            if (user.getCreated_at() == null) {
-                ps.setTimestamp(6, Timestamp.from(Instant.now()));  // Use current timestamp if created_at is null
-            } else {
-                ps.setTimestamp(6, user.getCreated_at());  // Use provided created_at timestamp
-            }
+            ps.setTimestamp(10, user.getCreated_at() != null ? user.getCreated_at() : Timestamp.from(Instant.now()));
 
-            // Execute the INSERT operation and return the number of affected rows
-            return ps.executeUpdate();  // This will return the number of rows affected
+            return ps.executeUpdate();
         } catch (SQLException ex) {
-            // Log the exception if there's an error during execution
             Logger.getLogger(AdminUsersDAO.class.getName()).log(Level.SEVERE, null, ex);
-            throw new RuntimeException("Error while inserting user", ex);  // Throw runtime exception for debugging purposes
+            throw new RuntimeException("Error while inserting user", ex);
         }
     }
 
