@@ -1,7 +1,7 @@
 <%-- 
     Document   : add-user
     Created on : Jun 11, 2025, 12:25:46 AM
-    Author     : Pham Van Hoai - CE181744
+    Author     : Nguyen Thanh Truong - CE180140
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
@@ -14,8 +14,8 @@
 <body class="bg-[#f9fafb]">
     <div class="p-8 bg-white rounded-xl shadow-lg mt-10">
         <h2 class="text-3xl font-bold text-orange-600 mb-6">Create Account</h2>
-        
-        <!-- Hiển thị thông báo nếu có -->
+
+        <!-- Show notifications if available -->
         <c:choose>
             <c:when test="${not empty requestScope.message}">
                 <div style="color: green;">${message}</div>
@@ -24,15 +24,15 @@
                 <div style="color: red;">${error}</div>
             </c:when>
         </c:choose>
-                
-                <c:if test="${not empty requestScope.errors}">
+
+        <c:if test="${not empty requestScope.errors}">
             <div style="color: red;">
                 <c:forEach var="error" items="${requestScope.errors}">
                     <p>${error}</p>
                 </c:forEach>
             </div>
         </c:if>
-                
+
         <form action="${pageContext.request.contextPath}/admin/users" method="post" class="space-y-6">
             <input type="hidden" name="action" value="add">
 
@@ -43,7 +43,7 @@
                     name="name"
                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-orange-500"
                     required
-                />
+                    />
             </div>
 
             <div>
@@ -53,7 +53,7 @@
                     name="email"
                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-orange-500"
                     required
-                />
+                    />
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -64,7 +64,7 @@
                         name="password"
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-orange-500"
                         required
-                    />
+                        />
                 </div>
 
                 <div>
@@ -74,7 +74,7 @@
                         name="confirmPassword"
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-orange-500"
                         required
-                    />
+                        />
                 </div>
             </div>
 
@@ -85,8 +85,8 @@
                         name="role"
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-orange-500"
                         required
-                    >
-                        <option value="" disabled>Select role</option>
+                        >
+                        <option value="" disabled selected>Select role</option>
                         <option value="Admin">Admin</option>
                         <option value="Staff">Staff</option>
                         <option value="Driver">Driver</option>
@@ -99,7 +99,7 @@
                     <select
                         name="status"
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-orange-500"
-                    >
+                        >
                         <option value="Active">Active</option>
                         <option value="Inactive">Inactive</option>
                     </select>
@@ -107,20 +107,19 @@
             </div>
 
             <div class="flex justify-end gap-4 pt-4">
-                <button
-                    type="button"
-                    class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold px-6 py-2 rounded-lg"
-                >
+                <button type="button" onclick="history.back()"
+                        class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold px-6 py-2 rounded-lg">
                     Cancel
                 </button>
+
                 <button
                     type="submit"
                     class="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2 rounded-lg"
-                >
+                    >
                     Submit
                 </button>
             </div>
         </form>
     </div> 
 
-<%@include file="/WEB-INF/include/admin/admin-footer.jsp" %>
+    <%@include file="/WEB-INF/include/admin/admin-footer.jsp" %>

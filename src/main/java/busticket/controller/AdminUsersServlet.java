@@ -14,6 +14,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
+import java.util.Date;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -21,11 +24,10 @@ import java.util.List;
 
 /**
  *
- * @author Pham Van Hoai - CE181744
+ * @author Nguyen Thanh Truong - CE180140
  */
 public class AdminUsersServlet extends HttpServlet {
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
      *
@@ -40,74 +42,70 @@ public class AdminUsersServlet extends HttpServlet {
 
         AdminUsersDAO adminUserDAO = new AdminUsersDAO();
 
-        // Check if the user is an admin; redirect to home if not
-//        if (!SessionUtil.isAdmin(request)) {
-//            response.sendRedirect(request.getContextPath() + "/pages/home.jsp");
-//            return;
-//        }
-
+        // Check if the request contains ?add → forward to the Add User form
         if (request.getParameter("add") != null) {
             request.getRequestDispatcher("/WEB-INF/admin/users/add-user.jsp").forward(request, response);
             return;
         }
-        // Handle request to edit a specific user
+
+        // Handle request to edit a user if ?editId is present
         String editId = request.getParameter("editId");
         if (editId != null) {
             try {
                 int userId = Integer.parseInt(editId);
                 AdminUsers user = adminUserDAO.getUserById(userId);
 
-                // Redirect to 404 page if the user is not found
+                // If user not found → redirect to 404 page
                 if (user == null) {
                     response.sendRedirect(request.getContextPath() + "/pages/404.jsp");
                     return;
                 }
 
-                // Set user data and forward to edit page
+                // Set user data and forward to the edit-user.jsp page
                 request.setAttribute("user", user);
                 request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp").forward(request, response);
                 return;
+
             } catch (NumberFormatException e) {
-                // Redirect to user list if editId is invalid
+                // If editId is invalid (not a number) → redirect to user list
                 response.sendRedirect(request.getContextPath() + "/admin/users");
                 return;
             }
         }
 
-        // Retrieve search query parameter
+        // Retrieve search query from the query string (?search=...)
         String searchQuery = request.getParameter("search");
 
-        // Pagination setup
-        int usersPerPage = 10; // Number of users per page
-        int currentPage = 1;   // Default to page 1
+        // Pagination setup: default to 10 users per page
+        int usersPerPage = 10;
+        int currentPage = 1;
         if (request.getParameter("page") != null) {
             try {
                 currentPage = Integer.parseInt(request.getParameter("page"));
             } catch (NumberFormatException e) {
-                currentPage = 1; // Fallback to page 1 if parsing fails
+                currentPage = 1; // Fall back to page 1 if the page parameter is invalid
             }
         }
-        int offset = (currentPage - 1) * usersPerPage; // Calculate offset for pagination
+        int offset = (currentPage - 1) * usersPerPage;
 
-        // Fetch paginated and filtered list of users
+        // Retrieve paginated user list (with optional search filter)
         List<AdminUsers> adminUsers = adminUserDAO.getAllAdminUsers(searchQuery, offset, usersPerPage);
-        int totalUsers = adminUserDAO.countUsersByFilter(searchQuery); // Get total number of users
-        int totalPages = (int) Math.ceil((double) totalUsers / usersPerPage); // Calculate total pages
+        int totalUsers = adminUserDAO.countUsersByFilter(searchQuery);
+        int totalPages = (int) Math.ceil((double) totalUsers / usersPerPage);
 
-        // Calculate the current total users displayed (full page size or remaining users on the last page)
+        // Calculate the number of users currently displayed (used for stats)
         int currentTotalUsers = (currentPage < totalPages ? usersPerPage * currentPage : totalUsers);
 
-        // Set attributes for JSP rendering
-        request.setAttribute("users", adminUsers);             // List of users
-        request.setAttribute("totalUsers", totalUsers);       // Total number of users
-        request.setAttribute("searchQuery", searchQuery);     // Search query for reuse in JSP
-        request.setAttribute("totalPages", totalPages);       // Total number of pages for pagination
-        request.setAttribute("currentPage", currentPage);     // Current page number
-        request.setAttribute("currentTotalUsers", currentTotalUsers); // Current total users displayed
+        // Set attributes for rendering in JSP
+        request.setAttribute("users", adminUsers);                     // List of users
+        request.setAttribute("totalUsers", totalUsers);               // Total number of users
+        request.setAttribute("searchQuery", searchQuery);             // Search query (if any)
+        request.setAttribute("totalPages", totalPages);               // Total number of pages
+        request.setAttribute("currentPage", currentPage);             // Current page number
+        request.setAttribute("currentTotalUsers", currentTotalUsers); // Users currently displayed
 
-        // Forward request to the users JSP page
+        // Forward to the user list page
         request.getRequestDispatcher("/WEB-INF/admin/users/users.jsp").forward(request, response);
-
     }
 
     /**
@@ -121,13 +119,14 @@ public class AdminUsersServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         String action = request.getParameter("action");
-        AdminUsersDAO adminUsersDAO = new AdminUsersDAO();  // Sử dụng AdminUsersDAO thay cho AdminCouponsDAO
+        AdminUsersDAO adminUsersDAO = new AdminUsersDAO();
+        boolean redirected = false; // Used to prevent multiple forwards or redirects
 
         try {
+            // Handle account creation
             if ("add".equals(action)) {
-                // Add a new user
-                // Get user data from the form
                 String name = request.getParameter("name");
                 String email = request.getParameter("email");
                 String password = request.getParameter("password");
@@ -137,7 +136,7 @@ public class AdminUsersServlet extends HttpServlet {
 
                 List<String> errorMessages = new ArrayList<>();
 
-                // Validate form input
+                // Validate input fields
                 if (name == null || name.isEmpty()) {
                     errorMessages.add("Full Name is required.");
                 }
@@ -153,43 +152,30 @@ public class AdminUsersServlet extends HttpServlet {
                 if (!password.equals(confirmPassword)) {
                     errorMessages.add("Passwords do not match.");
                 }
-
-                // Check if email already exists
                 if (adminUsersDAO.isEmailExists(email)) {
                     errorMessages.add("Email already exists!");
                 }
-
-                // Validate email format
                 if (!InputValidator.isEmailValid(email)) {
                     errorMessages.add("Invalid email format. Example: user@example.com");
                 }
-
-                // Validate password strength
                 if (!InputValidator.isPasswordValid(password)) {
                     errorMessages.add("Password must be at least 8 characters with 1 letter & 1 number.");
                 }
 
-                // If errors exist, forward back to add-user.jsp
+                // If there are validation errors, return to the add-user form
                 if (!errorMessages.isEmpty()) {
                     request.setAttribute("errors", errorMessages);
-                    request.getRequestDispatcher("/WEB-INF/admin/add-user.jsp").forward(request, response);
+                    request.getRequestDispatcher("/WEB-INF/admin/users/add-user.jsp").forward(request, response);
+                    redirected = true;
                     return;
                 }
 
-                // Hash password before storing it
+                // Create new user with hashed password
                 String hashedPassword = PasswordUtils.hashPassword(password);
-                System.out.println("Hashed password: " + hashedPassword);
-
-                // Set created_at to the current time if it's null
                 Timestamp createdAt = Timestamp.from(Instant.now());
-
-                // Create user object
                 AdminUsers user = new AdminUsers(0, name, email, hashedPassword, role, status, createdAt);
 
-                // Add user to the database
                 int isAdded = adminUsersDAO.addUser(user);
-
-                // If user added successfully, redirect to user list
                 if (isAdded > 0) {
                     request.setAttribute("message", "Account created successfully!");
                     request.getRequestDispatcher("/WEB-INF/admin/users/users.jsp").forward(request, response);
@@ -197,69 +183,63 @@ public class AdminUsersServlet extends HttpServlet {
                     request.setAttribute("error", "Add failed. Please try again.");
                     request.getRequestDispatcher("/WEB-INF/admin/users/add-user.jsp").forward(request, response);
                 }
+                redirected = true;
+
+                // Handle account editing
             } else if ("edit".equals(action)) {
-                // Edit an existing user
                 int userId = Integer.parseInt(request.getParameter("userId"));
                 String name = request.getParameter("name");
                 String email = request.getParameter("email");
                 String phone = request.getParameter("phone");
                 String role = request.getParameter("role");
                 String gender = request.getParameter("gender");
-                String birthdate = request.getParameter("birthdate");  // Get birthdate
+                String birthdate = request.getParameter("birthdate");
                 String address = request.getParameter("address");
-                String status = request.getParameter("status");  // Include status
+                String status = request.getParameter("status");
 
-                // Validate input data
+                // Basic input validation
                 if (name == null || name.isEmpty() || email == null || email.isEmpty()
                         || role == null || role.isEmpty() || status == null || status.isEmpty()) {
-
-                    // Nếu có lỗi, trả về thông báo lỗi và không lưu
                     request.setAttribute("error", "Please enter valid information!");
-
-                    // Gửi dữ liệu lại về form (bao gồm userId để tiếp tục chỉnh sửa)
-                    request.setAttribute("userId", userId);
-                    request.setAttribute("name", name);
-                    request.setAttribute("email", email);
-                    request.setAttribute("phone", phone);
-                    request.setAttribute("role", role);
-                    request.setAttribute("gender", gender);
-                    request.setAttribute("birthdate", birthdate);
-                    request.setAttribute("address", address);
-                    request.setAttribute("status", status);
-
                     request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp?userId=" + userId).forward(request, response);
+                    redirected = true;
                     return;
                 }
 
-                // Convert birthdate from String to Timestamp (or Date if you prefer)
+                // Convert birthdate to Timestamp (format: dd/MM/yyyy)
                 Timestamp birthdateTimestamp = null;
                 if (birthdate != null && !birthdate.isEmpty()) {
                     try {
-                        // Convert the birthdate to a Timestamp (using "yyyy-MM-dd" format)
-                        birthdateTimestamp = Timestamp.valueOf(birthdate + " 00:00:00");  // Set default time to midnight
-                    } catch (IllegalArgumentException e) {
-                        // If the date format is invalid, show error
-                        request.setAttribute("error", "Invalid birthdate format!");
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                        sdf.setLenient(false);
+                        Date parsedDate = sdf.parse(birthdate);
+                        birthdateTimestamp = new Timestamp(parsedDate.getTime());
+                    } catch (ParseException e) {
+                        request.setAttribute("error", "Invalid birthdate format! Please use dd/MM/yyyy.");
                         request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp?userId=" + userId).forward(request, response);
+                        redirected = true;
                         return;
                     }
                 }
 
-                // Create and update the user
+                // Update user information
                 AdminUsers user = new AdminUsers(userId, name, email, phone, role, status, birthdateTimestamp, gender, address);
                 adminUsersDAO.updateUser(user);
 
-                // Nếu update thành công, gửi thông báo thành công và chuyển hướng đến trang danh sách người dùng
                 request.setAttribute("message", "User updated successfully!");
                 request.getRequestDispatcher("/WEB-INF/admin/users/users.jsp").forward(request, response);
+                redirected = true;
             }
+
         } catch (Exception e) {
-            // Handle any exceptions during processing
+            // Handle unexpected exceptions
             request.setAttribute("error", "Error occurred during processing!");
         }
 
-        // Redirect to the user list page after processing
-        response.sendRedirect(request.getContextPath() + "/admin/users");
+        // Redirect to the main user list if no forward has occurred
+        if (!redirected) {
+            response.sendRedirect(request.getContextPath() + "/admin/users");
+        }
     }
 
     /**

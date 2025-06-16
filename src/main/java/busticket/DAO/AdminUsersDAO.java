@@ -18,7 +18,7 @@ import java.time.Instant;
 
 /**
  *
- * @author Pham Van Hoai - CE181744
+ * @author Nguyen Thanh Truong - CE180140
  */
 public class AdminUsersDAO extends DBContext {
 
@@ -104,33 +104,32 @@ public class AdminUsersDAO extends DBContext {
 
     // Method to add a new user to the database
     public int addUser(AdminUsers user) {
-    String query = "INSERT INTO Users (user_name, user_email, password, role, user_status, user_created_at) "
-            + "VALUES (?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO Users (user_name, user_email, password, role, user_status, user_created_at) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
 
-    try (PreparedStatement ps = getConnection().prepareStatement(query)) {
-        // Set values for each parameter in PreparedStatement
-        ps.setString(1, user.getName());        // Set name
-        ps.setString(2, user.getEmail());       // Set email
-        ps.setString(3, user.getPassword());    // Set password (hashed)
-        ps.setString(4, user.getRole());        // Set role
-        ps.setString(5, user.getStatus());      // Set status
+        try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
+            // Set values for each parameter in PreparedStatement
+            ps.setString(1, user.getName());        // Set name
+            ps.setString(2, user.getEmail());       // Set email
+            ps.setString(3, user.getPassword());    // Set password (hashed)
+            ps.setString(4, user.getRole());        // Set role
+            ps.setString(5, user.getStatus());      // Set status
 
-        // Set created_at - if null, use the current time
-        if (user.getCreated_at() == null) {
-            ps.setTimestamp(6, Timestamp.from(Instant.now()));  // Use current timestamp if created_at is null
-        } else {
-            ps.setTimestamp(6, user.getCreated_at());  // Use provided created_at timestamp
+            // Set created_at - if null, use the current time
+            if (user.getCreated_at() == null) {
+                ps.setTimestamp(6, Timestamp.from(Instant.now()));  // Use current timestamp if created_at is null
+            } else {
+                ps.setTimestamp(6, user.getCreated_at());  // Use provided created_at timestamp
+            }
+
+            // Execute the INSERT operation and return the number of affected rows
+            return ps.executeUpdate();  // This will return the number of rows affected
+        } catch (SQLException ex) {
+            // Log the exception if there's an error during execution
+            Logger.getLogger(AdminUsersDAO.class.getName()).log(Level.SEVERE, null, ex);
+            throw new RuntimeException("Error while inserting user", ex);  // Throw runtime exception for debugging purposes
         }
-
-        // Execute the INSERT operation and return the number of affected rows
-        return ps.executeUpdate();  // This will return the number of rows affected
-    } catch (SQLException ex) {
-        // Log the exception if there's an error during execution
-        Logger.getLogger(AdminUsersDAO.class.getName()).log(Level.SEVERE, null, ex);
-        throw new RuntimeException("Error while inserting user", ex);  // Throw runtime exception for debugging purposes
     }
-}
-
 
     /**
      *
