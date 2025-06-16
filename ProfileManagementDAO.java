@@ -59,7 +59,7 @@ public class ProfileManagementDAO {
             ps.setInt(3, user.getId());
             return ps.executeUpdate() > 0;
         }
-    }
+    }2
 
     /**
      * Change user password
