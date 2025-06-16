@@ -5,13 +5,24 @@
 package busticket.controller;
 
 import busticket.DAO.AdminTripsDAO;
+import busticket.model.AdminBuses;
+import busticket.model.AdminDrivers;
+import busticket.model.AdminRoutes;
 import busticket.model.AdminTrips;
+import busticket.model.AdminUsers;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -31,20 +42,103 @@ public class AdminTripsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Khởi tạo DAO để lấy danh sách chuyến đi
+        
+
         AdminTripsDAO adminTripsDAO = new AdminTripsDAO();
 
         // Lấy tham số hành động (action)
         String action = request.getParameter("action");
 
         if (request.getParameter("add") != null) {
-            request.getRequestDispatcher("/WEB-INF/admin/trips/add-trip.jsp").forward(request, response);
+            AdminTripsDAO dao = new AdminTripsDAO();
+            request.setAttribute("routes", dao.getAllRoutes());
+            request.setAttribute("buses", dao.getAllBuses());
+            request.setAttribute("drivers", dao.getAllDrivers());
+            request.getRequestDispatcher("/WEB-INF/admin/trips/add-trip.jsp")
+                    .forward(request, response);
+            return;
+        }
+        
+        // View details flow
+        String detail = request.getParameter("detail");
+        if (detail != null) {
+            try {
+                int tripId = Integer.parseInt(detail);
+                AdminTrips trip = adminTripsDAO.getTripDetailById(tripId);
+
+                // ** mới **: load danh sách hành khách
+                List<AdminUsers> passengers = adminTripsDAO.getPassengersByTripId(tripId);
+
+                // đẩy vào request
+                request.setAttribute("trip", trip);
+                request.setAttribute("passengers", passengers);
+
+                request.getRequestDispatcher("/WEB-INF/admin/trips/view-trip-details.jsp")
+                        .forward(request, response);
+            } catch (Exception ex) {
+                response.sendRedirect(request.getContextPath() + "/admin/trips");
+                return;
+            }
             return;
         }
 
-        if (request.getParameter("editId") != null) {
-            request.getRequestDispatcher("/WEB-INF/admin/trips/edit-trip.jsp").forward(request, response);
+        String editId = request.getParameter("editId");
+        if (editId != null) {
+            try {
+                int tripId = Integer.parseInt(editId);
+
+                AdminTrips trip = adminTripsDAO.getTripById(tripId);
+                List<AdminRoutes> routes = adminTripsDAO.getAllRoutes();
+                List<AdminBuses> buses = adminTripsDAO.getAllBuses();
+                List<AdminDrivers> drivers = adminTripsDAO.getAllDrivers();
+
+                request.setAttribute("trip", trip);
+                request.setAttribute("routes", routes);
+                request.setAttribute("buses", buses);
+                request.setAttribute("drivers", drivers);
+
+                request.getRequestDispatcher("/WEB-INF/admin/trips/edit-trip.jsp")
+                        .forward(request, response);
+                return;
+
+            } catch (NumberFormatException nfe) {
+                // ID không hợp lệ
+                request.setAttribute("error", "Invalid trip ID.");
+            } catch (SQLException sqle) {
+                // Lỗi DB
+                request.setAttribute("error", "Database error: " + sqle.getMessage());
+            }
+            // Nếu có lỗi, chuyển về trang list hoặc hiển thị thông báo
+            response.sendRedirect(request.getContextPath() + "/admin/trips");
             return;
+        }
+
+        // 1) Nếu là Delete flow
+        String delete = request.getParameter("delete");
+        if (delete != null) {
+            try {
+                int tripId = Integer.parseInt(delete);
+                // load dữ liệu chuyến
+                AdminTrips trip = adminTripsDAO.getTripById(tripId);
+                // đổ dropdown nếu muốn hiển thị tham số route/bus/driver
+                List<AdminRoutes> routes = adminTripsDAO.getAllRoutes();
+                List<AdminBuses> buses = adminTripsDAO.getAllBuses();
+                List<AdminDrivers> drivers = adminTripsDAO.getAllDrivers();
+
+                request.setAttribute("trip", trip);
+                request.setAttribute("routes", routes);
+                request.setAttribute("buses", buses);
+                request.setAttribute("drivers", drivers);
+
+                request.getRequestDispatcher("/WEB-INF/admin/trips/delete-trip.jsp")
+                        .forward(request, response);
+                return;
+            } catch (NumberFormatException | SQLException ex) {
+                // không tìm được hay lỗi DB — chuyển về list với thông báo
+                request.getSession().setAttribute("error", "Cannot load trip for deletion.");
+                response.sendRedirect(request.getContextPath() + "/admin/trips");
+                return;
+            }
         }
 
         String route = request.getParameter("route");
@@ -73,8 +167,8 @@ public class AdminTripsServlet extends HttpServlet {
         request.setAttribute("currentPage", currentPage);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalTrips", totalTrips);
-
-        request.getRequestDispatcher("/WEB-INF/admin/trips/trips.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/admin/trips/trips.jsp")
+                .forward(request, response);
     }
 
     /**
@@ -88,7 +182,52 @@ public class AdminTripsServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        String action = request.getParameter("action");
+        AdminTripsDAO adminTripsDAO = new AdminTripsDAO();
 
+        try {
+            if ("add".equals(action)) {
+                // --- ADD NEW TRIP ---
+                int routeId = Integer.parseInt(request.getParameter("route"));
+                int busId = Integer.parseInt(request.getParameter("bus"));
+                int driverId = Integer.parseInt(request.getParameter("driver"));
+                // đọc ngày/giờ và ghép thành Timestamp
+                LocalDate ld = LocalDate.parse(request.getParameter("departureDate"));
+                LocalTime lt = LocalTime.parse(request.getParameter("departureTime"));
+                Timestamp ts = Timestamp.valueOf(LocalDateTime.of(ld, lt));
+                String status = request.getParameter("status");  // mới thêm
+                adminTripsDAO.addTrip(routeId, busId, driverId, ts, status);
+                // sau khi thêm, redirect về list
+                response.sendRedirect(request.getContextPath() + "/admin/trips");
+                return;
+
+            } else if ("edit".equals(action)) {
+                // --- UPDATE EXISTING TRIP ---
+                int tripId = Integer.parseInt(request.getParameter("tripId"));
+                int routeId = Integer.parseInt(request.getParameter("route"));
+                int busId = Integer.parseInt(request.getParameter("bus"));
+                int driverId = Integer.parseInt(request.getParameter("driver"));
+                LocalDate ld = LocalDate.parse(request.getParameter("departureDate"));
+                LocalTime lt = LocalTime.parse(request.getParameter("departureTime"));
+                Timestamp ts = Timestamp.valueOf(LocalDateTime.of(ld, lt));
+                String status = request.getParameter("status");
+                adminTripsDAO.updateTrip(tripId, routeId, busId, driverId, ts, status);
+                response.sendRedirect(request.getContextPath() + "/admin/trips");
+                return;
+
+            } else if ("delete".equals(action)) {
+                // --- DELETE TRIP ---
+                int tripId = Integer.parseInt(request.getParameter("tripId"));
+                adminTripsDAO.deleteTrip(tripId);
+                response.sendRedirect(request.getContextPath() + "/admin/trips");
+                return;
+            }
+
+        } catch (Exception ex) {
+            // Nếu có lỗi, đưa thông báo vào request và forward về trang error hoặc list
+             response.sendRedirect(request.getContextPath() + "/admin/trips");
+                return;
+        }
     }
 
     /**
