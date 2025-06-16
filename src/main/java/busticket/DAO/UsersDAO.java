@@ -18,24 +18,24 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author Pham Van Hoai - CE181744
+ * @author Nguyen Thanh Truong - CE180140
  */
 public class UsersDAO extends DBContext {
+
     /**
-     * 
-     * @param userId
-     * @param newPassword 
+     * Update the password for a specific user.
+     *
+     * @param userId The ID of the user.
+     * @param newPassword The new (already hashed) password to store.
      */
     public void updatePassword(int userId, String newPassword) {
         String query = "UPDATE Users SET password = ? WHERE user_id = ?";
 
         try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
-            // Đảm bảo mật khẩu được mã hóa trước khi lưu vào cơ sở dữ liệu
-            ps.setString(1, newPassword);  // Mật khẩu đã mã hóa
-            ps.setInt(2, userId);  // ID người dùng cần cập nhật mật khẩu
+            ps.setString(1, newPassword);
+            ps.setInt(2, userId);
 
-            // Thực thi câu lệnh cập nhật
-            int rowsUpdated = ps.executeUpdate();  // Kiểm tra xem có bản ghi nào được cập nhật không
+            int rowsUpdated = ps.executeUpdate();
             if (rowsUpdated > 0) {
                 System.out.println("Password updated successfully.");
             } else {
@@ -46,81 +46,41 @@ public class UsersDAO extends DBContext {
         }
     }
 
+    /**
+     * Mark a password reset token as used (after successful reset).
+     *
+     * @param token The token to mark as used.
+     */
     public void markTokenAsUsed(String token) {
         String query = "UPDATE Password_Reset_Tokens SET token_used = 1 WHERE token = ?";
 
         try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
-            ps.setString(1, token);  // Set token value to mark it as used
-            ps.executeUpdate();  // Cập nhật token là đã sử dụng
-        } catch (SQLException ex) {
-            Logger.getLogger(UsersDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    public Users getUserByResetToken(String token) {
-        String query = "SELECT * FROM Users u "
-                + "JOIN Password_Reset_Tokens prt ON u.user_id = prt.user_id "
-                + "WHERE prt.token = ? AND prt.token_used = 0 AND prt.token_expires_at > ?";  // Dùng 0 thay vì 'false'
-
-        Timestamp currentTime = Timestamp.from(Instant.now());  // Lấy thời gian hiện tại
-
-        try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
-            ps.setString(1, token);  // Token từ URL
-            ps.setTimestamp(2, currentTime);  // Kiểm tra xem token có hết hạn không
-
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                return new Users(
-                        rs.getInt("user_id"),
-                        rs.getString("user_name"),
-                        rs.getString("user_email"),
-                        rs.getString("password"),
-                        rs.getString("user_phone"),
-                        rs.getString("role"),
-                        rs.getTimestamp("birthdate"),
-                        rs.getString("gender"),
-                        rs.getString("user_address"),
-                        rs.getTimestamp("user_created_at")
-                );
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(UsersDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        return null;  // Nếu không tìm thấy người dùng hợp lệ
-    }
-
-    public void storeResetToken(int userId, String resetToken) {
-        String query = "INSERT INTO Password_Reset_Tokens (user_id, token, token_created_at, token_expires_at, token_used) VALUES (?, ?, ?, ?, ?)";
-
-        // Set expiration time (1 hour from now)
-        Timestamp createdAt = Timestamp.from(Instant.now());  // Current time
-        Timestamp expiresAt = Timestamp.from(Instant.now().plus(1, ChronoUnit.HOURS));  // Expiration time (1 hour later)
-
-        try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
-            ps.setInt(1, userId);  // user_id
-            ps.setString(2, resetToken);  // token
-            ps.setTimestamp(3, createdAt);  // created_at
-            ps.setTimestamp(4, expiresAt);  // expires_at
-            ps.setBoolean(5, false);  // used (false initially, because it hasn't been used yet)
-
+            ps.setString(1, token);
             ps.executeUpdate();
         } catch (SQLException ex) {
             Logger.getLogger(UsersDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    public Users getUserByEmail(String email) {
-        String query = "SELECT * FROM Users WHERE user_email = ?";  // Query to find the user by email
+    /**
+     * Retrieve user information based on a valid, unexpired password reset
+     * token.
+     *
+     * @param token The reset token from the URL.
+     * @return The associated User object if valid, null otherwise.
+     */
+    public Users getUserByResetToken(String token) {
+        String query = "SELECT * FROM Users u "
+                + "JOIN Password_Reset_Tokens prt ON u.user_id = prt.user_id "
+                + "WHERE prt.token = ? AND prt.token_used = 0 AND prt.token_expires_at > ?";
+
+        Timestamp currentTime = Timestamp.from(Instant.now());
+
         try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
-            // Set the email parameter in the query
-            ps.setString(1, email);
+            ps.setString(1, token);
+            ps.setTimestamp(2, currentTime);
 
-            // Execute the query and get the result set
             ResultSet rs = ps.executeQuery();
-
-            // If a user with the provided email exists, return the user object
             if (rs.next()) {
                 return new Users(
                         rs.getInt("user_id"),
@@ -139,48 +99,47 @@ public class UsersDAO extends DBContext {
             Logger.getLogger(UsersDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        return null;  // Return null if no user found with the given email
+        return null;
     }
 
     /**
+     * Store a newly generated reset token in the database.
      *
-     * @param email
-     * @return
+     * @param userId ID of the user requesting password reset.
+     * @param resetToken The generated token string.
      */
-    public boolean isEmailExists(String email) {
-        String query = "SELECT COUNT(user_id) FROM Users WHERE user_email = ?;";
-        try ( ResultSet rs = execSelectQuery(query, new Object[]{email})) {
-            return rs.next() && rs.getInt(1) > 0;
+    public void storeResetToken(int userId, String resetToken) {
+        String query = "INSERT INTO Password_Reset_Tokens (user_id, token, token_created_at, token_expires_at, token_used) VALUES (?, ?, ?, ?, ?)";
+
+        Timestamp createdAt = Timestamp.from(Instant.now());
+        Timestamp expiresAt = Timestamp.from(Instant.now().plus(1, ChronoUnit.HOURS)); // expires in 1 hour
+
+        try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
+            ps.setInt(1, userId);
+            ps.setString(2, resetToken);
+            ps.setTimestamp(3, createdAt);
+            ps.setTimestamp(4, expiresAt);
+            ps.setBoolean(5, false); // token initially unused
+            ps.executeUpdate();
         } catch (SQLException ex) {
             Logger.getLogger(UsersDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return false;
     }
 
     /**
-     * For traditional login only (Not using any other provider than local)
+     * Retrieve a user from the database by email address.
      *
-     * @param email
-     * @param password
-     * @return
+     * @param email The email to search for.
+     * @return The User object if found, or null otherwise.
      */
-    public Users login(String email, String password) {
-        try {
-            String query = "SELECT * FROM Users u WHERE u.user_email = ?;";
-            Object[] params = {email};
-            ResultSet rs = execSelectQuery(query, params); // Execute the query
+    public Users getUserByEmail(String email) {
+        String query = "SELECT * FROM Users WHERE user_email = ?";
 
-            // Ensure the cursor is pointing to a valid row
-            if (rs.next()) { // If a user is found
-                String hashedPassword = rs.getString("password");
+        try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
+            ps.setString(1, email);
+            ResultSet rs = ps.executeQuery();
 
-                // Step 4: check the password
-                if (hashedPassword == null || hashedPassword.isEmpty() || !PasswordUtils.checkPassword(password, hashedPassword)) {
-                    // If password doesn't match
-                    return null;
-                }
-
-                // Return user if everything is fine
+            if (rs.next()) {
                 return new Users(
                         rs.getInt("user_id"),
                         rs.getString("user_name"),
@@ -198,42 +157,95 @@ public class UsersDAO extends DBContext {
             Logger.getLogger(UsersDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        // Return null if no user found or other issues
         return null;
     }
 
     /**
+     * Check if an email is already registered in the database.
      *
-     * @param user
-     * @return
+     * @param email The email address to check.
+     * @return True if email exists, false otherwise.
      */
-    public int signup(Users user) {
-        try {
-            // Cập nhật câu lệnh SQL để phù hợp với các tham số
-            String query = "INSERT INTO Users (user_name, user_email, password, role, user_status, user_created_at) VALUES (?, ?, ?, ?, ?, ?)";
+    public boolean isEmailExists(String email) {
+        String query = "SELECT COUNT(user_id) FROM Users WHERE user_email = ?";
 
-            // Lấy thời gian hiện tại nếu `created_at` không được truyền từ phía người dùng
-            Timestamp timestamp = Timestamp.from(Instant.now()); // Default created_at is the current time
-
-            // Các tham số truyền vào câu lệnh SQL
-            Object[] params = {
-                user.getName(), // user name
-                user.getEmail(), // user email
-                user.getPassword(), // user password (hashed)
-                user.getRole(), // user role (e.g., "user" or "admin")
-                user.getStatus(), // user status (e.g., "active", "inactive")
-                timestamp // created_at
-            };
-
-            // Thực thi câu lệnh SQL và trả về số bản ghi bị ảnh hưởng (inserted row count)
-            return execQuery(query, params);
-
+        try ( ResultSet rs = execSelectQuery(query, new Object[]{email})) {
+            return rs.next() && rs.getInt(1) > 0;
         } catch (SQLException ex) {
-            // Log error if an exception occurs
             Logger.getLogger(UsersDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        return 0; // Return 0 if there was an error
+        return false;
     }
 
+    /**
+     * Perform user login using email and password (hashed comparison).
+     *
+     * @param email The user's email.
+     * @param password The raw password entered by the user.
+     * @return The User object if login successful, or null otherwise.
+     */
+    public Users login(String email, String password) {
+        try {
+            String query = "SELECT * FROM Users u WHERE u.user_email = ?";
+            ResultSet rs = execSelectQuery(query, new Object[]{email});
+
+            if (rs.next()) {
+                String hashedPassword = rs.getString("password");
+
+                // Validate password using PasswordUtils
+                if (hashedPassword == null || hashedPassword.isEmpty()
+                        || !PasswordUtils.checkPassword(password, hashedPassword)) {
+                    return null;
+                }
+
+                return new Users(
+                        rs.getInt("user_id"),
+                        rs.getString("user_name"),
+                        rs.getString("user_email"),
+                        rs.getString("password"),
+                        rs.getString("user_phone"),
+                        rs.getString("role"),
+                        rs.getTimestamp("birthdate"),
+                        rs.getString("gender"),
+                        rs.getString("user_address"),
+                        rs.getTimestamp("user_created_at")
+                );
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(UsersDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return null;
+    }
+
+    /**
+     * Register (sign up) a new user into the system.
+     *
+     * @param user A User object with the necessary fields filled.
+     * @return The number of rows affected (1 if success, 0 if failure).
+     */
+    public int signup(Users user) {
+        try {
+            String query = "INSERT INTO Users (user_name, user_email, password, role, user_status, user_created_at) VALUES (?, ?, ?, ?, ?, ?)";
+
+            Timestamp timestamp = Timestamp.from(Instant.now());
+
+            Object[] params = {
+                user.getName(),
+                user.getEmail(),
+                user.getPassword(), // Already hashed
+                user.getRole(),
+                user.getStatus(),
+                timestamp
+            };
+
+            return execQuery(query, params);
+
+        } catch (SQLException ex) {
+            Logger.getLogger(UsersDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return 0;
+    }
 }

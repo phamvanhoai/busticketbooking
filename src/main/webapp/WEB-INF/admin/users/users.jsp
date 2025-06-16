@@ -1,13 +1,14 @@
 <%-- 
     Document   : users
     Created on : Jun 10, 2025, 1:53:23 AM
-    Author     : Pham Van Hoai - CE181744
+    Author     : Nguyen Thanh Truong - CE180140
 --%>
 
 <%@ page contentType="text/html" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="fbus" uri="/WEB-INF/tags/implicit.tld" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ include file="/WEB-INF/include/admin/admin-header.jsp" %>
 <c:set var="baseUrl" value="${pageContext.request.contextPath}/admin/users"/>
 
@@ -22,6 +23,21 @@
 </c:if>
 
 <body class="bg-gray-50">
+    <c:if test="${param.message == 'updated'}">
+        <div class="flex items-center justify-between bg-green-100 border border-green-300 text-green-800 text-sm px-6 py-4 rounded-lg shadow mb-6">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" stroke-width="2"
+                     viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M5 13l4 4L19 7"/>
+                </svg>
+                <span><strong>Success:</strong> User updated successfully!</span>
+            </div>
+            <button onclick="this.parentElement.style.display = 'none'" class="text-green-500 hover:text-green-700 text-lg font-bold">&times;</button>
+        </div>
+    </c:if>
+
+
     <div class="px-4 py-8">
         <!-- Title + Filters -->
         <h1 class="text-3xl font-bold text-orange-600 mb-4">Manage Accounts</h1>
@@ -40,7 +56,7 @@
                     type="text"
                     name="search"
                     value="${fn:escapeXml(param.search)}"
-                    placeholder="Search by email"
+                    placeholder="Search by name or email"
                     class="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-300"
                     />
                 <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -94,7 +110,10 @@
                                     </c:otherwise>
                                 </c:choose>
                             </td>
-                            <td class="px-4 py-2">${user.created_at}</td>
+                            <td class="px-4 py-2">
+                                <fmt:formatDate value="${user.created_at}" pattern="dd/MM/yyyy"/>
+                            </td>
+
                             <td class="px-4 py-2">
                                 <a href="${pageContext.request.contextPath}/admin/users?editId=${user.user_id}" class="text-blue-600 hover:underline">Edit</a>
                             </td>

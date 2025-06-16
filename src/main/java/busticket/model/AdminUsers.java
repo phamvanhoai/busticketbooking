@@ -9,7 +9,7 @@ import java.sql.Timestamp;
 
 /**
  *
- * @author Pham Van Hoai - CE181744
+ * @author Nguyen Thanh Truong - CE180140
  */
 public class AdminUsers {
     // Khai báo các biến cho các cột trong bảng users
