@@ -44,23 +44,23 @@
             <form action="${pageContext.servletContext.contextPath}/admin/trips" method="get" class="flex gap-4">
                 <select class="border border-gray-300 rounded-lg px-4 py-2" name="route">
                     <option value="">All Routes</option>
-                    <option value="HCM → Can Tho">HCM → Can Tho</option>
-                    <option value="Can Tho → Chau Doc">Can Tho → Chau Doc</option>
-                    <option value="Hue → Da Nang">Hue → Da Nang</option>
+                    <c:forEach var="location" items="${locations}">
+                        <option value="${location}" ${location == param.route ? 'selected' : ''}>${location}</option>
+                    </c:forEach>
                 </select>
 
                 <select class="border border-gray-300 rounded-lg px-4 py-2" name="busType">
                     <option value="">All Bus Types</option>
-                    <option value="Seat">Seat</option>
-                    <option value="Bunk">Bunk</option>
-                    <option value="Limousine">Limousine</option>
+                    <c:forEach var="busType" items="${busTypes}">
+                        <option value="${busType}" ${busType == param.busType ? 'selected' : ''}>${busType}</option>
+                    </c:forEach>
                 </select>
 
                 <select class="border border-gray-300 rounded-lg px-4 py-2" name="driver">
                     <option value="">All Drivers</option>
-                    <option value="Driver 1">Driver 1</option>
-                    <option value="Driver 2">Driver 2</option>
-                    <option value="Driver 3">Driver 3</option>
+                    <c:forEach var="driver" items="${drivers}">
+                        <option value="${driver.driverId}" ${driver.driverId == param.driver ? 'selected' : ''}>${driver.userName}</option>
+                    </c:forEach>
                 </select>
 
                 <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg">
@@ -85,39 +85,44 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <c:forEach var="req" items="${requestList}">
-                        <tr class="border-b hover:bg-gray-50">
-                            <td class="px-6 py-4">DRVREQ${req.requestId}</td>
-                            <td class="px-6 py-4">${req.driverName}</td>
-                            <td class="px-6 py-4">${req.oldTripRoute}</td>
-                            <td class="px-6 py-4">${req.newTripRoute}</td>
-                            <td class="px-6 py-4">
-                    <fmt:formatDate value="${req.requestDate}" pattern="dd/MM/yyyy" />
-                    </td>
-                    <td class="px-6 py-4">
-                        <c:choose>
-                            <c:when test="${req.requestStatus == 'Pending'}">
-                                <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700">Pending</span>
-                            </c:when>
-                            <c:when test="${req.requestStatus == 'Approved'}">
-                                <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">Approved</span>
-                            </c:when>
-                            <c:when test="${req.requestStatus == 'Rejected'}">
-                                <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700">Rejected</span>
-                            </c:when>
-                        </c:choose>
-                    </td>
-                    <td class="px-6 py-4">
-                        <button class="flex items-center gap-1 text-blue-600 hover:underline">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="text-blue-600 text-xl" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg> View
-                        </button>
-                    </td>
-                    </tr>
-                </c:forEach>
+                    <c:forEach var="trip" items="${trips}">
+                        <tr class="border-t hover:bg-gray-50">
+                            <td class="py-2 px-4">${trip.tripId}</td>
+                            <td class="py-2 px-4">${trip.route}</td>
+                            <td class="py-2 px-4">${trip.tripDate}</td>
+                            <td class="py-2 px-4">${trip.tripTime}</td>
+                            <td class="py-2 px-4">${trip.busType}</td>
+                            <td class="py-2 px-4">${trip.driver}</td>
+                            <td class="py-2 px-4">
+                                <c:choose>
+                                    <c:when test="${trip.status == 'Cancelled'}">
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-red-100 text-red-600">
+                                            Cancelled
+                                        </span>
+                                    </c:when>
+                                    <c:when test="${trip.status == 'Scheduled'}">
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-green-100 text-green-700">
+                                            Scheduled
+                                        </span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-gray-100 text-gray-700">
+                                            ${trip.status}
+                                        </span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td class="px-6 py-4 flex items-center gap-3">
+                                <a href="${pageContext.servletContext.contextPath}/admin/trips?detail=${trip.tripId}" class="text-blue-600 hover:underline flex items-center gap-1">
+                                    <i class="fas fa-eye"></i> View</a>
+                                <a href="${pageContext.servletContext.contextPath}/admin/trips?editId=${trip.tripId}" class="text-blue-600 hover:underline flex items-center gap-1">
+                                    <i class="fas fa-edit"></i> Edit</a>
+                                <a href="${pageContext.servletContext.contextPath}/admin/trips?delete=${trip.tripId}" class="text-red-600 hover:underline flex items-center gap-1">
+                                    <i class="fas fa-trash-alt"></i> Delete</a>
+                            </td>
+                        </tr>
+                    </c:forEach>
                 </tbody>
-
             </table>
         </div>
 
