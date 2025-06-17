@@ -85,21 +85,39 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <c:forEach var="trip" items="${trips}">
-                        <tr class="border-t hover:bg-gray-50">
-                            <td class="py-2 px-4">${trip.tripId}</td>
-                            <td class="py-2 px-4">${trip.route}</td>
-                            <td class="py-2 px-4">${trip.tripDate}</td>
-                            <td class="py-2 px-4">${trip.tripTime}</td>
-                            <td class="py-2 px-4">${trip.busType}</td>
-                            <td class="py-2 px-4">${trip.driver}</td>
-                            <td class="py-2 px-4">${trip.status}</td>
-                            <td class="py-2 px-4">
-                                <a href="${pageContext.servletContext.contextPath}/admin/trips?editId=${trip.tripId}" class="text-blue-600 hover:underline">Edit</a>
-                            </td>
-                        </tr>
-                    </c:forEach>
+                    <c:forEach var="req" items="${requestList}">
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-6 py-4">DRVREQ${req.requestId}</td>
+                            <td class="px-6 py-4">${req.driverName}</td>
+                            <td class="px-6 py-4">${req.oldTripRoute}</td>
+                            <td class="px-6 py-4">${req.newTripRoute}</td>
+                            <td class="px-6 py-4">
+                    <fmt:formatDate value="${req.requestDate}" pattern="dd/MM/yyyy" />
+                    </td>
+                    <td class="px-6 py-4">
+                        <c:choose>
+                            <c:when test="${req.requestStatus == 'Pending'}">
+                                <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700">Pending</span>
+                            </c:when>
+                            <c:when test="${req.requestStatus == 'Approved'}">
+                                <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">Approved</span>
+                            </c:when>
+                            <c:when test="${req.requestStatus == 'Rejected'}">
+                                <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700">Rejected</span>
+                            </c:when>
+                        </c:choose>
+                    </td>
+                    <td class="px-6 py-4">
+                        <button class="flex items-center gap-1 text-blue-600 hover:underline">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="text-blue-600 text-xl" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg> View
+                        </button>
+                    </td>
+                    </tr>
+                </c:forEach>
                 </tbody>
+
             </table>
         </div>
 
