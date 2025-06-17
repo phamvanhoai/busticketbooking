@@ -5,8 +5,8 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@include file="/WEB-INF/include/header.jsp" %>
-
 
 <body class="bg-[#f9fafb]">
 
@@ -19,10 +19,10 @@
             <!-- Avatar -->
             <div class="flex flex-col items-center">
                 <img
-                    src="<%= getServletContext().getContextPath()%>/assets/images/avt/avatar.png"
+                    src="${pageContext.servletContext.contextPath}/assets/images/avt/avatar.png"
                     alt="Avatar"
                     class="w-48 h-48 rounded-full object-cover border-4 border-orange-400 shadow-md"
-                    />
+                />
                 <label class="mt-4 text-center">
                     <button class="bg-orange-500 text-white py-2 px-6 rounded-full font-medium hover:bg-orange-600 transition">
                         Choose Image
@@ -39,7 +39,7 @@
                 <div class="flex flex-col">
                     <label class="text-sm font-semibold text-gray-700 mb-1">Full Name</label>
                     <div class="px-4 py-3 bg-gray-100 rounded-xl shadow-inner text-gray-800 text-base min-h-[44px]">
-                        Nguyễn Thành Trương
+                        ${userProfile.name}
                     </div>
                 </div>
 
@@ -47,7 +47,7 @@
                 <div class="flex flex-col">
                     <label class="text-sm font-semibold text-gray-700 mb-1">Phone Number</label>
                     <div class="px-4 py-3 bg-gray-100 rounded-xl shadow-inner text-gray-800 text-base min-h-[44px]">
-                        0973898830
+                        ${userProfile.phone}
                     </div>
                 </div>
 
@@ -57,9 +57,10 @@
                     <select
                         class="w-full rounded-xl bg-gray-100 px-4 py-3 text-base shadow-inner text-gray-800 outline-none appearance-none"
                         disabled
-                        >
-                        <option value="">Male</option>
-                        <option value="Female">Female</option>
+                    >
+                        <option value="Male"   ${userProfile.gender == 'Male'   ? 'selected' : ''}>Male</option>
+                        <option value="Female" ${userProfile.gender == 'Female' ? 'selected' : ''}>Female</option>
+                        <option value="Other"  ${userProfile.gender == 'Other'  ? 'selected' : ''}>Other</option>
                     </select>
                 </div>
 
@@ -67,7 +68,7 @@
                 <div class="flex flex-col">
                     <label class="text-sm font-semibold text-gray-700 mb-1">Email</label>
                     <div class="px-4 py-3 bg-gray-100 rounded-xl shadow-inner text-gray-800 text-base min-h-[44px]">
-                        truongtn.dev@gmail.com
+                        ${userProfile.email}
                     </div>
                 </div>
 
@@ -75,7 +76,7 @@
                 <div class="flex flex-col">
                     <label class="text-sm font-semibold text-gray-700 mb-1">Day of Birth</label>
                     <div class="px-4 py-3 bg-gray-100 rounded-xl shadow-inner text-gray-800 text-base min-h-[44px]">
-                        <!-- No Date Provided in Data -->
+                        <fmt:formatDate value="${userProfile.birthdate}" pattern="yyyy-MM-dd" />
                     </div>
                 </div>
 
@@ -83,25 +84,21 @@
                 <div class="flex flex-col">
                     <label class="text-sm font-semibold text-gray-700 mb-1">Address</label>
                     <div class="px-4 py-3 bg-gray-100 rounded-xl shadow-inner text-gray-800 text-base min-h-[44px]">
-                        <!-- No Address Provided in Data -->
+                        ${userProfile.address}
                     </div>
                 </div>
 
-                <!-- Career -->
-                <div class="flex flex-col">
-                    <label class="text-sm font-semibold text-gray-700 mb-1">Career</label>
-                    <div class="px-4 py-3 bg-gray-100 rounded-xl shadow-inner text-gray-800 text-base min-h-[44px]">
-                        <!-- No Career Provided in Data -->
-                    </div>
-                </div>
+                
             </div>
         </div>
 
         <!-- Update Button -->
         <div class="mt-10 flex justify-center">
-            <a href="${pageContext.servletContext.contextPath}/profile/update"><button class="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-10 rounded-full shadow-lg transition">
-                Edit
-                </button></a>
+            <a href="${pageContext.servletContext.contextPath}/profile/update">
+                <button class="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-10 rounded-full shadow-lg transition">
+                    Edit
+                </button>
+            </a>
         </div>
     </div>
     <%-- CONTENT HERE--%>
