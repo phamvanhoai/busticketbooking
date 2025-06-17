@@ -93,9 +93,32 @@
                             <td class="py-2 px-4">${trip.tripTime}</td>
                             <td class="py-2 px-4">${trip.busType}</td>
                             <td class="py-2 px-4">${trip.driver}</td>
-                            <td class="py-2 px-4">${trip.status}</td>
                             <td class="py-2 px-4">
-                                <a href="${pageContext.servletContext.contextPath}/admin/trips?editId=${trip.tripId}" class="text-blue-600 hover:underline">Edit</a>
+                                <c:choose>
+                                    <c:when test="${trip.status == 'Cancelled'}">
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-red-100 text-red-600">
+                                            Cancelled
+                                        </span>
+                                    </c:when>
+                                    <c:when test="${trip.status == 'Scheduled'}">
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-green-100 text-green-700">
+                                            Scheduled
+                                        </span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-gray-100 text-gray-700">
+                                            ${trip.status}
+                                        </span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td class="px-6 py-4 flex items-center gap-3">
+                                <a href="${pageContext.servletContext.contextPath}/admin/trips?detail=${trip.tripId}" class="text-blue-600 hover:underline flex items-center gap-1">
+                                    <i class="fas fa-eye"></i> View</a>
+                                <a href="${pageContext.servletContext.contextPath}/admin/trips?editId=${trip.tripId}" class="text-blue-600 hover:underline flex items-center gap-1">
+                                    <i class="fas fa-edit"></i> Edit</a>
+                                <a href="${pageContext.servletContext.contextPath}/admin/trips?delete=${trip.tripId}" class="text-red-600 hover:underline flex items-center gap-1">
+                                    <i class="fas fa-trash-alt"></i> Delete</a>
                             </td>
                         </tr>
                     </c:forEach>

@@ -91,13 +91,11 @@ public class AdminUsers {
         this.address = address;
     }
 
-    
+    public AdminUsers(int user_id, String name) {
+        this.user_id = user_id;
+        this.name = name;
+    }
 
-    
-
-    
-    
-    
 
     public int getUser_id() {
         return user_id;
