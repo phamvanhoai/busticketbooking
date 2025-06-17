@@ -11,13 +11,12 @@ package busticket.util;
 import java.util.*;
 import jakarta.mail.*;
 import jakarta.mail.internet.*;
-import jakarta.mail.util.*;
 
 public class EmailUtils {
 
     // Cấu hình email (thay đổi thông tin này theo tài khoản email của bạn)
     private static final String FROM_EMAIL = "mailmaychu@gmail.com"; // Email gửi
-    private static final String PASSWORD = "myzqvrfacskuppax"; // Mật khẩu email (hoặc App Password nếu bạn dùng 2FA)
+    private static final String PASSWORD = "qijimmuyjzdofbyp"; // Mật khẩu email (hoặc App Password nếu bạn dùng 2FA)
 
     // Phương thức gửi email HTML
     public static boolean sendEmail(String toEmail, String subject, String body) {

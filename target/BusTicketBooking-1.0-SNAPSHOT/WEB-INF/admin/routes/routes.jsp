@@ -9,7 +9,7 @@
 
 
 <body class="bg-gray-50">
-  <div class="max-w-6xl mx-auto p-8 bg-white rounded-xl shadow-lg mt-10">
+  <div class="p-8 bg-white rounded-xl shadow-lg mt-10">
     <!-- Header + Create Button -->
     <div class="flex justify-between items-center mb-6">
       <h2 class="text-3xl font-bold text-orange-600">Manage Routes</h2>

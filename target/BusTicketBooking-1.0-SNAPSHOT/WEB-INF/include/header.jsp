@@ -24,7 +24,7 @@
         <header class="bg-gradient-to-b from-[#EF5222] to-[#ff7e38] shadow-md">
             <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center text-white">
                 <div class="font-bold text-lg">
-                    <img src="" alt="FBus Lines" class="h-10 inline-block">
+                    <img src="<%= getServletContext().getContextPath()%>/assets/images/logo.png" alt="FBus Lines" class="h-10 inline-block">
                 </div>
                 <nav class="flex gap-6 text-sm font-medium">
                     <a href="${pageContext.servletContext.contextPath}/" class="hover:underline">Home</a>
@@ -57,9 +57,6 @@
                                     </a>
                                     <a href="${pageContext.servletContext.contextPath}/ticket-management/view-bookings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                         <i class="fas fa-history text-blue-500 mr-2"></i> View Bookings
-                                    </a>
-                                    <a href="${pageContext.servletContext.contextPath}/ticket-management/cancel-ticket" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                        <i class="fas fa-history text-blue-500 mr-2"></i> Cancel Ticket
                                     </a>
                                     <a href="${pageContext.servletContext.contextPath}/profile/change-password" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                         <i class="fas fa-key text-orange-500 mr-2"></i> Reset Password
