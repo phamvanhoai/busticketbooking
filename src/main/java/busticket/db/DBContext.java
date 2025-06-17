@@ -21,7 +21,7 @@ public class DBContext {
     public Connection conn;
     private final String DB_URL = "jdbc:sqlserver://localhost\\BusTicketDatabase:1433;databaseName=BusTicket;encrypt=true;trustServerCertificate=true";
     private final String DB_USER = "sa";
-    private final String DB_PWD = "123456";
+    private final String DB_PWD = "123";
 
     public DBContext() {
         try {
