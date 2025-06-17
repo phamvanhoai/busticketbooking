@@ -1,0 +1,110 @@
+<%-- 
+    Document   : view-trip-details
+    Created on : Jun 16, 2025, 4:41:29 PM
+    Author     : Pham Van Hoai - CE181744
+--%>
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ include file="/WEB-INF/include/admin/admin-header.jsp" %>
+
+<body class="bg-gray-100 min-h-screen">
+    <div class="px-4 py-8 space-y-6">
+
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-xl shadow">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">Trip Details</h1>
+                <p class="text-gray-600 mt-1">
+                    Trip ID: <span class="font-medium">${trip.tripId}</span>
+                </p>
+            </div>
+            <span class="mt-4 md:mt-0 inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                ${trip.status}
+            </span>
+        </header>
+
+        <!-- Basic Information -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-white p-4 rounded-xl shadow">
+                <p class="text-xs text-gray-500">Route</p>
+                <p class="font-semibold text-gray-800">${trip.route}</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow">
+                <p class="text-xs text-gray-500">Departure</p>
+                <p class="font-semibold text-gray-800">
+                    ${trip.tripDate} ${trip.tripTime}
+                </p>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow">
+                <p class="text-xs text-gray-500">Arrival Time</p>
+                <p class="font-semibold text-gray-800">${trip.arrivalTime}</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow">
+                <p class="text-xs text-gray-500">Duration</p>
+                <p class="font-semibold text-gray-800">${trip.duration}</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow">
+                <p class="text-xs text-gray-500">Driver</p>
+                <p class="font-semibold text-gray-800">${trip.driver}</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow">
+                <p class="text-xs text-gray-500">Bus Type</p>
+                <p class="font-semibold text-gray-800">${trip.busType}</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow">
+                <p class="text-xs text-gray-500">Seats</p>
+                <p class="font-semibold text-gray-800">${trip.bookedSeats} / ${trip.capacity}</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow">
+                <p class="text-xs text-gray-500">Status</p>
+                <p class="font-semibold text-gray-800">${trip.status}</p>
+            </div>
+        </section>
+
+        <!-- Route Stops: only Start and End -->
+        <section class="bg-white p-6 rounded-xl shadow">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">Route Stops</h2>
+            <div class="space-y-6">
+                <!-- Start Stop -->
+                <div class="flex items-start">
+                    <div class="flex flex-col items-center">
+                        <div class="w-3 h-3 bg-orange-500 rounded-full mt-1"></div>
+                        <div class="flex-1 border-l-2 border-gray-200"></div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="font-medium text-gray-800">${trip.tripTime} – ${trip.startLocation}</p>
+                        <p class="text-sm text-gray-500">Departure Point</p>
+                    </div>
+                </div>
+                <!-- End Stop -->
+                <div class="flex items-start">
+                    <div class="flex flex-col items-center">
+                        <div class="w-3 h-3 bg-gray-400 rounded-full mt-1"></div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="font-medium text-gray-800">${trip.arrivalTime} – ${trip.endLocation}</p>
+                        <p class="text-sm text-gray-500">Destination Point</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Passenger List -->
+        <section class="bg-white p-6 rounded-xl shadow">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">Passenger List</h2>
+            <ul class="divide-y divide-gray-200">
+                <c:forEach var="p" items="${passengers}">
+                    <li class="py-3 flex justify-between items-center">
+                        <span class="text-gray-700">${p.name}</span>
+                        <a href="${pageContext.request.contextPath}/admin/users?viewId=${p.user_id}"
+                           class="text-blue-600 text-sm hover:underline">View Profile</a>
+                    </li>
+                </c:forEach>
+            </ul>
+        </section>
+
+    </div>
+    <%-- CONTENT HERE--%>
+
+    <%@include file="/WEB-INF/include/admin/admin-footer.jsp" %>
