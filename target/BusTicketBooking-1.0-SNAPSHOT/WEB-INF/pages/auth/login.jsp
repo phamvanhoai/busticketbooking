@@ -44,11 +44,23 @@
                 <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-[#ef5222]"></i>
                 <input type="email" name="email" placeholder="Email" class="w-full pl-12 pr-4 py-3 border border-[#fc7b4c] rounded-xl text-sm placeholder-[#bdbdbd]" required />
             </div>
+            <!-- Password Field with Toggle Eye Icon -->
             <div class="relative">
                 <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-[#ef5222]"></i>
-                <input type="password" name="password" placeholder="Password" class="w-full pl-12 pr-10 py-3 border border-[#fc7b4c] rounded-xl text-sm placeholder-[#bdbdbd]" required />
-                <i class="fas fa-eye-slash absolute right-4 top-1/2 -translate-y-1/2 text-[#bdbdbd] cursor-pointer"></i>
+                <input
+                    type="password"
+                    name="password"
+                    id="passwordInput"
+                    placeholder="Password"
+                    class="w-full pl-12 pr-10 py-3 border border-[#fc7b4c] rounded-xl text-sm placeholder-[#bdbdbd]"
+                    required
+                    />
+                <i
+                    id="togglePassword"
+                    class="fas fa-eye-slash absolute right-4 top-1/2 -translate-y-1/2 text-[#bdbdbd] cursor-pointer"
+                    ></i>
             </div>
+
             <button type="submit" class="w-full bg-[#ef5222] hover:bg-[#fc7b4c] text-white font-bold py-3 rounded-full text-sm">
                 Login
             </button>
@@ -61,5 +73,16 @@
     </div>
 
     <%-- CONTENT HERE--%>
+    <!-- Toggle Script -->
+    <script>
+        const togglePassword = document.getElementById("togglePassword");
+        const passwordInput = document.getElementById("passwordInput");
 
+        togglePassword.addEventListener("click", function () {
+            const isHidden = passwordInput.type === "password";
+            passwordInput.type = isHidden ? "text" : "password";
+            this.classList.toggle("fa-eye-slash");
+            this.classList.toggle("fa-eye");
+        });
+    </script>
     <%@include file="/WEB-INF/include/footer.jsp" %>

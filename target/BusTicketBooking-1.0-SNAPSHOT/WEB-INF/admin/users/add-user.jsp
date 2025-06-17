@@ -1,7 +1,7 @@
 <%-- 
     Document   : add-user
     Created on : Jun 11, 2025, 12:25:46 AM
-    Author     : Pham Van Hoai - CE181744
+    Author     : Nguyen Thanh Truong - CE180140
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
@@ -14,25 +14,48 @@
 <body class="bg-[#f9fafb]">
     <div class="p-8 bg-white rounded-xl shadow-lg mt-10">
         <h2 class="text-3xl font-bold text-orange-600 mb-6">Create Account</h2>
-        
-        <!-- Hiển thị thông báo nếu có -->
-        <c:choose>
-            <c:when test="${not empty requestScope.message}">
-                <div style="color: green;">${message}</div>
-            </c:when>
-            <c:when test="${not empty requestScope.error}">
-                <div style="color: red;">${error}</div>
-            </c:when>
-        </c:choose>
-                
-                <c:if test="${not empty requestScope.errors}">
-            <div style="color: red;">
-                <c:forEach var="error" items="${requestScope.errors}">
-                    <p>${error}</p>
-                </c:forEach>
+
+        <!-- Success message -->
+        <c:if test="${not empty requestScope.message}">
+            <div class="flex items-center justify-between bg-green-100 border border-green-300 text-green-800 text-sm px-6 py-4 rounded-lg shadow mb-6">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" stroke-width="2"
+                         viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <span><strong>Success:</strong> ${message}</span>
+                </div>
+                <button onclick="this.parentElement.style.display = 'none'" class="text-green-600 hover:text-green-800 text-lg font-bold">&times;</button>
             </div>
         </c:if>
-                
+
+        <!-- Error message (single error) -->
+        <c:if test="${not empty requestScope.error}">
+            <div class="flex items-center justify-between bg-red-100 border border-red-300 text-red-800 text-sm px-6 py-4 rounded-lg shadow mb-6">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" stroke-width="2"
+                         viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    <span><strong>Error:</strong> ${error}</span>
+                </div>
+                <button onclick="this.parentElement.style.display = 'none'" class="text-red-600 hover:text-red-800 text-lg font-bold">&times;</button>
+            </div>
+        </c:if>
+
+        <!-- Validation errors list -->
+        <c:if test="${not empty requestScope.errors}">
+            <div class="bg-red-100 border border-red-300 text-red-800 text-sm px-6 py-4 rounded-lg shadow mb-6">
+                <strong class="block mb-2">Please fix the following errors:</strong>
+                <ul class="list-disc list-inside space-y-1">
+                    <c:forEach var="error" items="${requestScope.errors}">
+                        <li>${error}</li>
+                        </c:forEach>
+                </ul>
+            </div>
+        </c:if>
+
+
         <form action="${pageContext.request.contextPath}/admin/users" method="post" class="space-y-6">
             <input type="hidden" name="action" value="add">
 
@@ -43,7 +66,7 @@
                     name="name"
                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-orange-500"
                     required
-                />
+                    />
             </div>
 
             <div>
@@ -53,7 +76,7 @@
                     name="email"
                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-orange-500"
                     required
-                />
+                    />
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -64,7 +87,7 @@
                         name="password"
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-orange-500"
                         required
-                    />
+                        />
                 </div>
 
                 <div>
@@ -74,7 +97,7 @@
                         name="confirmPassword"
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-orange-500"
                         required
-                    />
+                        />
                 </div>
             </div>
 
@@ -85,8 +108,8 @@
                         name="role"
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-orange-500"
                         required
-                    >
-                        <option value="" disabled>Select role</option>
+                        >
+                        <option value="" disabled selected>Select role</option>
                         <option value="Admin">Admin</option>
                         <option value="Staff">Staff</option>
                         <option value="Driver">Driver</option>
@@ -99,7 +122,7 @@
                     <select
                         name="status"
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-orange-500"
-                    >
+                        >
                         <option value="Active">Active</option>
                         <option value="Inactive">Inactive</option>
                     </select>
@@ -107,20 +130,19 @@
             </div>
 
             <div class="flex justify-end gap-4 pt-4">
-                <button
-                    type="button"
-                    class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold px-6 py-2 rounded-lg"
-                >
+                <button type="button" onclick="history.back()"
+                        class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold px-6 py-2 rounded-lg">
                     Cancel
                 </button>
+
                 <button
                     type="submit"
                     class="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2 rounded-lg"
-                >
+                    >
                     Submit
                 </button>
             </div>
         </form>
     </div> 
 
-<%@include file="/WEB-INF/include/admin/admin-footer.jsp" %>
+    <%@include file="/WEB-INF/include/admin/admin-footer.jsp" %>

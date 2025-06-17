@@ -67,15 +67,16 @@ public class AdminUsers {
     }
 
     //add user for admin
-    public AdminUsers(int user_id, String name, String email, String password, String role, String status, Timestamp created_at) {
+    public AdminUsers(int user_id, String name, String email, String phone, String role, String status, Timestamp created_at) {
         this.user_id = user_id;
         this.name = name;
         this.email = email;
-        this.password = password;
+        this.phone = phone;
         this.role = role;
         this.status = status;
         this.created_at = created_at;
     }
+
     
     
     public AdminUsers(int user_id, String name, String email, String phone, String role, String status, Timestamp birthdate, String gender, String address) {
