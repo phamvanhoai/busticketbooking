@@ -53,7 +53,7 @@ public class AdminTripsDAO extends DBContext {
             query.append(" AND bt.bus_type_name LIKE ?");
         }
         if (driver != null && !driver.isEmpty()) {
-            query.append(" AND u.user_name LIKE ?");
+            query.append(" AND d.driver_id LIKE ?");
         }
         query.append(" ORDER BY t.trip_id ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
 
@@ -90,22 +90,30 @@ public class AdminTripsDAO extends DBContext {
         return trips;
     }
 
-    // Hàm này sẽ lấy tổng số chuyến đi để tính phân trang
     public int getTotalTripsCount(String route, String busType, String driver) {
+        // Xây dựng câu truy vấn đếm tổng số chuyến đi với các điều kiện lọc
         StringBuilder query = new StringBuilder(
-                "SELECT COUNT(*) FROM trips WHERE 1=1"
+                "SELECT COUNT(*) FROM Trips t "
+                + "JOIN Routes r ON t.route_id = r.route_id "
+                + "JOIN Buses b ON t.bus_id = b.bus_id "
+                + "JOIN Bus_Types bt ON b.bus_type_id = bt.bus_type_id "
+                + "JOIN Drivers d ON t.driver_id = d.driver_id "
+                + "JOIN Users u ON d.user_id = u.user_id "
+                + "WHERE 1=1"
         );
 
+        // Thêm điều kiện lọc nếu có
         if (route != null && !route.isEmpty()) {
-            query.append(" AND route LIKE ?");
+            query.append(" AND CONCAT(r.start_location, ' → ', r.end_location) LIKE ?");
         }
         if (busType != null && !busType.isEmpty()) {
-            query.append(" AND bus_type LIKE ?");
+            query.append(" AND bt.bus_type_name LIKE ?");
         }
         if (driver != null && !driver.isEmpty()) {
-            query.append(" AND driver LIKE ?");
+            query.append(" AND d.driver_id LIKE ?");
         }
 
+        // Thực thi câu truy vấn và trả về tổng số chuyến đi
         try ( PreparedStatement ps = getConnection().prepareStatement(query.toString())) {
             int paramIndex = 1;
             if (route != null && !route.isEmpty()) {
@@ -120,7 +128,7 @@ public class AdminTripsDAO extends DBContext {
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                return rs.getInt(1);
+                return rs.getInt(1);  // Trả về tổng số chuyến đi
             }
         } catch (SQLException ex) {
             Logger.getLogger(AdminTripsDAO.class.getName()).log(Level.SEVERE, null, ex);
@@ -149,7 +157,7 @@ public class AdminTripsDAO extends DBContext {
                 = "SELECT "
                 + "  t.trip_id, "
                 + "  t.route_id, "
-                + "  CONCAT(r.start_location, ' → ', r.end_location) AS route, "
+                + "  CONCAT(r.start_location, N' → ', r.end_location) AS route, "
                 + "  CAST(t.departure_time AS DATE)    AS tripDate, "
                 + "  CONVERT(VARCHAR(5), t.departure_time, 108) AS tripTime, "
                 + "  t.bus_id, "
@@ -247,7 +255,36 @@ public class AdminTripsDAO extends DBContext {
         return null;
     }
 
-    // details trip
+    //get location name for admin trip filter
+    public List<String> getAllLocations() {
+        List<String> locations = new ArrayList<>();
+        String query = "SELECT DISTINCT location_name FROM Locations";
+
+        try ( PreparedStatement ps = getConnection().prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                locations.add(rs.getString("location_name"));
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+        return locations;
+    }
+
+    //get bus type for admin trip filter
+    public List<String> getAllBusTypes() {
+        List<String> busTypes = new ArrayList<>();
+        String query = "SELECT bus_type_name FROM Bus_Types";
+        try ( PreparedStatement ps = getConnection().prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                busTypes.add(rs.getString("bus_type_name"));
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return busTypes;
+    }
+
     // details trip
     public List<AdminUsers> getPassengersByTripId(int tripId) throws SQLException {
         String sql
@@ -335,7 +372,7 @@ public class AdminTripsDAO extends DBContext {
         return list;
     }
 
-// Lấy tất cả drivers
+    // Lấy tất cả drivers
     public List<AdminDrivers> getAllDrivers() {
         List<AdminDrivers> list = new ArrayList<>();
         String sql = "SELECT d.driver_id, u.user_name "

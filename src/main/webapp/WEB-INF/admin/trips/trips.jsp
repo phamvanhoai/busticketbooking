@@ -44,23 +44,23 @@
             <form action="${pageContext.servletContext.contextPath}/admin/trips" method="get" class="flex gap-4">
                 <select class="border border-gray-300 rounded-lg px-4 py-2" name="route">
                     <option value="">All Routes</option>
-                    <option value="HCM → Can Tho">HCM → Can Tho</option>
-                    <option value="Can Tho → Chau Doc">Can Tho → Chau Doc</option>
-                    <option value="Hue → Da Nang">Hue → Da Nang</option>
+                    <c:forEach var="location" items="${locations}">
+                        <option value="${location}" ${location == param.route ? 'selected' : ''}>${location}</option>
+                    </c:forEach>
                 </select>
 
                 <select class="border border-gray-300 rounded-lg px-4 py-2" name="busType">
                     <option value="">All Bus Types</option>
-                    <option value="Seat">Seat</option>
-                    <option value="Bunk">Bunk</option>
-                    <option value="Limousine">Limousine</option>
+                    <c:forEach var="busType" items="${busTypes}">
+                        <option value="${busType}" ${busType == param.busType ? 'selected' : ''}>${busType}</option>
+                    </c:forEach>
                 </select>
 
                 <select class="border border-gray-300 rounded-lg px-4 py-2" name="driver">
                     <option value="">All Drivers</option>
-                    <option value="Driver 1">Driver 1</option>
-                    <option value="Driver 2">Driver 2</option>
-                    <option value="Driver 3">Driver 3</option>
+                    <c:forEach var="driver" items="${drivers}">
+                        <option value="${driver.driverId}" ${driver.driverId == param.driver ? 'selected' : ''}>${driver.userName}</option>
+                    </c:forEach>
                 </select>
 
                 <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg">

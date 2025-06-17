@@ -42,7 +42,6 @@ public class AdminTripsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
 
         AdminTripsDAO adminTripsDAO = new AdminTripsDAO();
 
@@ -58,7 +57,7 @@ public class AdminTripsServlet extends HttpServlet {
                     .forward(request, response);
             return;
         }
-        
+
         // View details flow
         String detail = request.getParameter("detail");
         if (detail != null) {
@@ -141,10 +140,17 @@ public class AdminTripsServlet extends HttpServlet {
             }
         }
 
+        // Lấy các danh sách dữ liệu từ DAO
+        List<String> locations = adminTripsDAO.getAllLocations();  // Lấy danh sách locations
+        List<AdminDrivers> drivers = adminTripsDAO.getAllDrivers();  // Lấy danh sách drivers
+        List<String> busTypes = adminTripsDAO.getAllBusTypes();  // Lấy danh sách bus types
+
+        // Các tham số lọc
         String route = request.getParameter("route");
         String busType = request.getParameter("busType");
         String driver = request.getParameter("driver");
 
+        // Phân trang
         int currentPage = 1;
         int tripsPerPage = 10;
 
@@ -160,15 +166,20 @@ public class AdminTripsServlet extends HttpServlet {
 
         // Lấy danh sách chuyến đi với filter và phân trang
         List<AdminTrips> trips = adminTripsDAO.getAllTrips(route, busType, driver, offset, tripsPerPage);
-        int totalTrips = adminTripsDAO.getTotalTripsCount(route, busType, driver); // Lấy tổng số chuyến đi
+        int totalTrips = adminTripsDAO.getTotalTripsCount(route, busType, driver);  // Lấy tổng số chuyến đi
         int totalPages = (int) Math.ceil((double) totalTrips / tripsPerPage);
 
+        // Truyền dữ liệu vào request để hiển thị trên JSP
         request.setAttribute("trips", trips);
+        request.setAttribute("locations", locations);  // Truyền locations vào JSP
+        request.setAttribute("drivers", drivers);  // Truyền drivers vào JSP
+        request.setAttribute("busTypes", busTypes);  // Truyền bus types vào JSP
         request.setAttribute("currentPage", currentPage);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalTrips", totalTrips);
-        request.getRequestDispatcher("/WEB-INF/admin/trips/trips.jsp")
-                .forward(request, response);
+
+        // Forward đến JSP
+        request.getRequestDispatcher("/WEB-INF/admin/trips/trips.jsp").forward(request, response);
     }
 
     /**
@@ -225,8 +236,8 @@ public class AdminTripsServlet extends HttpServlet {
 
         } catch (Exception ex) {
             // Nếu có lỗi, đưa thông báo vào request và forward về trang error hoặc list
-             response.sendRedirect(request.getContextPath() + "/admin/trips");
-                return;
+            response.sendRedirect(request.getContextPath() + "/admin/trips");
+            return;
         }
     }
 
