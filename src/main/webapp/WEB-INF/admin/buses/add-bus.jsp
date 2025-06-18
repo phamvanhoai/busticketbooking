@@ -70,7 +70,7 @@
             <div>
                 <label for="status" class="block mb-2 font-medium text-gray-800">Status</label>
                 <select
-                    id="status"
+                    id="busStatus"
                     name="busStatus"
                     class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring"
                     >

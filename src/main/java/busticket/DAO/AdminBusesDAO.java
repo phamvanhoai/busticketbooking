@@ -151,7 +151,7 @@ public class AdminBusesDAO extends DBContext {
      * Thêm một xe buýt mới
      */
     public boolean addBus(AdminBuses bus) {
-        String sql = "INSERT INTO Buses (bus_code, plate_number, bus_type_id, capacity, status) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Buses (bus_code, plate_number, bus_type_id, capacity, bus_status) VALUES (?, ?, ?, ?, ?)";
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, bus.getBusCode());
