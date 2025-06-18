@@ -5,9 +5,12 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib prefix="fbus" uri="/WEB-INF/tags/implicit.tld" %>
 <%@include file="/WEB-INF/include/admin/admin-header.jsp" %>
-<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
+<c:set var="baseUrl" value="${pageContext.request.contextPath}/admin/routes" />
 <body class="bg-gray-50">
     <div class="p-8 bg-white rounded-xl shadow-lg mt-10">
         <!-- Header + Create Button -->
@@ -64,11 +67,11 @@
         </div>
 
         <!-- Pagination -->
-        <div class="flex justify-center gap-2 mt-6">
-            <button class="px-4 py-2 rounded-lg border bg-[#EF5222] text-white">1</button>
-            <button class="px-4 py-2 rounded-lg border bg-white text-orange-600 border-orange-300 hover:bg-orange-100">2</button>
-            <button class="px-4 py-2 rounded-lg border bg-white text-orange-600 border-orange-300 hover:bg-orange-100">3</button>
-            <button class="px-4 py-2 rounded-lg border bg-white text-orange-600 border-orange-300 hover:bg-orange-100">4</button>
+        <div class="flex justify-center space-x-2 mt-6">
+            <fbus:adminpagination
+                currentPage="${currentPage}"
+                totalPages="${totalPages}"
+                url="${baseUrl}" />
         </div>
     </div>
     <%-- CONTENT HERE--%>

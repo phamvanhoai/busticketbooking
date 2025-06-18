@@ -11,12 +11,21 @@ import java.util.*;
 
 public class AdminRoutesDAO extends DBContext {
 
-    public List<AdminRoutes> getAllRoutes() {
+    // Lấy tất cả các tuyến đường với phân trang
+    public List<AdminRoutes> getAllRoutes(int offset, int limit) {
         List<AdminRoutes> list = new ArrayList<>();
         String sql = "SELECT route_id, start_location, end_location, distance_km, estimated_time "
-                + "FROM Routes";  // Sửa câu lệnh chỉ lấy thông tin từ bảng Routes
+                + "FROM Routes "
+                + "ORDER BY route_id ASC "
+                + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
-        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
+        try {
+            Connection conn = getConnection();  // Giữ kết nối mở mà không đóng
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, offset);
+            ps.setInt(2, limit);
+
+            ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 AdminRoutes route = new AdminRoutes();
                 route.setRouteId(rs.getInt("route_id"));
@@ -27,10 +36,27 @@ public class AdminRoutesDAO extends DBContext {
                 list.add(route);
             }
         } catch (SQLException e) {
-            e.printStackTrace();  // Log lỗi chi tiết
+            e.printStackTrace();
         }
 
         return list;
+    }
+
+    // Đếm số tuyến đường trong cơ sở dữ liệu
+    public int countRoutes() {
+        String sql = "SELECT COUNT(*) AS total FROM Routes";
+        try {
+            Connection conn = getConnection();  // Giữ kết nối mở mà không đóng
+            PreparedStatement ps = conn.prepareStatement(sql);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     public void createRoute(AdminRoutes route) {

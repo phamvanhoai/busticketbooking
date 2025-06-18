@@ -49,8 +49,27 @@ public class AdminRoutesServlet extends HttpServlet {
             return;
         }
 // Fetch all routes
-        List<AdminRoutes> routesList = dao.getAllRoutes();
-        request.setAttribute("routes", routesList);
+        // Pagination setup
+    int requestsPerPage = 10;  // Số dòng mỗi trang
+    int currentPage = 1;  // Mặc định trang 1
+    if (request.getParameter("page") != null) {
+        try {
+            currentPage = Integer.parseInt(request.getParameter("page"));
+        } catch (NumberFormatException e) {
+            currentPage = 1;
+        }
+    }
+    int offset = (currentPage - 1) * requestsPerPage;
+
+    // Fetch routes with pagination
+    List<AdminRoutes> routesList = dao.getAllRoutes(offset, requestsPerPage);
+    int totalRoutes = dao.countRoutes();
+    int totalPages = (int) Math.ceil((double) totalRoutes / requestsPerPage);
+
+    // Set attributes for JSP
+    request.setAttribute("routes", routesList);
+    request.setAttribute("currentPage", currentPage);
+    request.setAttribute("totalPages", totalPages);
         request.getRequestDispatcher("/WEB-INF/admin/routes/routes.jsp")
                 .forward(request, response);
     }
