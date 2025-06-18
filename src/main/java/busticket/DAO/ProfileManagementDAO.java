@@ -2,10 +2,13 @@ package busticket.DAO;
 
 import busticket.db.DBContext;
 import busticket.model.Users;
+import busticket.util.PasswordUtils;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ProfileManagementDAO extends DBContext {
 
@@ -14,8 +17,6 @@ public class ProfileManagementDAO extends DBContext {
      */
     public Users getUserById(int userId) {
         String sql = "SELECT "
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
                 + "user_id, user_name, user_email, password, user_phone, "
                 + "role, user_status, birthdate, gender, user_address, user_created_at "
                 + "FROM Users WHERE user_id = ?";
@@ -24,22 +25,6 @@ public class ProfileManagementDAO extends DBContext {
             ps.setInt(1, userId);
 
             try ( ResultSet rs = ps.executeQuery()) {
-=======
-=======
->>>>>>> Stashed changes
-                   + "user_id, user_name, user_email, password, user_phone, "
-                   + "role, user_status, birthdate, gender, user_address, user_created_at "
-                   + "FROM Users WHERE user_id = ?";
-        try (Connection conn = this.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, userId);
-
-            try (ResultSet rs = ps.executeQuery()) {
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
                 if (rs.next()) {
                     Users u = new Users();
                     u.setUser_id(rs.getInt("user_id"));
@@ -58,34 +43,18 @@ public class ProfileManagementDAO extends DBContext {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            // Có thể throw new RuntimeException(e) hoặc log chi tiết hơn tuỳ yêu cầu
         }
         return null;
     }
 
-    /**
-     * Update user information
-     */
+// Cập nhật thông tin người dùng (bao gồm mật khẩu)
     public boolean updateUser(Users user) {
         String sql = "UPDATE Users SET "
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
                 + "user_name = ?, user_email = ?, password = ?, user_phone = ?, role = ?, "
                 + "user_status = ?, birthdate = ?, gender = ?, user_address = ? "
                 + "WHERE user_id = ?";
-        try ( Connection conn = this.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
-=======
-=======
->>>>>>> Stashed changes
-                   + "user_name = ?, user_email = ?, password = ?, user_phone = ?, role = ?, "
-                   + "user_status = ?, birthdate = ?, gender = ?, user_address = ? "
-                   + "WHERE user_id = ?";
-        try (Connection conn = this.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, user.getName());
             ps.setString(2, user.getEmail());
             ps.setString(3, user.getPassword());
@@ -98,81 +67,61 @@ public class ProfileManagementDAO extends DBContext {
             ps.setInt(10, user.getUser_id());
 
             int rowsUpdated = ps.executeUpdate();
-            return rowsUpdated > 0;  // If at least one row is updated, return true
+            return rowsUpdated > 0;
         } catch (SQLException e) {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
             e.printStackTrace();
->>>>>>> Stashed changes
-=======
-            e.printStackTrace();
->>>>>>> Stashed changes
         }
         return false;
     }
 
     /**
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-     * Change user password
+     * Thay đổi mật khẩu người dùng
      */
     public boolean changePassword(int userId, String newPassword) {
         String sql = "UPDATE Users SET password = ? WHERE user_id = ?";
-        try ( Connection conn = this.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            // Mã hóa mật khẩu mới
+            String hashedPassword = PasswordUtils.hashPassword(newPassword);
+            ps.setString(1, hashedPassword);
+            ps.setInt(2, userId);
 
-=======
-=======
->>>>>>> Stashed changes
-     * Check if the current password matches the one in the database.
-     */
-    public boolean checkPassword(int userId, String currentPassword) {
-        String sql = "SELECT COUNT(*) FROM Users WHERE user_id = ? AND password = ?";
-        try (Connection conn = this.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+            int rowsUpdated = ps.executeUpdate();
+            return rowsUpdated > 0;  // Nếu có ít nhất 1 dòng được cập nhật, trả về true
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public String getHashedPassword(int userId) {
+        String sql = "SELECT password FROM Users WHERE user_id = ?";
+        try ( Connection conn = this.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
-            ps.setString(2, currentPassword);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next() && rs.getInt(1) > 0) {
-                    return true;
+
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("password");
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return false;
+        return null;
     }
 
-    /**
-     * Update the user's password in the database.
-     */
+    // Cập nhật mật khẩu mới
     public boolean updatePassword(int userId, String newPassword) {
         String sql = "UPDATE Users SET password = ? WHERE user_id = ?";
-        try (Connection conn = this.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+        try ( Connection conn = new DBContext().getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, newPassword);
             ps.setInt(2, userId);
 
             int rowsUpdated = ps.executeUpdate();
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-            return rowsUpdated > 0; // If at least one row is updated, return true
-        } catch (SQLException e) {
-=======
             return rowsUpdated > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
->>>>>>> Stashed changes
-=======
-            return rowsUpdated > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
->>>>>>> Stashed changes
+        } catch (SQLException ex) {
+            Logger.getLogger(ProfileManagementDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return false;
     }
+
 }

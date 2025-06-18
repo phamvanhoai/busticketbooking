@@ -15,6 +15,16 @@
             View Profile
         </h1>
 
+        <%-- Check if there is a message stored in the session --%>
+        <c:if test="${not empty sessionScope.message}">
+            <div style="color: green; font-weight: bold;">
+                ${sessionScope.message}
+            </div>
+            <%-- Clear the message from session after it is displayed --%>
+            <c:remove var="message" scope="session" />
+        </c:if>
+
+
         <div class="flex flex-col md:flex-row items-center gap-10">
             <!-- Avatar -->
             <div class="flex flex-col items-center">
@@ -22,7 +32,7 @@
                     src="${pageContext.servletContext.contextPath}/assets/images/avt/avatar.png"
                     alt="Avatar"
                     class="w-48 h-48 rounded-full object-cover border-4 border-orange-400 shadow-md"
-                />
+                    />
                 <label class="mt-4 text-center">
                     <button class="bg-orange-500 text-white py-2 px-6 rounded-full font-medium hover:bg-orange-600 transition">
                         Choose Image
@@ -57,7 +67,7 @@
                     <select
                         class="w-full rounded-xl bg-gray-100 px-4 py-3 text-base shadow-inner text-gray-800 outline-none appearance-none"
                         disabled
-                    >
+                        >
                         <option value="Male"   ${userProfile.gender == 'Male'   ? 'selected' : ''}>Male</option>
                         <option value="Female" ${userProfile.gender == 'Female' ? 'selected' : ''}>Female</option>
                         <option value="Other"  ${userProfile.gender == 'Other'  ? 'selected' : ''}>Other</option>
@@ -88,7 +98,7 @@
                     </div>
                 </div>
 
-                
+
             </div>
         </div>
 

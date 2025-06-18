@@ -4,20 +4,21 @@
  */
 package busticket.controller;
 
-import busticket.DAO.ProfileManangementDAO;
+import busticket.DAO.ProfileManagementDAO;
 
 import busticket.model.Users;
+import busticket.util.PasswordUtils;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProfileManagementServlet extends HttpServlet {
 
-
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
      *
@@ -26,15 +27,19 @@ public class ProfileManagementServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-
-    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        // Kiểm tra session người dùng
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("currentUser") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
         // Get the path from the URL (excluding base path like "/ticket-management")
         String path = request.getPathInfo();
-        ProfileManagementDAO profileManangementDAO = new ProfileManagementDAO();
-
+        ProfileManagementDAO profileManagementDAO = new ProfileManagementDAO();
 
         if (path == null) {
             response.sendRedirect(request.getContextPath() + "/profile/view");
@@ -45,8 +50,6 @@ public class ProfileManagementServlet extends HttpServlet {
             case "/view":
 
                 // Retrieve the logged-in user from session
-
-                HttpSession session = request.getSession(false);
                 if (session == null) {
                     response.sendRedirect(request.getContextPath() + "/login");
                     return;
@@ -59,22 +62,14 @@ public class ProfileManagementServlet extends HttpServlet {
                 int userId = currentUser.getUser_id();
 
                 // Get the most recent user information from DB
-                Users profile = profileManangementDAO.getUserById(userId);
+                Users profile = profileManagementDAO.getUserById(userId);
                 // Pass the user profile to the JSP
                 request.setAttribute("userProfile", profile != null ? profile : currentUser);
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/view-profile.jsp")
                         .forward(request, response);
-
-
-                // Lấy lại thông tin user mới nhất từ DB
-                Users profile = profileManangementDAO.getUserById(userId);
-                // Đẩy xuống JSP
-                request.setAttribute("userProfile", profile != null ? profile : currentUser);
-                request.getRequestDispatcher("/WEB-INF/pages/profile-management/view-profile.jsp")
-                       .forward(request, response);
-
                 break;
             case "/update":
+
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/update-profile.jsp").forward(request, response);
                 break;
             case "/change-password":
@@ -86,11 +81,11 @@ public class ProfileManagementServlet extends HttpServlet {
         }
     }
 
-
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Retrieve the updated user data from the form
+
+        // Kiểm tra session người dùng
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("currentUser") == null) {
             response.sendRedirect(request.getContextPath() + "/login");
@@ -99,115 +94,134 @@ public class ProfileManagementServlet extends HttpServlet {
 
         Users currentUser = (Users) session.getAttribute("currentUser");
 
-        // Check if we are updating the user profile or changing the password
+        // Lấy action từ form (profile update or password change)
         String action = request.getParameter("action");
 
         if ("update".equals(action)) {
-            // Update profile data
-
-        // Handle update user profile
-        if (request.getPathInfo().equals("/update")) {
-
+            // Cập nhật thông tin người dùng
             String name = request.getParameter("name");
             String email = request.getParameter("email");
-            String password = request.getParameter("password");
             String phone = request.getParameter("phone");
             String role = request.getParameter("role");
             String status = request.getParameter("status");
             String gender = request.getParameter("gender");
             String address = request.getParameter("address");
+            String birthdate = request.getParameter("birthdate");
 
-            // Convert birthdate
-            java.sql.Timestamp birthdate = java.sql.Timestamp.valueOf(request.getParameter("birthdate") + " 00:00:00");
+            // Kiểm tra thông tin người dùng nhập vào
+            List<String> errorMessages = new ArrayList<>();
+            if (name == null || name.isEmpty()) {
+                errorMessages.add("Full Name is required.");
+            }
+            if (email == null || email.isEmpty()) {
+                errorMessages.add("Email is required.");
+            }
+            if (phone == null || phone.isEmpty()) {
+                errorMessages.add("Phone number is required.");
+            }
+            if (role == null || role.isEmpty()) {
+                errorMessages.add("Role is required.");
+            }
+            if (status == null || status.isEmpty()) {
+                errorMessages.add("Status is required.");
+            }
+            if (gender == null || gender.isEmpty()) {
+                errorMessages.add("Gender is required.");
+            }
+            if (address == null || address.isEmpty()) {
+                errorMessages.add("Address is required.");
+            }
 
-            // Create a new Users object with the updated data
-            Users updatedUser = new Users(currentUser.getUser_id(), name, email, password, phone, role, birthdate, gender, address, currentUser.getCreated_at());
+            // Validate ngày sinh nếu có
+            java.sql.Timestamp birthdateTimestamp = null;
+            if (birthdate != null && !birthdate.isEmpty()) {
+                try {
+                    birthdateTimestamp = java.sql.Timestamp.valueOf(birthdate + " 00:00:00");
+                } catch (IllegalArgumentException e) {
+                    errorMessages.add("Invalid birthdate format.");
+                }
+            }
 
-            // Use DAO to update the user's data in the database
+            // Nếu có lỗi, hiển thị lỗi và quay lại trang update profile
+            if (!errorMessages.isEmpty()) {
+                request.setAttribute("errors", errorMessages);
+                request.getRequestDispatcher("/WEB-INF/pages/profile-management/update-profile.jsp").forward(request, response);
+                return;
+            }
+
+            // Nếu mật khẩu được nhập, tiến hành hash mật khẩu trước khi lưu
+            String hashedPassword = currentUser.getPassword();  // Nếu không thay đổi mật khẩu thì giữ nguyên
+            String newPassword = request.getParameter("password");
+            if (newPassword != null && !newPassword.isEmpty()) {
+                hashedPassword = PasswordUtils.hashPassword(newPassword);  // Hash mật khẩu mới
+            }
+
+            // Tạo đối tượng Users mới với thông tin cập nhật
+            Users updatedUser = new Users(currentUser.getUser_id(), name, email, hashedPassword, phone, role, birthdateTimestamp, gender, address, currentUser.getCreated_at());
+
+            // Sử dụng DAO để cập nhật thông tin người dùng vào cơ sở dữ liệu
             ProfileManagementDAO profileDAO = new ProfileManagementDAO();
             boolean isUpdated = profileDAO.updateUser(updatedUser);
 
             if (isUpdated) {
-                // Update session with the new user data
+                // Cập nhật session với thông tin người dùng mới
                 session.setAttribute("currentUser", updatedUser);
-                // Redirect to the profile view page
-                response.sendRedirect(request.getContextPath() + "/profile/view");
+                response.sendRedirect(request.getContextPath() + "/profile/view");  // Redirect đến trang profile
             } else {
-                // If the update fails, set an error message and forward back to update profile page
+                // Nếu cập nhật không thành công, hiển thị lỗi và quay lại trang cập nhật
                 request.setAttribute("error", "Error updating profile.");
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/update-profile.jsp").forward(request, response);
             }
-
         } else if ("change-password".equals(action)) {
-            // Change password data
+            // Đoạn xử lý thay đổi mật khẩu trong doPost
+            // Lấy dữ liệu từ form
             String oldPassword = request.getParameter("oldPassword");
             String newPassword = request.getParameter("newPassword");
             String confirmPassword = request.getParameter("confirmPassword");
 
-            // Check if the new password and confirmation match
-
-        }
-
-        // Handle change password
-        if (request.getPathInfo().equals("/change-password")) {
-            String currentPassword = request.getParameter("currentPassword");
-            String newPassword = request.getParameter("newPassword");
-            String confirmPassword = request.getParameter("confirmPassword");
-
-            // Check if new password and confirm password match
+            // Kiểm tra nếu mật khẩu mới và xác nhận mật khẩu trùng khớp
             if (!newPassword.equals(confirmPassword)) {
                 request.setAttribute("error", "New password and confirmation do not match.");
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/change-password.jsp").forward(request, response);
                 return;
             }
 
-            // Check if the old password is correct
-            if (!oldPassword.equals(currentUser.getPassword())) {
-                request.setAttribute("error", "Old password is incorrect.");
-
-            // Use DAO to check the current password
+            // Kiểm tra mật khẩu cũ
             ProfileManagementDAO profileDAO = new ProfileManagementDAO();
-            boolean isPasswordValid = profileDAO.checkPassword(currentUser.getUser_id(), currentPassword);
-            if (!isPasswordValid) {
-                request.setAttribute("error", "Current password is incorrect.");
+            String hashedOldPassword = profileDAO.getHashedPassword(currentUser.getUser_id()); // Lấy mật khẩu đã mã hóa từ DB
 
+            // Kiểm tra nếu mật khẩu cũ đúng
+            boolean isOldPasswordValid = PasswordUtils.checkPassword(oldPassword, hashedOldPassword);
+
+            if (!isOldPasswordValid) {
+                request.setAttribute("error", "Old password is incorrect.");
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/change-password.jsp").forward(request, response);
                 return;
             }
 
-            // Update the password in the database
+            // Hash mật khẩu mới trước khi lưu
+            String hashedNewPassword = PasswordUtils.hashPassword(newPassword);
 
-            ProfileManagementDAO profileManagementDAO = new ProfileManagementDAO();
-            boolean isPasswordUpdated = profileManagementDAO.changePassword(currentUser.getUser_id(), newPassword);
+            // Cập nhật mật khẩu vào cơ sở dữ liệu
+            boolean isPasswordUpdated = profileDAO.updatePassword(currentUser.getUser_id(), hashedNewPassword);
 
             if (isPasswordUpdated) {
-                // Redirect to the profile view page after successful password change
-                response.sendRedirect(request.getContextPath() + "/profile/view");
-            } else {
-                // If update fails, show error message
-                request.setAttribute("error", "Failed to update password.");
-
-            boolean isPasswordUpdated = profileDAO.updatePassword(currentUser.getUser_id(), newPassword);
-            if (isPasswordUpdated) {
-                // Update session data with the new password
-                currentUser.setPassword(newPassword);
+                currentUser.setPassword(hashedNewPassword);
                 session.setAttribute("currentUser", currentUser);
+                request.setAttribute("message", "Password changed successfully.");
                 response.sendRedirect(request.getContextPath() + "/profile/view");
             } else {
-                request.setAttribute("error", "Error updating password.");
-
+                request.setAttribute("error", "Failed to update password.");
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/change-password.jsp").forward(request, response);
             }
         }
     }
-
 
     /**
      * Returns a short description of the servlet.
      *
      * @return a String containing servlet description
      */
-
     @Override
     public String getServletInfo() {
         return "Profile Management Servlet";
