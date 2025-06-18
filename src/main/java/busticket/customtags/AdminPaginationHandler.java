@@ -4,9 +4,10 @@
  */
 package busticket.customtags;
 
+import jakarta.servlet.jsp.JspException;
+import static jakarta.servlet.jsp.tagext.Tag.SKIP_BODY;
+import jakarta.servlet.jsp.tagext.TagSupport;
 import java.io.IOException;
-import javax.servlet.jsp.JspException;
-import javax.servlet.jsp.tagext.TagSupport;
 
 /**
  *

@@ -15,6 +15,7 @@ public class AdminBuses {
     private String busStatus;
     private String busCode;
     private int busTypeId;
+    private String busTypeName;
 
     public AdminBuses() {
     }
@@ -24,6 +25,26 @@ public class AdminBuses {
         this.busId = busId;
         this.plateNumber = plateNumber;
     }
+
+    public AdminBuses(String busCode, String plateNumber, int busTypeId, int capacity, String busStatus) {
+        this.busCode = busCode;
+        this.plateNumber = plateNumber;
+        this.busTypeId = busTypeId;
+        this.capacity = capacity;
+        this.busStatus = busStatus;
+    }
+
+    public AdminBuses(int busId, String busCode, String plateNumber, int busTypeId, String busTypeName, int capacity, String busStatus) {
+        this.busId = busId;
+        this.busCode = busCode;
+        this.plateNumber = plateNumber;
+        this.busTypeId = busTypeId;
+        this.busTypeName = busTypeName;
+        this.capacity = capacity;
+        this.busStatus = busStatus;
+    }
+
+    
     
     
 
@@ -73,6 +94,14 @@ public class AdminBuses {
 
     public void setBusTypeId(int busTypeId) {
         this.busTypeId = busTypeId;
+    }
+
+    public String getBusTypeName() {
+        return busTypeName;
+    }
+
+    public void setBusTypeName(String busTypeName) {
+        this.busTypeName = busTypeName;
     }
     
     
