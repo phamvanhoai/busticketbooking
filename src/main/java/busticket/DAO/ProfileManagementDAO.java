@@ -51,20 +51,17 @@ public class ProfileManagementDAO extends DBContext {
 // Cập nhật thông tin người dùng (bao gồm mật khẩu)
     public boolean updateUser(Users user) {
         String sql = "UPDATE Users SET "
-                + "user_name = ?, user_email = ?, password = ?, user_phone = ?, role = ?, "
-                + "user_status = ?, birthdate = ?, gender = ?, user_address = ? "
+                + "user_name = ?, user_email = ?, user_phone = ?, "
+                + "birthdate = ?, gender = ?, user_address = ? "
                 + "WHERE user_id = ?";
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, user.getName());
             ps.setString(2, user.getEmail());
-            ps.setString(3, user.getPassword());
-            ps.setString(4, user.getPhone());
-            ps.setString(5, user.getRole());
-            ps.setString(6, user.getStatus());
-            ps.setTimestamp(7, user.getBirthdate());
-            ps.setString(8, user.getGender());
-            ps.setString(9, user.getAddress());
-            ps.setInt(10, user.getUser_id());
+            ps.setString(3, user.getPhone());
+            ps.setTimestamp(4, user.getBirthdate());
+            ps.setString(5, user.getGender());
+            ps.setString(6, user.getAddress());
+            ps.setInt(7, user.getUser_id());
 
             int rowsUpdated = ps.executeUpdate();
             return rowsUpdated > 0;

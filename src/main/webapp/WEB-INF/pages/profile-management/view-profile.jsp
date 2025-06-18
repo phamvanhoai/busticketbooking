@@ -15,14 +15,15 @@
             View Profile
         </h1>
 
-        <%-- Check if there is a message stored in the session --%>
-        <c:if test="${not empty sessionScope.message}">
-            <div style="color: green; font-weight: bold;">
-                ${sessionScope.message}
-            </div>
-            <%-- Clear the message from session after it is displayed --%>
-            <c:remove var="message" scope="session" />
-        </c:if>
+        <!-- Display error messages if there are any -->
+        <c:choose>
+            <c:when test="${not empty message}">
+                <div style="color: green;">${message}</div>
+            </c:when>
+            <c:when test="${not empty error}">
+                <div style="color: red;">${error}</div>
+            </c:when>
+        </c:choose>
 
 
         <div class="flex flex-col md:flex-row items-center gap-10">
@@ -86,7 +87,7 @@
                 <div class="flex flex-col">
                     <label class="text-sm font-semibold text-gray-700 mb-1">Day of Birth</label>
                     <div class="px-4 py-3 bg-gray-100 rounded-xl shadow-inner text-gray-800 text-base min-h-[44px]">
-                        <fmt:formatDate value="${userProfile.birthdate}" pattern="yyyy-MM-dd" />
+                        <fmt:formatDate value="${userProfile.birthdate}" pattern="dd-MM-yyyy" />
                     </div>
                 </div>
 

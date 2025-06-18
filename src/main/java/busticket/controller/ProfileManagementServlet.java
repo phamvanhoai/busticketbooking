@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,23 +47,15 @@ public class ProfileManagementServlet extends HttpServlet {
             return;
         }
 
+        Users currentUser = (Users) session.getAttribute("currentUser");
+
+        int userId = currentUser.getUser_id();
+
+        // Get the most recent user information from DB
+        Users profile = profileManagementDAO.getUserById(userId);
+
         switch (path) {
             case "/view":
-
-                // Retrieve the logged-in user from session
-                if (session == null) {
-                    response.sendRedirect(request.getContextPath() + "/login");
-                    return;
-                }
-                Users currentUser = (Users) session.getAttribute("currentUser");
-                if (currentUser == null) {
-                    response.sendRedirect(request.getContextPath() + "/login");
-                    return;
-                }
-                int userId = currentUser.getUser_id();
-
-                // Get the most recent user information from DB
-                Users profile = profileManagementDAO.getUserById(userId);
                 // Pass the user profile to the JSP
                 request.setAttribute("userProfile", profile != null ? profile : currentUser);
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/view-profile.jsp")
@@ -70,6 +63,8 @@ public class ProfileManagementServlet extends HttpServlet {
                 break;
             case "/update":
 
+                // Pass the user profile to the JSP
+                request.setAttribute("userProfile", profile != null ? profile : currentUser);
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/update-profile.jsp").forward(request, response);
                 break;
             case "/change-password":
@@ -98,17 +93,26 @@ public class ProfileManagementServlet extends HttpServlet {
         String action = request.getParameter("action");
 
         if ("update".equals(action)) {
-            // Cập nhật thông tin người dùng
             String name = request.getParameter("name");
             String email = request.getParameter("email");
             String phone = request.getParameter("phone");
-            String role = request.getParameter("role");
-            String status = request.getParameter("status");
             String gender = request.getParameter("gender");
             String address = request.getParameter("address");
             String birthdate = request.getParameter("birthdate");
 
-            // Kiểm tra thông tin người dùng nhập vào
+            Timestamp birthdateTimestamp = null;
+
+            if (birthdate != null && !birthdate.isEmpty()) {
+                try {
+                    birthdateTimestamp = Timestamp.valueOf(birthdate + " 00:00:00");
+                } catch (IllegalArgumentException e) {
+                    request.setAttribute("error", "Invalid birthdate format.");
+                    request.getRequestDispatcher("/WEB-INF/pages/profile-management/update-profile.jsp").forward(request, response);
+                    return;
+                }
+            }
+
+            // Validate data
             List<String> errorMessages = new ArrayList<>();
             if (name == null || name.isEmpty()) {
                 errorMessages.add("Full Name is required.");
@@ -116,59 +120,24 @@ public class ProfileManagementServlet extends HttpServlet {
             if (email == null || email.isEmpty()) {
                 errorMessages.add("Email is required.");
             }
-            if (phone == null || phone.isEmpty()) {
-                errorMessages.add("Phone number is required.");
-            }
-            if (role == null || role.isEmpty()) {
-                errorMessages.add("Role is required.");
-            }
-            if (status == null || status.isEmpty()) {
-                errorMessages.add("Status is required.");
-            }
-            if (gender == null || gender.isEmpty()) {
-                errorMessages.add("Gender is required.");
-            }
-            if (address == null || address.isEmpty()) {
-                errorMessages.add("Address is required.");
-            }
+            // Add more validation checks here
 
-            // Validate ngày sinh nếu có
-            java.sql.Timestamp birthdateTimestamp = null;
-            if (birthdate != null && !birthdate.isEmpty()) {
-                try {
-                    birthdateTimestamp = java.sql.Timestamp.valueOf(birthdate + " 00:00:00");
-                } catch (IllegalArgumentException e) {
-                    errorMessages.add("Invalid birthdate format.");
-                }
-            }
-
-            // Nếu có lỗi, hiển thị lỗi và quay lại trang update profile
             if (!errorMessages.isEmpty()) {
                 request.setAttribute("errors", errorMessages);
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/update-profile.jsp").forward(request, response);
                 return;
             }
 
-            // Nếu mật khẩu được nhập, tiến hành hash mật khẩu trước khi lưu
-            String hashedPassword = currentUser.getPassword();  // Nếu không thay đổi mật khẩu thì giữ nguyên
-            String newPassword = request.getParameter("password");
-            if (newPassword != null && !newPassword.isEmpty()) {
-                hashedPassword = PasswordUtils.hashPassword(newPassword);  // Hash mật khẩu mới
-            }
-
-            // Tạo đối tượng Users mới với thông tin cập nhật
-            Users updatedUser = new Users(currentUser.getUser_id(), name, email, hashedPassword, phone, role, birthdateTimestamp, gender, address, currentUser.getCreated_at());
-
-            // Sử dụng DAO để cập nhật thông tin người dùng vào cơ sở dữ liệu
+            // Proceed with updating the user profile
             ProfileManagementDAO profileDAO = new ProfileManagementDAO();
-            boolean isUpdated = profileDAO.updateUser(updatedUser);
+            boolean isUpdated = profileDAO.updateUser(new Users(currentUser.getUser_id(), name, email, phone, birthdateTimestamp, gender, address));
 
             if (isUpdated) {
-                // Cập nhật session với thông tin người dùng mới
-                session.setAttribute("currentUser", updatedUser);
-                response.sendRedirect(request.getContextPath() + "/profile/view");  // Redirect đến trang profile
+                currentUser.setName(name);
+                currentUser.setEmail(email);
+                session.setAttribute("currentUser", currentUser);
+                response.sendRedirect(request.getContextPath() + "/profile/view");
             } else {
-                // Nếu cập nhật không thành công, hiển thị lỗi và quay lại trang cập nhật
                 request.setAttribute("error", "Error updating profile.");
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/update-profile.jsp").forward(request, response);
             }

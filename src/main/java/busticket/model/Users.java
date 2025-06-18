@@ -52,6 +52,18 @@ public class Users {
         this.address = address;
     }
 
+    public Users(int user_id, String name, String email, String phone, Timestamp birthdate, String gender, String address) {
+        this.user_id = user_id;
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+        this.birthdate = birthdate;
+        this.gender = gender;
+        this.address = address;
+    }
+    
+    
+
     //FOR SIGNUP
     public Users(String name, String email, String password) {
         this.name = name;
