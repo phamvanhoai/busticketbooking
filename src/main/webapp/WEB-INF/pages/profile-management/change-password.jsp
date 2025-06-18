@@ -14,6 +14,10 @@
             Change Password
         </h2>
 
+<<<<<<< Updated upstream
+=======
+        <!-- Display error messages if there are any -->
+>>>>>>> Stashed changes
         <c:if test="${not empty requestScope.errors}">
             <div style="color: red;">
                 <c:forEach var="error" items="${requestScope.errors}">
@@ -22,7 +26,11 @@
             </div>
         </c:if>
 
+<<<<<<< Updated upstream
         <!-- Tabs -->
+=======
+        <!-- Tabs for login/register -->
+>>>>>>> Stashed changes
         <div class="flex justify-center mb-8 border-b border-gray-200">
             <a href="login" class="px-6 py-2 font-semibold text-sm border-b-2 text-gray-400 border-transparent">
                 LOG IN
@@ -34,11 +42,16 @@
 
         <!-- Change Password Form -->
         <form action="${pageContext.servletContext.contextPath}/profile/change-password" method="POST" class="space-y-5">
+<<<<<<< Updated upstream
             <!-- Old Password -->
+=======
+            <!-- Current Password -->
+>>>>>>> Stashed changes
             <div class="relative">
                 <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-[#ef5222]"></i>
                 <input
                     type="password"
+<<<<<<< Updated upstream
                     name="oldPassword"
                     id="oldPassword"
                     placeholder="Old Password"
@@ -50,6 +63,15 @@
                     ></i>
             </div>
 
+=======
+                    name="currentPassword"
+                    id="currentPassword"
+                    placeholder="Current Password"
+                    class="w-full pl-12 pr-10 py-3 border border-[#fc7b4c] rounded-xl text-sm placeholder-[#bdbdbd]"
+                    required />
+            </div>
+            
+>>>>>>> Stashed changes
             <!-- New Password -->
             <div class="relative">
                 <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-[#ef5222]"></i>
@@ -90,6 +112,7 @@
 
     <%@include file="/WEB-INF/include/footer.jsp" %>
 
+<<<<<<< Updated upstream
     <!-- Toggle Script -->
     <script>
         // Toggle visibility for Old Password
@@ -104,6 +127,10 @@
         });
 
         // Toggle visibility for New Password
+=======
+    <!-- Toggle Password Visibility Script -->
+    <script>
+>>>>>>> Stashed changes
         const toggleNewPassword = document.getElementById("toggleNewPassword");
         const newPasswordInput = document.getElementById("newPassword");
 
@@ -114,7 +141,10 @@
             this.classList.toggle("fa-eye");
         });
 
+<<<<<<< Updated upstream
         // Toggle visibility for Confirm New Password
+=======
+>>>>>>> Stashed changes
         const toggleConfirmPassword = document.getElementById("toggleConfirmPassword");
         const confirmPasswordInput = document.getElementById("confirmPassword");
 

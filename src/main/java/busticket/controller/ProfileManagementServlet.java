@@ -42,7 +42,11 @@ public class ProfileManagementServlet extends HttpServlet {
                 // Pass the user profile to the JSP
                 request.setAttribute("userProfile", profile != null ? profile : currentUser);
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/view-profile.jsp")
+<<<<<<< Updated upstream
                         .forward(request, response);
+=======
+                       .forward(request, response);
+>>>>>>> Stashed changes
                 break;
             case "/update":
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/update-profile.jsp").forward(request, response);
@@ -68,11 +72,16 @@ public class ProfileManagementServlet extends HttpServlet {
 
         Users currentUser = (Users) session.getAttribute("currentUser");
 
+<<<<<<< Updated upstream
         // Check if we are updating the user profile or changing the password
         String action = request.getParameter("action");
 
         if ("update".equals(action)) {
             // Update profile data
+=======
+        // Handle update user profile
+        if (request.getPathInfo().equals("/update")) {
+>>>>>>> Stashed changes
             String name = request.getParameter("name");
             String email = request.getParameter("email");
             String password = request.getParameter("password");
@@ -102,6 +111,7 @@ public class ProfileManagementServlet extends HttpServlet {
                 request.setAttribute("error", "Error updating profile.");
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/update-profile.jsp").forward(request, response);
             }
+<<<<<<< Updated upstream
         } else if ("change-password".equals(action)) {
             // Change password data
             String oldPassword = request.getParameter("oldPassword");
@@ -109,20 +119,40 @@ public class ProfileManagementServlet extends HttpServlet {
             String confirmPassword = request.getParameter("confirmPassword");
 
             // Check if the new password and confirmation match
+=======
+        }
+
+        // Handle change password
+        if (request.getPathInfo().equals("/change-password")) {
+            String currentPassword = request.getParameter("currentPassword");
+            String newPassword = request.getParameter("newPassword");
+            String confirmPassword = request.getParameter("confirmPassword");
+
+            // Check if new password and confirm password match
+>>>>>>> Stashed changes
             if (!newPassword.equals(confirmPassword)) {
                 request.setAttribute("error", "New password and confirmation do not match.");
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/change-password.jsp").forward(request, response);
                 return;
             }
 
+<<<<<<< Updated upstream
             // Check if the old password is correct
             if (!oldPassword.equals(currentUser.getPassword())) {
                 request.setAttribute("error", "Old password is incorrect.");
+=======
+            // Use DAO to check the current password
+            ProfileManagementDAO profileDAO = new ProfileManagementDAO();
+            boolean isPasswordValid = profileDAO.checkPassword(currentUser.getUser_id(), currentPassword);
+            if (!isPasswordValid) {
+                request.setAttribute("error", "Current password is incorrect.");
+>>>>>>> Stashed changes
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/change-password.jsp").forward(request, response);
                 return;
             }
 
             // Update the password in the database
+<<<<<<< Updated upstream
             ProfileManagementDAO profileManagementDAO = new ProfileManagementDAO();
             boolean isPasswordUpdated = profileManagementDAO.changePassword(currentUser.getUser_id(), newPassword);
 
@@ -132,6 +162,16 @@ public class ProfileManagementServlet extends HttpServlet {
             } else {
                 // If update fails, show error message
                 request.setAttribute("error", "Failed to update password.");
+=======
+            boolean isPasswordUpdated = profileDAO.updatePassword(currentUser.getUser_id(), newPassword);
+            if (isPasswordUpdated) {
+                // Update session data with the new password
+                currentUser.setPassword(newPassword);
+                session.setAttribute("currentUser", currentUser);
+                response.sendRedirect(request.getContextPath() + "/profile/view");
+            } else {
+                request.setAttribute("error", "Error updating password.");
+>>>>>>> Stashed changes
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/change-password.jsp").forward(request, response);
             }
         }

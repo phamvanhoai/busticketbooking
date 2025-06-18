@@ -14,6 +14,7 @@ public class ProfileManagementDAO extends DBContext {
      */
     public Users getUserById(int userId) {
         String sql = "SELECT "
+<<<<<<< Updated upstream
                 + "user_id, user_name, user_email, password, user_phone, "
                 + "role, user_status, birthdate, gender, user_address, user_created_at "
                 + "FROM Users WHERE user_id = ?";
@@ -22,6 +23,17 @@ public class ProfileManagementDAO extends DBContext {
             ps.setInt(1, userId);
 
             try ( ResultSet rs = ps.executeQuery()) {
+=======
+                   + "user_id, user_name, user_email, password, user_phone, "
+                   + "role, user_status, birthdate, gender, user_address, user_created_at "
+                   + "FROM Users WHERE user_id = ?";
+        try (Connection conn = this.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, userId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+>>>>>>> Stashed changes
                 if (rs.next()) {
                     Users u = new Users();
                     u.setUser_id(rs.getInt("user_id"));
@@ -49,10 +61,18 @@ public class ProfileManagementDAO extends DBContext {
      */
     public boolean updateUser(Users user) {
         String sql = "UPDATE Users SET "
+<<<<<<< Updated upstream
                 + "user_name = ?, user_email = ?, password = ?, user_phone = ?, role = ?, "
                 + "user_status = ?, birthdate = ?, gender = ?, user_address = ? "
                 + "WHERE user_id = ?";
         try ( Connection conn = this.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+=======
+                   + "user_name = ?, user_email = ?, password = ?, user_phone = ?, role = ?, "
+                   + "user_status = ?, birthdate = ?, gender = ?, user_address = ? "
+                   + "WHERE user_id = ?";
+        try (Connection conn = this.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+>>>>>>> Stashed changes
 
             ps.setString(1, user.getName());
             ps.setString(2, user.getEmail());
@@ -68,23 +88,62 @@ public class ProfileManagementDAO extends DBContext {
             int rowsUpdated = ps.executeUpdate();
             return rowsUpdated > 0;  // If at least one row is updated, return true
         } catch (SQLException e) {
+<<<<<<< Updated upstream
+=======
+            e.printStackTrace();
+>>>>>>> Stashed changes
         }
         return false;
     }
 
     /**
+<<<<<<< Updated upstream
      * Change user password
      */
     public boolean changePassword(int userId, String newPassword) {
         String sql = "UPDATE Users SET password = ? WHERE user_id = ?";
         try ( Connection conn = this.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
 
+=======
+     * Check if the current password matches the one in the database.
+     */
+    public boolean checkPassword(int userId, String currentPassword) {
+        String sql = "SELECT COUNT(*) FROM Users WHERE user_id = ? AND password = ?";
+        try (Connection conn = this.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setString(2, currentPassword);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    return true;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Update the user's password in the database.
+     */
+    public boolean updatePassword(int userId, String newPassword) {
+        String sql = "UPDATE Users SET password = ? WHERE user_id = ?";
+        try (Connection conn = this.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+>>>>>>> Stashed changes
             ps.setString(1, newPassword);
             ps.setInt(2, userId);
 
             int rowsUpdated = ps.executeUpdate();
+<<<<<<< Updated upstream
             return rowsUpdated > 0; // If at least one row is updated, return true
         } catch (SQLException e) {
+=======
+            return rowsUpdated > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+>>>>>>> Stashed changes
         }
         return false;
     }
