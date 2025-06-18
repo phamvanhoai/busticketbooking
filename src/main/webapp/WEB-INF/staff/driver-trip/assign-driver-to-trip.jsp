@@ -88,7 +88,7 @@
                             <td class="py-2 px-4">
                                 <button class="text-blue-800 hover:text-blue-600 flex items-center gap-1"
                                         onclick="openAssignModal('${trip.tripId}')">
-                                    <i class="fas fa-user-plus text-blue-700"></i> Assign
+                                    <i class="fas fa-user-edit text-blue-700"></i> Assign
                                 </button>
                             </td>
 
