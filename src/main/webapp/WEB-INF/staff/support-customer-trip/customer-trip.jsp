@@ -5,35 +5,16 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib prefix="fbus" uri="/WEB-INF/tags/implicit.tld" %>
 <%@include file="/WEB-INF/include/staff/staff-header.jsp" %>
 
-
+<c:set var="baseUrl" value="${pageContext.request.contextPath}/staff/support-customer-trip" />
 
 <body class="bg-[#f9fafb]">
-
     <div class="p-6 space-y-6">
         <h2 class="text-2xl font-bold text-orange-600">Support Change Trip for Customer</h2>
-
-        <!-- Search & Filter -->
-        <div class="flex flex-wrap items-center gap-4">
-            <div class="flex flex-1 max-w-md">
-                <input
-                    type="text"
-                    placeholder="Search by Request ID or Customer"
-                    class="flex-1 border border-gray-300 rounded-l-lg px-4 py-2 focus:outline-none"
-                    />
-                <button class="bg-orange-500 hover:bg-orange-600 text-white px-4 rounded-r-lg">
-                    
-                    Search
-                </button>
-            </div>
-            <select class="border border-gray-300 rounded-lg px-4 py-2">
-                <option value="All">All Statuses</option>
-                <option value="Pending">Pending</option>
-                <option value="Approved">Approved</option>
-                <option value="Rejected">Rejected</option>
-            </select>
-        </div>
 
         <!-- Table -->
         <div class="overflow-x-auto bg-white rounded-2xl shadow">
@@ -43,102 +24,69 @@
                         <th class="px-6 py-3 text-left font-medium text-orange-600">Request ID</th>
                         <th class="px-6 py-3 text-left font-medium text-orange-600">Customer</th>
                         <th class="px-6 py-3 text-left font-medium text-orange-600">Old Trip</th>
-                        <th class="px-6 py-3 text-left font-medium text-orange-600">New Trip</th>
+                        <th class="px-6 py-3 text-left font-medium text-orange-600">Reason</th>
                         <th class="px-6 py-3 text-left font-medium text-orange-600">Date</th>
                         <th class="px-6 py-3 text-left font-medium text-orange-600">Status</th>
                         <th class="px-6 py-3 text-left font-medium text-orange-600">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Row 1 -->
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-6 py-4">REQ1</td>
-                        <td class="px-6 py-4">Customer 1</td>
-                        <td class="px-6 py-4">HCM → Can Tho</td>
-                        <td class="px-6 py-4">HCM → Vung Tau</td>
-                        <td class="px-6 py-4">10/06/2025</td>
-                        <td class="px-6 py-4">
-                            <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700">Pending</span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <button class="flex items-center gap-1 text-blue-600 hover:underline">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="text-blue-600 text-xl" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg> View
-                            </button>
-                        </td>
-                    </tr>
+                    <c:forEach var="req" items="${listRequest}">
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-6 py-4">REQ${req.requestId}</td>
+                            <td class="px-6 py-4">${req.customerName}</td>
+                            <td class="px-6 py-4">${req.oldTripName}</td>
+                            <td class="px-6 py-4">${req.newTripName}</td>
+                            <td class="px-6 py-4">
+                                <fmt:formatDate value="${req.requestDate}" pattern="dd/MM/yyyy" />
+                            </td>
+                            <td class="px-6 py-4">
+                                <c:choose>
+                                    <c:when test="${req.requestStatus == 'Pending'}">
+                                        <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700">Pending</span>
+                                    </c:when>
+                                    <c:when test="${req.requestStatus == 'Approved'}">
+                                        <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">Approved</span>
+                                    </c:when>
+                                    <c:when test="${req.requestStatus == 'Rejected'}">
+                                        <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700">Rejected</span>
+                                    </c:when>
+                                </c:choose>
+                            </td>
+                            <td class="px-6 py-4">
+                                <c:if test="${req.requestStatus == 'Pending'}">
+                                    <form action="${pageContext.request.contextPath}/staff/support-customer-trip" method="post" style="display:inline;">
+                                        <input type="hidden" name="action" value="approve" />
+                                        <input type="hidden" name="requestId" value="${req.requestId}" />
+                                        <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg mr-2">Approve</button>
+                                    </form>
+                                    <form action="${pageContext.request.contextPath}/staff/support-customer-trip" method="post" style="display:inline;">
+                                        <input type="hidden" name="action" value="reject" />
+                                        <input type="hidden" name="requestId" value="${req.requestId}" />
+                                        <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg">Reject</button>
+                                    </form>
+                                </c:if>
+                            </td>
+                        </tr>
+                    </c:forEach>
 
-                    <!-- Row 2 -->
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-6 py-4">REQ2</td>
-                        <td class="px-6 py-4">Customer 2</td>
-                        <td class="px-6 py-4">Can Tho → Chau Doc</td>
-                        <td class="px-6 py-4">Da Nang → Hue</td>
-                        <td class="px-6 py-4">11/06/2025</td>
-                        <td class="px-6 py-4">
-                            <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">Approved</span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <button class="flex items-center gap-1 text-blue-600 hover:underline">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="text-blue-600 text-xl" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg> View
-                            </button>
-                        </td>
-                    </tr>
-
-                    <!-- Row 3 -->
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-6 py-4">REQ3</td>
-                        <td class="px-6 py-4">Customer 3</td>
-                        <td class="px-6 py-4">HCM → Can Tho</td>
-                        <td class="px-6 py-4">HCM → Vung Tau</td>
-                        <td class="px-6 py-4">12/06/2025</td>
-                        <td class="px-6 py-4">
-                            <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700">Rejected</span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <button class="flex items-center gap-1 text-blue-600 hover:underline">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="text-blue-600 text-xl" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg> View
-                            </button>
-                        </td>
-                    </tr>
-
-                    <!-- Row 4 -->
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-6 py-4">REQ4</td>
-                        <td class="px-6 py-4">Customer 4</td>
-                        <td class="px-6 py-4">Can Tho → Chau Doc</td>
-                        <td class="px-6 py-4">Da Nang → Hue</td>
-                        <td class="px-6 py-4">13/06/2025</td>
-                        <td class="px-6 py-4">
-                            <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700">Pending</span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <button class="flex items-center gap-1 text-blue-600 hover:underline">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="text-blue-600 text-xl" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg> View
-                            </button>
-                        </td>
-                    </tr>
+                    <c:if test="${empty listRequest}">
+                        <tr>
+                            <td colspan="7" class="text-center text-gray-500 py-6">No data available.</td>
+                        </tr>
+                    </c:if>
                 </tbody>
             </table>
         </div>
 
         <!-- Pagination -->
-        <div class="flex justify-center mt-6 gap-2">
-            <button class="px-3 py-1 rounded-md border bg-orange-500 text-white">1</button>
-            <button class="px-3 py-1 rounded-md border bg-white text-orange-500 border-orange-300 hover:bg-orange-100">2</button>
-            <button class="px-3 py-1 rounded-md border bg-white text-orange-500 border-orange-300 hover:bg-orange-100">3</button>
-            <button class="px-3 py-1 rounded-md border bg-white text-orange-500 border-orange-300 hover:bg-orange-100">4</button>
+        <div class="flex justify-center space-x-2 mt-6">
+            <fbus:adminpagination
+                currentPage="${currentPage}"
+                totalPages="${totalPages}"
+                url="${baseUrl}" />
         </div>
-
     </div>
+        <%-- CONTENT HERE--%>
 
-    <%-- CONTENT HERE--%>
-
-    <%@include file="/WEB-INF/include/staff/staff-footer.jsp" %>
+        <%@include file="/WEB-INF/include/staff/staff-footer.jsp" %>
