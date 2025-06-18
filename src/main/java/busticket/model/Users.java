@@ -11,7 +11,7 @@ import java.sql.Timestamp;
  * @author Pham Van Hoai - CE181744
  */
 public class Users {
-    
+
     private int user_id;
     private String name;
     private String email;
@@ -51,14 +51,13 @@ public class Users {
         this.created_at = created_at;
         this.address = address;
     }
+
     //FOR SIGNUP
     public Users(String name, String email, String password) {
         this.name = name;
         this.email = email;
         this.password = password;
     }
-    
-    
 
     public int getUser_id() {
         return user_id;
@@ -147,6 +146,5 @@ public class Users {
     public void setCreated_at(Timestamp created_at) {
         this.created_at = created_at;
     }
-    
-    
+
 }
