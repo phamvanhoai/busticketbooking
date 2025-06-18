@@ -17,11 +17,11 @@
     <div class="bg-white border border-red-200 rounded-2xl shadow-lg p-8">
       <!-- Details -->
       <div class="space-y-3 text-gray-800">
-        <p><span class="font-medium">Bus Code:</span> BUS001</p>
-        <p><span class="font-medium">Plate Number:</span> 51F-123.45</p>
-        <p><span class="font-medium">Vehicle Type:</span> Limousine</p>
-        <p><span class="font-medium">Capacity:</span> 40 seats</p>
-        <p><span class="font-medium">Status:</span> Active</p>
+        <p><span class="font-medium">Bus Code:</span> ${bus.busCode}</p>
+        <p><span class="font-medium">Plate Number:</span> ${bus.plateNumber}</p>
+        <p><span class="font-medium">Vehicle Type:</span> ${bus.busTypeName}</p>
+        <p><span class="font-medium">Capacity:</span> ${bus.capacity} seats</p>
+        <p><span class="font-medium">Status:</span> ${bus.busStatus}</p>
       </div>
 
       <!-- Warning -->
@@ -39,16 +39,22 @@
         >
           Cancel
         </button>
-        <button
-          type="button"
-          onclick="alert('Bus BUS001 deleted')"
-          class="px-6 py-3 bg-[#EF5222] text-white rounded-xl hover:bg-opacity-90 transition"
-        >
-          Delete
-        </button>
+        
+        <!-- Form to submit the delete request -->
+        <form action="${pageContext.request.contextPath}/admin/buses" method="post" style="display:inline;">
+          <input type="hidden" name="action" value="delete" />
+                    <input type="hidden" name="busId" value="${bus.busId}"/>
+          <button
+            type="submit"
+            class="px-6 py-3 bg-[#EF5222] text-white rounded-xl hover:bg-opacity-90 transition"
+          >
+            Delete
+          </button>
+        </form>
       </div>
     </div>
   </div>
+
 <%-- CONTENT HERE--%>
 
 <%@include file="/WEB-INF/include/admin/admin-footer.jsp" %>

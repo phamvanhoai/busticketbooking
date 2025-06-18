@@ -18,7 +18,7 @@ import java.util.logging.Logger;
  */
 public class DBContext {
 
-    private final String DB_URL = "jdbc:sqlserver://localhost\\BusTicketDatabase:1433;databaseName=BusTicket;encrypt=true;trustServerCertificate=true";
+private final String DB_URL = "jdbc:sqlserver://localhost\\BusTicketDatabase:1433;databaseName=BusTicket;encrypt=true;trustServerCertificate=true";
     private final String DB_USER = "sa";
     private final String DB_PWD = "123";
 
@@ -30,13 +30,13 @@ public class DBContext {
         }
     }
 
+    
     public Connection getConnection() throws SQLException {
         return DriverManager.getConnection(DB_URL, DB_USER, DB_PWD);
     }
-
     // Phuong thuc cac lenh INSERT, UPDATE, DELETE
-    public int execQuery(String query, Object[] params) throws SQLException {
-        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+        public int execQuery(String query, Object[] params) throws SQLException {
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
             if (params != null) {
                 for (int i = 0; i < params.length; i++) {
                     ps.setObject(i + 1, params[i]);
@@ -46,7 +46,7 @@ public class DBContext {
         }
     }
 
-    public ResultSet execSelectQuery(String query, Object[] params) throws SQLException {
+     public ResultSet execSelectQuery(String query, Object[] params) throws SQLException {
         Connection conn = getConnection(); // giữ conn mở để ResultSet vẫn dùng được
         PreparedStatement ps = conn.prepareStatement(query);
         if (params != null) {
@@ -56,8 +56,8 @@ public class DBContext {
         }
         return ps.executeQuery(); // conn phải được đóng sau khi dùng ResultSet
     }
-
-    public ResultSet execSelectQuery(String query) throws SQLException {
+    
+     public ResultSet execSelectQuery(String query) throws SQLException {
         return execSelectQuery(query, null);
     }
 }

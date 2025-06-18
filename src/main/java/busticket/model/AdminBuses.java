@@ -44,8 +44,24 @@ public class AdminBuses {
         this.busStatus = busStatus;
     }
 
+    public AdminBuses(int busId, String busCode, String plateNumber, int capacity, String busStatus, String busTypeName) {
+        this.busId = busId;
+        this.busCode = busCode;
+        this.plateNumber = plateNumber;
+        this.capacity = capacity;
+        this.busStatus = busStatus;
+        this.busTypeName = busTypeName;
+    }
     
-    
+    public AdminBuses(int busId, String busCode, String plateNumber, int capacity, String busStatus, int busTypeId) {
+        this.busId = busId;
+        this.busCode = busCode;
+        this.plateNumber = plateNumber;
+        this.capacity = capacity;
+        this.busStatus = busStatus;
+        this.busTypeId = busTypeId;
+    }
+
     
 
     public int getBusId() {

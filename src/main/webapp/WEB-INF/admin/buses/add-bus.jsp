@@ -11,6 +11,17 @@
 <body class="bg-gray-50">
     <div class="mt-10 p-8 bg-white rounded-2xl shadow-lg border border-[#EF5222]">
         <h1 class="text-3xl font-bold text-[#EF5222] mb-6">Create New Bus</h1>
+
+        <!-- Display error messages if there are any -->
+        <c:choose>
+            <c:when test="${not empty message}">
+                <div style="color: green;">${message}</div>
+            </c:when>
+            <c:when test="${not empty error}">
+                <div style="color: red;">${error}</div>
+            </c:when>
+        </c:choose>
+
         <!-- form action trỏ về servlet xử lý POST -->
         <form action="${pageContext.servletContext.contextPath}/admin/buses" method="post" class="space-y-6">
             <input type="hidden" name="action" value="add"/>
