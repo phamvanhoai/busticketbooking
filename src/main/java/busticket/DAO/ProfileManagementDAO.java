@@ -15,6 +15,7 @@ public class ProfileManagementDAO extends DBContext {
     public Users getUserById(int userId) {
         String sql = "SELECT "
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 + "user_id, user_name, user_email, password, user_phone, "
                 + "role, user_status, birthdate, gender, user_address, user_created_at "
                 + "FROM Users WHERE user_id = ?";
@@ -24,6 +25,8 @@ public class ProfileManagementDAO extends DBContext {
 
             try ( ResultSet rs = ps.executeQuery()) {
 =======
+=======
+>>>>>>> Stashed changes
                    + "user_id, user_name, user_email, password, user_phone, "
                    + "role, user_status, birthdate, gender, user_address, user_created_at "
                    + "FROM Users WHERE user_id = ?";
@@ -33,6 +36,9 @@ public class ProfileManagementDAO extends DBContext {
             ps.setInt(1, userId);
 
             try (ResultSet rs = ps.executeQuery()) {
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 if (rs.next()) {
                     Users u = new Users();
@@ -62,16 +68,22 @@ public class ProfileManagementDAO extends DBContext {
     public boolean updateUser(Users user) {
         String sql = "UPDATE Users SET "
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 + "user_name = ?, user_email = ?, password = ?, user_phone = ?, role = ?, "
                 + "user_status = ?, birthdate = ?, gender = ?, user_address = ? "
                 + "WHERE user_id = ?";
         try ( Connection conn = this.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
 =======
+=======
+>>>>>>> Stashed changes
                    + "user_name = ?, user_email = ?, password = ?, user_phone = ?, role = ?, "
                    + "user_status = ?, birthdate = ?, gender = ?, user_address = ? "
                    + "WHERE user_id = ?";
         try (Connection conn = this.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
             ps.setString(1, user.getName());
@@ -89,6 +101,10 @@ public class ProfileManagementDAO extends DBContext {
             return rowsUpdated > 0;  // If at least one row is updated, return true
         } catch (SQLException e) {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+            e.printStackTrace();
+>>>>>>> Stashed changes
 =======
             e.printStackTrace();
 >>>>>>> Stashed changes
@@ -98,6 +114,7 @@ public class ProfileManagementDAO extends DBContext {
 
     /**
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
      * Change user password
      */
     public boolean changePassword(int userId, String newPassword) {
@@ -105,6 +122,8 @@ public class ProfileManagementDAO extends DBContext {
         try ( Connection conn = this.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
 
 =======
+=======
+>>>>>>> Stashed changes
      * Check if the current password matches the one in the database.
      */
     public boolean checkPassword(int userId, String currentPassword) {
@@ -131,14 +150,23 @@ public class ProfileManagementDAO extends DBContext {
         String sql = "UPDATE Users SET password = ? WHERE user_id = ?";
         try (Connection conn = this.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             ps.setString(1, newPassword);
             ps.setInt(2, userId);
 
             int rowsUpdated = ps.executeUpdate();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             return rowsUpdated > 0; // If at least one row is updated, return true
         } catch (SQLException e) {
+=======
+            return rowsUpdated > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+>>>>>>> Stashed changes
 =======
             return rowsUpdated > 0;
         } catch (SQLException e) {

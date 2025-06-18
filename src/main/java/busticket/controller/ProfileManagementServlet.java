@@ -11,7 +11,11 @@ import jakarta.servlet.http.HttpSession;
 
 public class ProfileManagementServlet extends HttpServlet {
 
+<<<<<<< Updated upstream
     @Override
+=======
+ @Override
+>>>>>>> Stashed changes
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // Get the path from the URL (excluding base path like "/ticket-management")
@@ -43,7 +47,11 @@ public class ProfileManagementServlet extends HttpServlet {
                 request.setAttribute("userProfile", profile != null ? profile : currentUser);
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/view-profile.jsp")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                         .forward(request, response);
+=======
+                       .forward(request, response);
+>>>>>>> Stashed changes
 =======
                        .forward(request, response);
 >>>>>>> Stashed changes
@@ -73,11 +81,16 @@ public class ProfileManagementServlet extends HttpServlet {
         Users currentUser = (Users) session.getAttribute("currentUser");
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // Check if we are updating the user profile or changing the password
         String action = request.getParameter("action");
 
         if ("update".equals(action)) {
             // Update profile data
+=======
+        // Handle update user profile
+        if (request.getPathInfo().equals("/update")) {
+>>>>>>> Stashed changes
 =======
         // Handle update user profile
         if (request.getPathInfo().equals("/update")) {
@@ -112,6 +125,7 @@ public class ProfileManagementServlet extends HttpServlet {
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/update-profile.jsp").forward(request, response);
             }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         } else if ("change-password".equals(action)) {
             // Change password data
             String oldPassword = request.getParameter("oldPassword");
@@ -120,6 +134,8 @@ public class ProfileManagementServlet extends HttpServlet {
 
             // Check if the new password and confirmation match
 =======
+=======
+>>>>>>> Stashed changes
         }
 
         // Handle change password
@@ -129,6 +145,9 @@ public class ProfileManagementServlet extends HttpServlet {
             String confirmPassword = request.getParameter("confirmPassword");
 
             // Check if new password and confirm password match
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             if (!newPassword.equals(confirmPassword)) {
                 request.setAttribute("error", "New password and confirmation do not match.");
@@ -137,21 +156,28 @@ public class ProfileManagementServlet extends HttpServlet {
             }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             // Check if the old password is correct
             if (!oldPassword.equals(currentUser.getPassword())) {
                 request.setAttribute("error", "Old password is incorrect.");
 =======
+=======
+>>>>>>> Stashed changes
             // Use DAO to check the current password
             ProfileManagementDAO profileDAO = new ProfileManagementDAO();
             boolean isPasswordValid = profileDAO.checkPassword(currentUser.getUser_id(), currentPassword);
             if (!isPasswordValid) {
                 request.setAttribute("error", "Current password is incorrect.");
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/change-password.jsp").forward(request, response);
                 return;
             }
 
             // Update the password in the database
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
             ProfileManagementDAO profileManagementDAO = new ProfileManagementDAO();
             boolean isPasswordUpdated = profileManagementDAO.changePassword(currentUser.getUser_id(), newPassword);
@@ -163,6 +189,8 @@ public class ProfileManagementServlet extends HttpServlet {
                 // If update fails, show error message
                 request.setAttribute("error", "Failed to update password.");
 =======
+=======
+>>>>>>> Stashed changes
             boolean isPasswordUpdated = profileDAO.updatePassword(currentUser.getUser_id(), newPassword);
             if (isPasswordUpdated) {
                 // Update session data with the new password
@@ -171,6 +199,9 @@ public class ProfileManagementServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/profile/view");
             } else {
                 request.setAttribute("error", "Error updating password.");
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/change-password.jsp").forward(request, response);
             }

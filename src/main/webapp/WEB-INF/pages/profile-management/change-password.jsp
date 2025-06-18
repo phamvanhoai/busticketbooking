@@ -15,6 +15,10 @@
         </h2>
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+        <!-- Display error messages if there are any -->
+>>>>>>> Stashed changes
 =======
         <!-- Display error messages if there are any -->
 >>>>>>> Stashed changes
@@ -27,7 +31,11 @@
         </c:if>
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         <!-- Tabs -->
+=======
+        <!-- Tabs for login/register -->
+>>>>>>> Stashed changes
 =======
         <!-- Tabs for login/register -->
 >>>>>>> Stashed changes
@@ -43,7 +51,11 @@
         <!-- Change Password Form -->
         <form action="${pageContext.servletContext.contextPath}/profile/change-password" method="POST" class="space-y-5">
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             <!-- Old Password -->
+=======
+            <!-- Current Password -->
+>>>>>>> Stashed changes
 =======
             <!-- Current Password -->
 >>>>>>> Stashed changes
@@ -51,6 +63,7 @@
                 <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-[#ef5222]"></i>
                 <input
                     type="password"
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
                     name="oldPassword"
                     id="oldPassword"
@@ -64,6 +77,8 @@
             </div>
 
 =======
+=======
+>>>>>>> Stashed changes
                     name="currentPassword"
                     id="currentPassword"
                     placeholder="Current Password"
@@ -71,6 +86,9 @@
                     required />
             </div>
             
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             <!-- New Password -->
             <div class="relative">
@@ -113,6 +131,7 @@
     <%@include file="/WEB-INF/include/footer.jsp" %>
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     <!-- Toggle Script -->
     <script>
         // Toggle visibility for Old Password
@@ -131,6 +150,10 @@
     <!-- Toggle Password Visibility Script -->
     <script>
 >>>>>>> Stashed changes
+=======
+    <!-- Toggle Password Visibility Script -->
+    <script>
+>>>>>>> Stashed changes
         const toggleNewPassword = document.getElementById("toggleNewPassword");
         const newPasswordInput = document.getElementById("newPassword");
 
@@ -142,7 +165,10 @@
         });
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         // Toggle visibility for Confirm New Password
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         const toggleConfirmPassword = document.getElementById("toggleConfirmPassword");
