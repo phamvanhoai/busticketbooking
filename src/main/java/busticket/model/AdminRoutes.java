@@ -1,33 +1,39 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package busticket.model;
+ */package busticket.model;
 
-/**
- *
- * @author Pham Van Hoai - CE181744
- */
 public class AdminRoutes {
     private int routeId;
     private String startLocation;
     private String endLocation;
     private double distanceKm;
-    private String estimatedTime;
+    private String estimatedTime; // HH:mm:ss
     private Integer startLocationId;
     private Integer endLocationId;
+
 
     public AdminRoutes() {
     }
 
-    //get route for Admin add trip
+    // Constructor ngắn để show danh sách
     public AdminRoutes(int routeId, String startLocation, String endLocation) {
         this.routeId = routeId;
         this.startLocation = startLocation;
         this.endLocation = endLocation;
     }
-    
-    
+
+    // Full constructor nếu cần
+    public AdminRoutes(int routeId, String startLocation, String endLocation,
+                       double distanceKm, String estimatedTime) {
+        this.routeId = routeId;
+        this.startLocation = startLocation;
+        this.endLocation = endLocation;
+        this.distanceKm = distanceKm;
+        this.estimatedTime = estimatedTime;
+    }
+
+    // Getters và Setters
 
     public int getRouteId() {
         return routeId;
@@ -84,6 +90,5 @@ public class AdminRoutes {
     public void setEndLocationId(Integer endLocationId) {
         this.endLocationId = endLocationId;
     }
-    
-    
+
 }
