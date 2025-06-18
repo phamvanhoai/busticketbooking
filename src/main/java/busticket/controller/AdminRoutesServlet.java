@@ -40,14 +40,26 @@ public class AdminRoutesServlet extends HttpServlet {
         }
 
         if (request.getParameter("editId") != null) {
-            request.getRequestDispatcher("/WEB-INF/admin/routes/edit-route.jsp").forward(request, response);
-            return;
-        }
+    int id = Integer.parseInt(request.getParameter("editId"));
+    AdminRoutes route = dao.getRouteById(id);  // Gọi phương thức để lấy tuyến đường
+    request.setAttribute("route", route);  // Đặt đối tượng route vào request
+    request.getRequestDispatcher("/WEB-INF/admin/routes/edit-route.jsp").forward(request, response);
+    return;
+}
 
-        if (request.getParameter("delete") != null) {
+    // Chức năng Delete
+    if (request.getParameter("delete") != null) {
+        int routeId = Integer.parseInt(request.getParameter("delete"));
+        AdminRoutes route = dao.getRouteById(routeId);  // Lấy thông tin tuyến đường cần xóa
+        if (route != null) {
+            request.setAttribute("route", route);  // Set dữ liệu vào request để hiển thị trên form
             request.getRequestDispatcher("/WEB-INF/admin/routes/delete-route.jsp").forward(request, response);
-            return;
+        } else {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Route not found.");
         }
+        return;
+    }
+
 // Fetch all routes
         // Pagination setup
     int requestsPerPage = 10;  // Số dòng mỗi trang
@@ -123,59 +135,38 @@ public class AdminRoutesServlet extends HttpServlet {
         }
 
         if ("update".equalsIgnoreCase(action)) {
-            AdminRoutes r = new AdminRoutes();
-            String routeIdStr = request.getParameter("route_id");
-            if (routeIdStr != null && !routeIdStr.isEmpty()) {
-                r.setRouteId(Integer.parseInt(routeIdStr));
-            } else {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing route_id for update.");
-                return;
-            }
+        // Xử lý cập nhật tuyến đường
+        int routeId = Integer.parseInt(request.getParameter("route_id"));
+        AdminRoutes r = new AdminRoutes();
+        r.setRouteId(routeId);
+        r.setStartLocation(request.getParameter("origin"));
+        r.setEndLocation(request.getParameter("destination"));
+        r.setDistanceKm(Double.parseDouble(request.getParameter("distance")));
+        r.setEstimatedTime(request.getParameter("estimatedTime"));
 
-            r.setStartLocation(request.getParameter("origin"));
-            r.setEndLocation(request.getParameter("destination"));
-
-            // Kiểm tra và xử lý estimatedTime (Chuyển từ HH:mm:ss sang phút)
-            try {
-                String estimatedTimeStr = request.getParameter("estimatedTime");
-                int estimatedTimeInMinutes = convertTimeToMinutes(estimatedTimeStr);  // Hàm chuyển từ HH:mm:ss sang phút
-                r.setEstimatedTime(String.format("%d minutes", estimatedTimeInMinutes));  // Lưu kết quả ở dạng phút
-            } catch (Exception e) {
-                e.printStackTrace();
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid estimated time format. Please use HH:mm:ss format.");
-                return;
-            }
-
-            // Xử lý giá trị distance
-            String distanceStr = request.getParameter("distance");
-            if (distanceStr != null && !distanceStr.isEmpty()) {
-                distanceStr = distanceStr.replace("km", "").trim();
-                try {
-                    double distance = Double.parseDouble(distanceStr);
-                    r.setDistanceKm(distance);
-                } catch (NumberFormatException e) {
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid distance format.");
-                    return;
-                }
-            }
-
-            try {
-                dao.updateRoute(r);
-                response.sendRedirect("routes");
-            } catch (Exception e) {
-                e.printStackTrace();
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error updating route.");
-            }
-            return;
+        try {
+            dao.updateRoute(r);  // Gọi phương thức cập nhật tuyến đường trong DAO
+            response.sendRedirect("routes");  // Redirect về danh sách tuyến đường
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error updating route.");
         }
-
-        if (request.getParameter("delete") != null) {
-            request.getRequestDispatcher("/WEB-INF/admin/routes/delete-route.jsp").forward(request, response);
-            return;
-        }
-
-        response.sendRedirect("routes");
+        return;
     }
+
+    if ("delete".equalsIgnoreCase(action)) {
+        // Xử lý xóa tuyến đường
+        int routeId = Integer.parseInt(request.getParameter("route_id"));
+        try {
+            dao.deleteRoute(routeId);  // Gọi phương thức xóa tuyến đường trong DAO
+            response.sendRedirect("routes");  // Redirect về danh sách tuyến đường
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error deleting route.");
+        }
+        return;
+    }
+}
 
 // Hàm chuyển đổi từ HH:mm:ss sang số phút
     private int convertTimeToMinutes(String timeStr) throws Exception {

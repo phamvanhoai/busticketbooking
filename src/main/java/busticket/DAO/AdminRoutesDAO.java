@@ -136,4 +136,29 @@ public class AdminRoutesDAO extends DBContext {
             e.printStackTrace();  // Log lỗi chi tiết
         }
     }
+
+   public AdminRoutes getRouteById(int routeId) {
+    AdminRoutes route = null;
+    String sql = "SELECT route_id, start_location, end_location, distance_km, estimated_time "
+                 + "FROM Routes "
+                 + "WHERE route_id = ?";
+
+    try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, routeId);  // Set routeId vào câu truy vấn
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            route = new AdminRoutes();
+            route.setRouteId(rs.getInt("route_id"));
+            route.setStartLocation(rs.getString("start_location"));
+            route.setEndLocation(rs.getString("end_location"));
+            route.setDistanceKm(rs.getDouble("distance_km"));
+            route.setEstimatedTime(rs.getString("estimated_time"));
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+
+    return route;
 }
+}
+
