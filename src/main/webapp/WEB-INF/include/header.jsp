@@ -14,9 +14,9 @@
         <title>FUTA Bus Lines</title>
         <!-- Link tới CDN TailwindCSS -->
         <script src="https://cdn.tailwindcss.com"></script>
-        
+
         <!-- Font Awesome -->
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/all.min.css">
     </head>
     <body class="bg-[#fff6f3] min-h-screen">
 
@@ -45,11 +45,11 @@
                             <!-- Nếu user đã đăng nhập, hiển thị menu dropdown -->
                             <div class="relative">
                                 <button id="dropdown-button" class="flex items-center gap-2 text-white">
-                                    
+
                                     <span class="font-medium">${user.name}</span>
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
-                                
+
                                 <!-- Dropdown Menu -->
                                 <div id="dropdown-menu" class="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md z-50 hidden">
                                     <a href="${pageContext.servletContext.contextPath}/profile/view" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
@@ -77,13 +77,13 @@
             </div>
         </header>
     </body>                
-        <script>
-            // Get the button and menu elements
-            const dropdownButton = document.getElementById('dropdown-button');
-            const dropdownMenu = document.getElementById('dropdown-menu');
-            
-            // Toggle dropdown visibility when button is clicked
-            dropdownButton.addEventListener('click', function() {
-                dropdownMenu.classList.toggle('hidden');  // Show or hide the dropdown menu
-            });
-        </script>
+    <script>
+        // Get the button and menu elements
+        const dropdownButton = document.getElementById('dropdown-button');
+        const dropdownMenu = document.getElementById('dropdown-menu');
+
+        // Toggle dropdown visibility when button is clicked
+        dropdownButton.addEventListener('click', function () {
+            dropdownMenu.classList.toggle('hidden');  // Show or hide the dropdown menu
+        });
+    </script>

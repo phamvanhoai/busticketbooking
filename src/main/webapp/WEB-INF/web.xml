@@ -115,6 +115,7 @@
     <servlet-mapping>
         <servlet-name>AdminUsersServlet</servlet-name>
         <url-pattern>/admin/users</url-pattern>
+        <url-pattern>/admin/users/*</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>AdminTripsServlet</servlet-name>
