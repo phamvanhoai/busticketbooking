@@ -19,9 +19,8 @@ public class AdminRoutesDAO extends DBContext {
                 + "ORDER BY route_id ASC "
                 + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
-        try {
-            Connection conn = getConnection();  // Giữ kết nối mở mà không đóng
-            PreparedStatement ps = conn.prepareStatement(sql);
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setInt(1, offset);
             ps.setInt(2, limit);
 
@@ -32,7 +31,7 @@ public class AdminRoutesDAO extends DBContext {
                 route.setStartLocation(rs.getString("start_location"));
                 route.setEndLocation(rs.getString("end_location"));
                 route.setDistanceKm(rs.getDouble("distance_km"));
-                route.setEstimatedTime(rs.getString("estimated_time"));
+                route.setEstimatedTime(rs.getString("estimated_time")); // Giá trị theo HH:mm:ss
                 list.add(route);
             }
         } catch (SQLException e) {
@@ -45,9 +44,7 @@ public class AdminRoutesDAO extends DBContext {
     // Đếm số tuyến đường trong cơ sở dữ liệu
     public int countRoutes() {
         String sql = "SELECT COUNT(*) AS total FROM Routes";
-        try {
-            Connection conn = getConnection();  // Giữ kết nối mở mà không đóng
-            PreparedStatement ps = conn.prepareStatement(sql);
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -59,106 +56,86 @@ public class AdminRoutesDAO extends DBContext {
         return 0;
     }
 
+    // Tạo tuyến đường mới
     public void createRoute(AdminRoutes route) {
         String sql = "INSERT INTO Routes (start_location, end_location, distance_km, estimated_time) VALUES (?, ?, ?, ?)";
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            // Ghi thông tin đầu vào
-            System.out.println("Start Location: " + route.getStartLocation());
-            System.out.println("End Location: " + route.getEndLocation());
-            System.out.println("Distance (km): " + route.getDistanceKm());
-            System.out.println("Estimated Time: " + route.getEstimatedTime());
-
             ps.setString(1, route.getStartLocation());
             ps.setString(2, route.getEndLocation());
             ps.setDouble(3, route.getDistanceKm());
 
-            // Kiểm tra và xử lý estimatedTime trước khi insert
-            try {
-                String estimatedTimeStr = route.getEstimatedTime();
-
-                // Nếu estimatedTime là dạng số phút, ví dụ "150 minutes"
-                if (estimatedTimeStr != null && estimatedTimeStr.matches("\\d+ minutes")) {
-                    int minutes = Integer.parseInt(estimatedTimeStr.replace(" minutes", "").trim());
-                    int hours = minutes / 60;
-                    minutes = minutes % 60;
-                    estimatedTimeStr = String.format("%02d:%02d:%02d", hours, minutes, 0);  // Chuyển thành HH:mm:ss
-                }
-
-                // Kiểm tra định dạng HH:mm:ss
-                if (estimatedTimeStr != null && !estimatedTimeStr.matches("^\\d{2}:\\d{2}:\\d{2}$")) {
-                    throw new IllegalArgumentException("Invalid estimated time format. Please use HH:mm:ss format.");
-                }
-
-                // Chuyển đổi estimatedTime thành Time
-                ps.setTime(4, Time.valueOf(estimatedTimeStr));  // Chuyển đổi estimatedTime thành Time
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();  // Log lỗi chi tiết
-                throw new SQLException("Invalid estimated time format: " + e.getMessage());
+            // Chuyển estimatedTime từ dạng "X minutes" sang số phút (int)
+            String estimatedTimeStr = route.getEstimatedTime();  // Ví dụ: "150 minutes"
+            if (estimatedTimeStr != null && estimatedTimeStr.matches("\\d+ minutes")) {
+                int minutes = Integer.parseInt(estimatedTimeStr.replace(" minutes", "").trim());
+                ps.setInt(4, minutes);  // Lưu vào cơ sở dữ liệu với dạng INT (số phút)
             }
 
             ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();  // Log lỗi chi tiết
+            e.printStackTrace();
             throw new RuntimeException("Error executing query: " + e.getMessage());
         }
     }
 
+    // Cập nhật tuyến đường
     public void updateRoute(AdminRoutes route) {
         String sql = "UPDATE Routes SET start_location=?, end_location=?, distance_km=?, estimated_time=? WHERE route_id=?";
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, route.getStartLocation());
             ps.setString(2, route.getEndLocation());
             ps.setDouble(3, route.getDistanceKm());
 
-            // Kiểm tra và chuyển đổi thời gian trước khi update
-            try {
-                ps.setTime(4, Time.valueOf(route.getEstimatedTime()));  // Chuyển đổi estimatedTime thành Time
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-                throw new SQLException("Invalid estimated time format.");
+            // Chuyển estimatedTime từ dạng "X minutes" sang số phút (int)
+            String estimatedTimeStr = route.getEstimatedTime();  // Ví dụ: "150 minutes"
+            if (estimatedTimeStr != null && estimatedTimeStr.matches("\\d+ minutes")) {
+                int minutes = Integer.parseInt(estimatedTimeStr.replace(" minutes", "").trim());
+                ps.setInt(4, minutes);  // Lưu vào cơ sở dữ liệu với dạng INT (số phút)
             }
 
             ps.setInt(5, route.getRouteId());
             ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();  // Log lỗi chi tiết
+            e.printStackTrace();
             throw new RuntimeException("Error executing query: " + e.getMessage());
         }
     }
 
+    // Xóa tuyến đường
     public void deleteRoute(int id) {
         String sql = "DELETE FROM Routes WHERE route_id=?";
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setInt(1, id);
             ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();  // Log lỗi chi tiết
+            e.printStackTrace();
         }
     }
 
-   public AdminRoutes getRouteById(int routeId) {
-    AdminRoutes route = null;
-    String sql = "SELECT route_id, start_location, end_location, distance_km, estimated_time "
-                 + "FROM Routes "
-                 + "WHERE route_id = ?";
+    // Lấy tuyến đường theo ID
+    public AdminRoutes getRouteById(int routeId) {
+        AdminRoutes route = null;
+        String sql = "SELECT route_id, start_location, end_location, distance_km, estimated_time "
+                + "FROM Routes WHERE route_id = ?";
 
-    try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-        ps.setInt(1, routeId);  // Set routeId vào câu truy vấn
-        ResultSet rs = ps.executeQuery();
-        if (rs.next()) {
-            route = new AdminRoutes();
-            route.setRouteId(rs.getInt("route_id"));
-            route.setStartLocation(rs.getString("start_location"));
-            route.setEndLocation(rs.getString("end_location"));
-            route.setDistanceKm(rs.getDouble("distance_km"));
-            route.setEstimatedTime(rs.getString("estimated_time"));
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, routeId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                route = new AdminRoutes();
+                route.setRouteId(rs.getInt("route_id"));
+                route.setStartLocation(rs.getString("start_location"));
+                route.setEndLocation(rs.getString("end_location"));
+                route.setDistanceKm(rs.getDouble("distance_km"));
+                route.setEstimatedTime(rs.getInt("estimated_time") + " minutes");  // Đọc và trả về với định dạng "minutes"
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-    } catch (SQLException e) {
-        e.printStackTrace();
+
+        return route;
     }
-
-    return route;
 }
-}
-
