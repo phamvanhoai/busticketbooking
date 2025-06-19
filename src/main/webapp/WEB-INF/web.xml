@@ -107,6 +107,10 @@
     <servlet>
         <servlet-name>HomeViewTripsServlet</servlet-name>
         <servlet-class>busticket.controller.HomeViewTripsServlet</servlet-class>
+    </servlet>    
+    <servlet>
+        <servlet-name>DriverLicenseServlet</servlet-name>
+        <servlet-class>busticket.controller.DriverLicenseServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
@@ -216,6 +220,10 @@
     <servlet-mapping>
         <servlet-name>HomeViewTripsServlet</servlet-name>
         <url-pattern>/view-trips</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DriverLicenseServlet</servlet-name>
+        <url-pattern>/driver/driver-license</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

@@ -71,9 +71,8 @@
                             <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs">Scheduled</span>
                         </td>
                         <td class="px-6 py-4 space-x-2">
-                            <a href="${pageContext.servletContext.contextPath}/driver/assigned-trips?roll-call=">
+                            <a href="${pageContext.servletContext.contextPath}/driver/assigned-trips?roll-call">
                                 <button class="text-blue-600 hover:underline text-sm">Roll call</button></a>
-                            <button class="text-blue-600 hover:underline text-sm">View</button>
                             <button class="text-gray-600 hover:underline text-sm">Start</button>
                         </td>
                     </tr>
@@ -89,9 +88,8 @@
                             <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs">Ongoing</span>
                         </td>
                         <td class="px-6 py-4 space-x-2">
-                            <a href="${pageContext.servletContext.contextPath}/driver/assigned-trips?roll-call=">
+                            <a href="${pageContext.servletContext.contextPath}/driver/assigned-trips?roll-call">
                                 <button class="text-blue-600 hover:underline text-sm">Roll call</button></a>
-                            <button class="text-blue-600 hover:underline text-sm">View</button>
                             <button class="text-red-600 hover:underline text-sm">End</button>
                         </td>
                     </tr>
@@ -107,10 +105,8 @@
                             <span class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-xs">Completed</span>
                         </td>
                         <td class="px-6 py-4 space-x-2">
-                            <a href="${pageContext.servletContext.contextPath}/driver/assigned-trips?roll-call=">
+                            <a href="${pageContext.servletContext.contextPath}/driver/assigned-trips?roll-call">
                                 <button class="text-blue-600 hover:underline text-sm">Roll call</button></a>
-                            <button class="text-blue-600 hover:underline text-sm">View</button>
-
                         </td>
                     </tr>
                     <!-- … thêm các bản ghi khác … -->
@@ -126,6 +122,8 @@
             <button class="px-3 py-1 border rounded hover:bg-gray-100">»</button>
         </div>
     </div>
-    <%-- CONTENT HERE--%>
+</body>
 
-    <%@include file="/WEB-INF/include/driver/driver-footer.jsp" %>
+<%-- CONTENT HERE--%>
+
+<%@include file="/WEB-INF/include/driver/driver-footer.jsp" %>

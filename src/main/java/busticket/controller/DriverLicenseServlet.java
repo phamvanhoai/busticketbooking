@@ -6,6 +6,7 @@
 package busticket.controller;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,7 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
  *
  * @author Pham Van Hoai - CE181744
  */
-public class DriverAssignedTripsServlet extends HttpServlet {
+public class DriverLicenseServlet extends HttpServlet {
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /** 
@@ -28,14 +29,7 @@ public class DriverAssignedTripsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        String action = request.getParameter("action");
-
-        if (request.getParameter("roll-call") != null) {
-            request.getRequestDispatcher("/WEB-INF/driver/assigned-trips/passenger-roll-call.jsp")
-                    .forward(request, response);
-            return;
-        }
-        request.getRequestDispatcher("/WEB-INF/driver/assigned-trips.jsp")
+        request.getRequestDispatcher("/WEB-INF/driver/driver-license.jsp")
                 .forward(request, response);
     } 
 
@@ -49,7 +43,6 @@ public class DriverAssignedTripsServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        
     }
 
     /** 
