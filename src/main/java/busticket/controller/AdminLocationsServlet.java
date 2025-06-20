@@ -4,11 +4,15 @@
  */
 package busticket.controller;
 
+import busticket.DAO.AdminLocationsDAO;
+import busticket.model.AdminLocations;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.sql.SQLException;
+import java.util.List;
 
 /**
  *
@@ -28,6 +32,7 @@ public class AdminLocationsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        AdminLocationsDAO adminLocationsDAO = new AdminLocationsDAO();
 
         // Lấy tham số hành động (action)
         String action = request.getParameter("action");
@@ -41,7 +46,16 @@ public class AdminLocationsServlet extends HttpServlet {
         // View details
         String detail = request.getParameter("detail");
         if (detail != null) {
-            request.getRequestDispatcher("/WEB-INF/admin/locations/view-location-details.jsp").forward(request, response);
+            try {
+                int locId = Integer.parseInt(detail);
+                AdminLocations loc = adminLocationsDAO.getLocationById(locId);
+                request.setAttribute("location", loc);
+            } catch (Exception e) {
+                throw new ServletException("Invalid location ID for detail", e);
+            }
+            request.getRequestDispatcher("/WEB-INF/admin/locations/view-location-details.jsp")
+                    .forward(request, response);
+            return;
         }
 
         String editId = request.getParameter("editId");
@@ -55,7 +69,33 @@ public class AdminLocationsServlet extends HttpServlet {
             request.getRequestDispatcher("/WEB-INF/admin/locations/delete-location.jsp").forward(request, response);
 
         }
-        request.getRequestDispatcher("/WEB-INF/admin/locations/locations.jsp").forward(request, response);
+        // 2. Phân trang + search
+        String search = request.getParameter("search");  // từ ô input
+        int currentPage = 1, rowsPerPage = 10;
+        if (request.getParameter("page") != null) {
+            try {
+                currentPage = Integer.parseInt(request.getParameter("page"));
+            } catch (NumberFormatException e) {
+                /* giữ currentPage = 1 */ }
+        }
+        int offset = (currentPage - 1) * rowsPerPage;
+
+        try {
+            List<AdminLocations> list = adminLocationsDAO.getLocations(search, offset, rowsPerPage);
+            int total = adminLocationsDAO.getTotalLocationsCount(search);
+            int totalPages = (int) Math.ceil((double) total / rowsPerPage);
+
+            request.setAttribute("locations", list);
+            request.setAttribute("currentPage", currentPage);
+            request.setAttribute("totalPages", totalPages);
+            request.setAttribute("totalLocations", total);
+            request.setAttribute("search", search);
+        } catch (SQLException e) {
+            throw new ServletException(e);
+        }
+
+        request.getRequestDispatcher("/WEB-INF/admin/locations/locations.jsp")
+                .forward(request, response);
     }
 
     /**

@@ -6,7 +6,11 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@include file="/WEB-INF/include/admin/admin-header.jsp" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
+
+<c:set var="loc" value="${location}" />
 
 <body class="bg-gray-100 min-h-screen p-6">
     <div class="bg-white rounded-xl shadow-lg p-8">
@@ -15,47 +19,50 @@
         <div class="space-y-4 text-gray-700">
             <div class="flex">
                 <span class="w-32 font-semibold">Name:</span>
-                <span>Downtown Station</span>
+                <span>${loc.locationName}</span>
             </div>
             <div class="flex">
                 <span class="w-32 font-semibold">Address:</span>
-                <div>
-                    123 Main St, District 1, Ho Chi Minh City, HCMC 700000
-                </div>
+                <div>${loc.address}</div>
             </div>
             <div class="flex">
                 <span class="w-32 font-semibold">Description:</span>
-                <span>Main drop-off and pick-up point in the city center.</span>
+                <span>${loc.locationDescription}</span>
             </div>
             <div class="flex">
                 <span class="w-32 font-semibold">Created On:</span>
-                <span>2025-06-20</span>
+                <span><fmt:formatDate value="${loc.locationCreatedAt}" pattern="dd-MM-yyyy" /></span>
             </div>
             <div class="flex">
                 <span class="w-32 font-semibold">Status:</span>
-                <span class="text-green-600 font-medium">Active</span>
+                <span class="${loc.locationStatus == 'Active' ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}">
+                    ${loc.locationStatus}
+                </span>
             </div>
         </div>
 
-        <!-- Map placeholder -->
+        <!-- Map Preview -->
         <div class="mt-6">
-            <div class="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400">
-                [Map Preview]
-            </div>
+            <iframe
+                width="100%" height="300" frameborder="0" style="border:0"
+                src="https://maps.google.com/maps?q=${loc.latitude},${loc.longitude}&z=15&output=embed"
+                allowfullscreen>
+            </iframe>
         </div>
+
 
         <!-- Action buttons -->
         <div class="flex justify-end gap-4 pt-4">
-            <button class="bg-orange-500 hover:bg-orange-600 text-white font-medium px-6 py-2 rounded-lg transition">
-                Edit
-            </button>
-            <button class="bg-red-500 hover:bg-red-600 text-white font-medium px-6 py-2 rounded-lg transition">
-                Delete
-            </button>
-            <a href="${pageContext.servletContext.contextPath}/admin/locations">
-                <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-6 py-2 rounded-lg transition">
-            Back
-            </button></a>
+            <a href="${pageContext.request.contextPath}/admin/locations?editId=${loc.locationId}">
+                <button class="bg-orange-500 hover:bg-orange-600 text-white font-medium px-6 py-2 rounded-lg">Edit</button>
+            </a>
+            <a href="${pageContext.request.contextPath}/admin/locations?delete=${loc.locationId}"
+               onclick="return confirm('Bạn có chắc muốn xóa không?');">
+                <button class="bg-red-500 hover:bg-red-600 text-white font-medium px-6 py-2 rounded-lg">Delete</button>
+            </a>
+            <a href="${pageContext.request.contextPath}/admin/locations">
+                <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-6 py-2 rounded-lg">Back</button>
+            </a>
         </div>
     </div>
     <%-- CONTENT HERE--%>
