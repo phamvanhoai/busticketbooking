@@ -56,8 +56,7 @@
             <a href="${pageContext.request.contextPath}/admin/locations?editId=${loc.locationId}">
                 <button class="bg-orange-500 hover:bg-orange-600 text-white font-medium px-6 py-2 rounded-lg">Edit</button>
             </a>
-            <a href="${pageContext.request.contextPath}/admin/locations?delete=${loc.locationId}"
-               onclick="return confirm('Bạn có chắc muốn xóa không?');">
+            <a href="${pageContext.request.contextPath}/admin/locations?delete=${loc.locationId}">
                 <button class="bg-red-500 hover:bg-red-600 text-white font-medium px-6 py-2 rounded-lg">Delete</button>
             </a>
             <a href="${pageContext.request.contextPath}/admin/locations">

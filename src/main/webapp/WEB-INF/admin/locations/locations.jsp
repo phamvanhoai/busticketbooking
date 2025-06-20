@@ -21,6 +21,19 @@
         <!-- Title + Search/Add -->
         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <h1 class="text-3xl font-bold text-[#EF5222]">Manage Locations</h1>
+
+            <!-- Flash messages -->
+            <c:if test="${not empty success}">
+                <div class="p-4 mb-4 bg-green-100 border border-green-400 text-green-800 rounded">
+                    ${success}
+                </div>
+            </c:if>
+            <c:if test="${not empty error}">
+                <div class="p-4 mb-4 bg-red-100 border border-red-400 text-red-800 rounded">
+                    ${error}
+                </div>
+            </c:if>
+
             <div class="flex gap-2 w-full md:w-auto">
                 <form action="${pageContext.request.contextPath}/admin/locations" method="get" class="flex gap-2">
                     <input type="text" name="search" placeholder="Search locations..."
@@ -48,6 +61,7 @@
                         <th class="px-4 py-3">Name</th>
                         <th class="px-4 py-3">Address</th>
                         <th class="px-4 py-3">City</th>
+                        <th class="px-4 py-3">Status</th>
                         <th class="px-4 py-3">Actions</th>
                     </tr>
                 </thead>
@@ -59,16 +73,34 @@
                             <td class="px-4 py-3">${loc.address}</td>
                             <td class="px-4 py-3">${loc.locationType}</td>
                             <td class="px-4 py-3">
+                                <c:choose>
+                                    <c:when test="${loc.locationStatus == 'Inactive'}">
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-red-100 text-red-600">
+                                            Inactive
+                                        </span>
+                                    </c:when>
+                                    <c:when test="${loc.locationStatus == 'Active'}">
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-green-100 text-green-700">
+                                            Active
+                                        </span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-gray-100 text-gray-700">
+                                            ${loc.locationStatus}
+                                        </span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td class="px-4 py-3">
                                 <div class="flex items-center gap-4">
                                     <a href="${pageContext.request.contextPath}/admin/locations?detail=${loc.locationId}">
-                                        <button class="text-blue-600 hover:underline text-sm">View</button>
+                                        <button class="text-blue-600 hover:underline text-sm"><i class="fas fa-eye"></i> View</button>
                                     </a>
                                     <a href="${pageContext.request.contextPath}/admin/locations?editId=${loc.locationId}">
-                                        <button class="text-blue-600 hover:underline text-sm">Edit</button>
+                                        <button class="text-blue-600 hover:underline text-sm"><i class="fas fa-edit"></i> Edit</button>
                                     </a>
-                                    <a href="${pageContext.request.contextPath}/admin/locations?delete=${loc.locationId}"
-                                       onclick="return confirm('Bạn có chắc muốn xóa không?');">
-                                        <button class="text-red-600 hover:underline text-sm">Delete</button>
+                                    <a href="${pageContext.request.contextPath}/admin/locations?delete=${loc.locationId}">
+                                        <button class="text-red-600 hover:underline text-sm"><i class="fas fa-trash-alt"></i> Delete</button>
                                     </a>
                                 </div>
                             </td>

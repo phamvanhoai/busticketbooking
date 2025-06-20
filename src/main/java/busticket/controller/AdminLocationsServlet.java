@@ -11,6 +11,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -33,6 +34,20 @@ public class AdminLocationsServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         AdminLocationsDAO adminLocationsDAO = new AdminLocationsDAO();
+
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            Object success = session.getAttribute("success");
+            Object error = session.getAttribute("error");
+            if (success != null) {
+                request.setAttribute("success", success);
+                session.removeAttribute("success");
+            }
+            if (error != null) {
+                request.setAttribute("error", error);
+                session.removeAttribute("error");
+            }
+        }
 
         // Lấy tham số hành động (action)
         String action = request.getParameter("action");
@@ -60,13 +75,31 @@ public class AdminLocationsServlet extends HttpServlet {
 
         String editId = request.getParameter("editId");
         if (editId != null) {
-            request.getRequestDispatcher("/WEB-INF/admin/locations/edit-location.jsp").forward(request, response);
+            try {
+                int id = Integer.parseInt(editId);
+                AdminLocations loc = adminLocationsDAO.getLocationById(id);
+                request.setAttribute("location", loc);
+                request.getRequestDispatcher("/WEB-INF/admin/locations/edit-location.jsp")
+                        .forward(request, response);
+                return;
+            } catch (NumberFormatException | SQLException e) {
+                throw new ServletException("Invalid location ID for edit", e);
+            }
         }
 
         //Delete
         String delete = request.getParameter("delete");
         if (delete != null) {
-            request.getRequestDispatcher("/WEB-INF/admin/locations/delete-location.jsp").forward(request, response);
+            try {
+                int id = Integer.parseInt(delete);
+                AdminLocations loc = adminLocationsDAO.getLocationById(id);
+                request.setAttribute("location", loc);
+                request.getRequestDispatcher("/WEB-INF/admin/locations/delete-location.jsp")
+                        .forward(request, response);
+            } catch (Exception e) {
+                throw new ServletException("Invalid location ID for delete", e);
+            }
+            return;
 
         }
         // 2. Phân trang + search
@@ -109,7 +142,48 @@ public class AdminLocationsServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        String action = request.getParameter("action");
+        AdminLocationsDAO dao = new AdminLocationsDAO();
+        HttpSession session = request.getSession();
 
+        try {
+            if ("add".equals(action)) {
+                AdminLocations loc = new AdminLocations();
+                loc.setLocationName(request.getParameter("locationName"));
+                loc.setAddress(request.getParameter("address"));
+                loc.setLatitude(Double.parseDouble(request.getParameter("latitude")));
+                loc.setLongitude(Double.parseDouble(request.getParameter("longitude")));
+                loc.setLocationType(request.getParameter("locationType"));
+                loc.setLocationDescription(request.getParameter("description"));
+                loc.setLocationStatus(request.getParameter("status"));
+                dao.insertLocation(loc);
+                session.setAttribute("success", "Location added successfully!");
+
+            } else if ("edit".equals(action)) {
+                AdminLocations loc = new AdminLocations();
+                loc.setLocationId(Integer.parseInt(request.getParameter("locationId")));
+                loc.setLocationName(request.getParameter("locationName"));
+                loc.setAddress(request.getParameter("address"));
+                loc.setLatitude(Double.parseDouble(request.getParameter("latitude")));
+                loc.setLongitude(Double.parseDouble(request.getParameter("longitude")));
+                loc.setLocationType(request.getParameter("locationType"));
+                loc.setLocationDescription(request.getParameter("description"));
+                loc.setLocationStatus(request.getParameter("status"));
+                dao.updateLocation(loc);
+                session.setAttribute("success", "Location updated successfully!");
+
+            } else if ("delete".equals(action)) {
+                int id = Integer.parseInt(request.getParameter("locationId"));
+                dao.deleteLocation(id);
+                session.setAttribute("success", "Location deleted successfully!");
+            }
+
+        } catch (Exception ex) {
+            session.setAttribute("error", "Error processing location: " + ex.getMessage());
+        }
+
+        response.sendRedirect(request.getContextPath() + "/admin/locations");
     }
 
     /**
