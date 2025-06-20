@@ -60,7 +60,7 @@
                         <th class="px-4 py-3">ID</th>
                         <th class="px-4 py-3">Name</th>
                         <th class="px-4 py-3">Address</th>
-                        <th class="px-4 py-3">City</th>
+                        <th class="px-4 py-3">Location Type</th>
                         <th class="px-4 py-3">Status</th>
                         <th class="px-4 py-3">Actions</th>
                     </tr>
