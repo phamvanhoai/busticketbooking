@@ -4,6 +4,7 @@
  */package busticket.model;
 
 public class AdminRoutes {
+
     private int routeId;
     private Integer startLocationId;
     private Integer endLocationId;
@@ -11,7 +12,7 @@ public class AdminRoutes {
     private String endLocation;
     private double distanceKm;
     private int estimatedTime;      // in minutes
-
+    private String routeStatus;   // ← thêm
 
     public AdminRoutes() {
     }
@@ -25,12 +26,13 @@ public class AdminRoutes {
 
     // Full constructor nếu cần
     public AdminRoutes(int routeId, String startLocation, String endLocation,
-                       double distanceKm, int estimatedTime) {
+            double distanceKm, int estimatedTime, String routeStatus) {
         this.routeId = routeId;
         this.startLocation = startLocation;
         this.endLocation = endLocation;
         this.distanceKm = distanceKm;
         this.estimatedTime = estimatedTime;
+        this.routeStatus = routeStatus;
     }
 
     public int getRouteId() {
@@ -88,4 +90,14 @@ public class AdminRoutes {
     public void setEstimatedTime(int estimatedTime) {
         this.estimatedTime = estimatedTime;
     }
+
+    public String getRouteStatus() {
+        return routeStatus;
+    }
+
+    public void setRouteStatus(String routeStatus) {
+        this.routeStatus = routeStatus;
+    }
+    
+    
 }

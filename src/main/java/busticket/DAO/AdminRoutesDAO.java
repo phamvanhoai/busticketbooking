@@ -18,18 +18,21 @@ public class AdminRoutesDAO extends DBContext {
 
     /**
      * Lấy tất cả các tuyến đường với phân trang, join bảng Locations để lấy tên
+     * và cả trạng thái
      */
     public List<AdminRoutes> getAllRoutes(int offset, int limit) {
         List<AdminRoutes> list = new ArrayList<>();
-        String sql = ""
-                + "SELECT r.route_id, "
-                + "       ls.location_id AS start_location_id, ls.location_name AS start_location, "
-                + "       le.location_id AS end_location_id,   le.location_name AS end_location, "
+        String sql = "SELECT r.route_id, "
+                + "       ls.location_id        AS start_location_id, "
+                + "       ls.location_name      AS start_location, "
+                + "       le.location_id        AS end_location_id, "
+                + "       le.location_name      AS end_location, "
                 + "       r.distance_km, "
-                + "       r.estimated_time "
+                + "       r.estimated_time, "
+                + "       r.route_status        AS route_status "
                 + "FROM Routes r "
-                + "JOIN Locations ls ON r.start_location_id = ls.location_id "
-                + "JOIN Locations le ON r.end_location_id   = le.location_id "
+                + "  JOIN Locations ls ON r.start_location_id = ls.location_id "
+                + "  JOIN Locations le ON r.end_location_id   = le.location_id "
                 + "ORDER BY r.route_id ASC "
                 + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
@@ -48,6 +51,7 @@ public class AdminRoutesDAO extends DBContext {
                     route.setEndLocation(rs.getString("end_location"));
                     route.setDistanceKm(rs.getDouble("distance_km"));
                     route.setEstimatedTime(rs.getInt("estimated_time"));
+                    route.setRouteStatus(rs.getString("route_status"));  // set status
                     list.add(route);
                 }
             }
@@ -76,42 +80,49 @@ public class AdminRoutesDAO extends DBContext {
     }
 
     /**
-     * Tạo tuyến đường mới
+     * Tạo mới 1 route và trả về route_id được sinh tự động
      */
-    public void createRoute(AdminRoutes route) {
-        String sql = ""
-                + "INSERT INTO Routes "
-                + "(start_location_id, end_location_id, distance_km, estimated_time) "
-                + "VALUES(?, ?, ?, ?)";
-        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
-
+    public int createRoute(AdminRoutes route) throws SQLException {
+        String sql = "INSERT INTO Routes ("
+                + "    start_location_id, end_location_id, distance_km, estimated_time, route_status"
+                + ") VALUES (?, ?, ?, ?, ?)";
+        try ( PreparedStatement ps = getConnection()
+                .prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, route.getStartLocationId());
             ps.setInt(2, route.getEndLocationId());
             ps.setDouble(3, route.getDistanceKm());
             ps.setInt(4, route.getEstimatedTime());
-
+            ps.setString(5, route.getRouteStatus());  // thêm status
             ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error creating route", e);
+
+            try ( ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
         }
+        throw new SQLException("Failed to create route, no ID obtained.");
     }
 
     /**
-     * Cập nhật tuyến đường
+     * Cập nhật thông tin của một route đã tồn tại
      */
     public void updateRoute(AdminRoutes route) {
-        String sql = ""
-                + "UPDATE Routes SET "
-                + "start_location_id=?, end_location_id=?, distance_km=?, estimated_time=? "
-                + "WHERE route_id=?";
+        String sql = "UPDATE Routes SET "
+                + "    start_location_id = ?, "
+                + "    end_location_id   = ?, "
+                + "    distance_km       = ?, "
+                + "    estimated_time    = ?, "
+                + "    route_status      = ? "
+                + "WHERE route_id = ?";
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, route.getStartLocationId());
             ps.setInt(2, route.getEndLocationId());
             ps.setDouble(3, route.getDistanceKm());
             ps.setInt(4, route.getEstimatedTime());
-            ps.setInt(5, route.getRouteId());
+            ps.setString(5, route.getRouteStatus());  // thêm status
+            ps.setInt(6, route.getRouteId());
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -121,17 +132,29 @@ public class AdminRoutesDAO extends DBContext {
     }
 
     /**
+     * Xóa hết các bản ghi giá cho một route
+     */
+    public void deleteRoutePrices(int routeId) throws SQLException {
+        String sql = "DELETE FROM Route_Prices WHERE route_id = ?";
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql)) {
+            ps.setInt(1, routeId);
+            ps.executeUpdate();
+        }
+    }
+
+    /**
      * Xóa tuyến đường
      */
-    public void deleteRoute(int id) {
-        String sql = "DELETE FROM Routes WHERE route_id=?";
-        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, id);
+    public void deleteRoute(int routeId) throws SQLException {
+        // 1) Xoá giá
+        deleteRoutePrices(routeId);
+        // 2) Xoá stops
+        deleteRouteStops(routeId);
+        // 3) Xoá route
+        String sql = "DELETE FROM Routes WHERE route_id = ?";
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql)) {
+            ps.setInt(1, routeId);
             ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error deleting route", e);
         }
     }
 
@@ -140,18 +163,24 @@ public class AdminRoutesDAO extends DBContext {
      */
     public AdminRoutes getRouteById(int routeId) {
         AdminRoutes route = null;
-        String sql = ""
-                + "SELECT r.route_id, "
-                + "       ls.location_id AS start_location_id, ls.location_name AS start_location, "
-                + "       le.location_id AS end_location_id,   le.location_name AS end_location, "
-                + "       r.distance_km, r.estimated_time "
+        String sql = "SELECT "
+                + "    r.route_id, "
+                + "    ls.location_id AS start_location_id, "
+                + "    ls.location_name AS start_location, "
+                + "    le.location_id AS end_location_id, "
+                + "    le.location_name AS end_location, "
+                + "    r.distance_km, "
+                + "    r.estimated_time, "
+                + "    r.route_status "
                 + "FROM Routes r "
                 + "JOIN Locations ls ON r.start_location_id = ls.location_id "
                 + "JOIN Locations le ON r.end_location_id   = le.location_id "
                 + "WHERE r.route_id = ?";
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setInt(1, routeId);
+
             try ( ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     route = new AdminRoutes();
@@ -162,6 +191,7 @@ public class AdminRoutesDAO extends DBContext {
                     route.setEndLocation(rs.getString("end_location"));
                     route.setDistanceKm(rs.getDouble("distance_km"));
                     route.setEstimatedTime(rs.getInt("estimated_time"));
+                    route.setRouteStatus(rs.getString("route_status"));  // gán status
                 }
             }
         } catch (SQLException e) {
@@ -274,57 +304,55 @@ public class AdminRoutesDAO extends DBContext {
             ps.executeUpdate();
         }
     }
-    
-    
+
     /**
- * Lấy danh sách giá hiện hành (effective_to IS NULL) cho một route
- */
-public List<AdminRoutePrice> getPricesByRouteId(int routeId) throws SQLException {
-    List<AdminRoutePrice> list = new ArrayList<>();
-    String sql = "SELECT bus_type_id, route_price"
-        + "  FROM Route_Prices"
-        + " WHERE route_id = ?"
-        + " AND route_price_effective_to IS NULL"
-        + " ORDER BY bus_type_id";
-    try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
-        ps.setInt(1, routeId);
-        try (ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                AdminRoutePrice rp = new AdminRoutePrice();
-                rp.setRouteId(routeId);
-                rp.setBusTypeId(rs.getInt("bus_type_id"));
-                rp.setPrice(rs.getBigDecimal("route_price"));
-                list.add(rp);
+     * Lấy danh sách giá hiện hành (effective_to IS NULL) cho một route
+     */
+    public List<AdminRoutePrice> getPricesByRouteId(int routeId) throws SQLException {
+        List<AdminRoutePrice> list = new ArrayList<>();
+        String sql = "SELECT bus_type_id, route_price"
+                + "  FROM Route_Prices"
+                + " WHERE route_id = ?"
+                + " AND route_price_effective_to IS NULL"
+                + " ORDER BY bus_type_id";
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql)) {
+            ps.setInt(1, routeId);
+            try ( ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    AdminRoutePrice rp = new AdminRoutePrice();
+                    rp.setRouteId(routeId);
+                    rp.setBusTypeId(rs.getInt("bus_type_id"));
+                    rp.setPrice(rs.getBigDecimal("route_price"));
+                    list.add(rp);
+                }
             }
         }
+        return list;
     }
-    return list;
-}
 
-/**
- * Lấy danh sách điểm dừng của một route, theo thứ tự stop_number
- */
-public List<AdminRouteStop> getRouteStops(int routeId) throws SQLException {
-    List<AdminRouteStop> list = new ArrayList<>();
-    String sql = "SELECT route_stop_number, location_id, route_stop_dwell_minutes"
-        + " FROM Route_Stops"
-        + " WHERE route_id = ?"
-        + " ORDER BY route_stop_number";
-    try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
-        ps.setInt(1, routeId);
-        try (ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                AdminRouteStop stop = new AdminRouteStop();
-                stop.setRouteId(routeId);
-                stop.setStopNumber(rs.getInt("route_stop_number"));
-                stop.setLocationId(rs.getInt("location_id"));
-                stop.setDwellMinutes(rs.getInt("route_stop_dwell_minutes"));
-                list.add(stop);
+    /**
+     * Lấy danh sách điểm dừng của một route, theo thứ tự stop_number
+     */
+    public List<AdminRouteStop> getRouteStops(int routeId) throws SQLException {
+        List<AdminRouteStop> list = new ArrayList<>();
+        String sql = "SELECT route_stop_number, location_id, route_stop_dwell_minutes"
+                + " FROM Route_Stops"
+                + " WHERE route_id = ?"
+                + " ORDER BY route_stop_number";
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql)) {
+            ps.setInt(1, routeId);
+            try ( ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    AdminRouteStop stop = new AdminRouteStop();
+                    stop.setRouteId(routeId);
+                    stop.setStopNumber(rs.getInt("route_stop_number"));
+                    stop.setLocationId(rs.getInt("location_id"));
+                    stop.setDwellMinutes(rs.getInt("route_stop_dwell_minutes"));
+                    list.add(stop);
+                }
             }
         }
+        return list;
     }
-    return list;
-}
-
 
 }

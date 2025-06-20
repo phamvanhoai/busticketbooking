@@ -11,6 +11,39 @@
 <body class="bg-gray-50">
     <div class="p-8 bg-white rounded-xl shadow-lg mt-10">
         <h2 class="text-3xl font-bold text-[#EF5222] mb-6">Create Route</h2>
+
+        <!-- Flash messages -->
+        <c:if test="${not empty success}">
+            <div class="flex items-center gap-2 p-3 mb-4 bg-green-50 border-l-4 border-green-400 text-green-700 rounded">
+                <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.707a1 1 0 00-1.414-1.414L9 
+                      10.586 7.707 9.293a1 1 0 10-1.414 
+                      1.414L9 13.414l4.707-4.707z"
+                      clip-rule="evenodd"/>
+                </svg>
+                <span class="text-sm font-medium">${success}</span>
+            </div>
+        </c:if>
+
+        <c:if test="${not empty error}">
+            <div class="flex items-center gap-2 p-3 mb-4 bg-red-50 border-l-4 border-red-400 text-red-700 rounded">
+                <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd"
+                      d="M8.257 3.099c.765-1.36 2.72-1.36 
+                      3.485 0l5.516 9.814A1.75 1.75 
+                      0 0116.516 15H3.484a1.75 1.75 
+                      0 01-1.742-2.087L8.257 3.1zM11 
+                      13a1 1 0 10-2 0 1 1 0 002 
+                      0zm-.25-2.75a.75.75 0 
+                      00-1.5 0v1.5a.75.75 0 
+                      001.5 0v-1.5z"
+                      clip-rule="evenodd"/>
+                </svg>
+                <span class="text-sm font-medium">${error}</span>
+            </div>
+        </c:if>
+
         <form action="${pageContext.request.contextPath}/admin/routes" method="post" class="space-y-6">
             <input type="hidden" name="action" value="create" />
 
@@ -66,6 +99,15 @@
                 </div>
             </div>
 
+            <!-- Status -->
+            <div>
+                <label for="routeStatus" class="block mb-1 font-medium">Status</label>
+                <select id="routeStatus" name="routeStatus" class="w-full border rounded-lg px-4 py-2 focus:outline-[#EF5222]" required>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                </select>
+            </div>
+
             <!-- Route Stops -->
             <div>
                 <h3 class="text-xl font-semibold mb-2">Route Stops</h3>
@@ -82,7 +124,7 @@
                         <tr class="stop-row">
                             <td class="px-4 py-2 stop-index">1</td>
                             <td class="px-4 py-2">
-                                <select name="stops[0].locationId" required
+                                <select name="stops[0].locationId"
                                         class="w-full border rounded px-2 py-1">
                                     <option value="" disabled selected>Select stop</option>
                                     <c:forEach var="loc" items="${locations}">
@@ -91,7 +133,7 @@
                                 </select>
                             </td>
                             <td class="px-4 py-2">
-                                <input type="number" name="stops[0].dwellMinutes" min="0" value="5" required
+                                <input type="number" name="stops[0].dwellMinutes" min="0" placeholder="e.g. 5"
                                        class="w-full border rounded px-2 py-1"/>
                             </td>
                             <td class="px-4 py-2 text-right space-x-2">
@@ -107,7 +149,7 @@
                 </button>
             </div>
 
-            
+
             <!-- Route Prices -->
             <div>
                 <h3 class="text-xl font-semibold mb-2">Route Prices</h3>
