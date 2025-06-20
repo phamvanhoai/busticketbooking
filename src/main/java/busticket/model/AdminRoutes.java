@@ -5,12 +5,12 @@
 
 public class AdminRoutes {
     private int routeId;
+    private Integer startLocationId;
+    private Integer endLocationId;
     private String startLocation;
     private String endLocation;
     private double distanceKm;
-    private String estimatedTime; // HH:mm:ss
-    private Integer startLocationId;
-    private Integer endLocationId;
+    private int estimatedTime;      // in minutes
 
 
     public AdminRoutes() {
@@ -25,7 +25,7 @@ public class AdminRoutes {
 
     // Full constructor nếu cần
     public AdminRoutes(int routeId, String startLocation, String endLocation,
-                       double distanceKm, String estimatedTime) {
+                       double distanceKm, int estimatedTime) {
         this.routeId = routeId;
         this.startLocation = startLocation;
         this.endLocation = endLocation;
@@ -33,14 +33,28 @@ public class AdminRoutes {
         this.estimatedTime = estimatedTime;
     }
 
-    // Getters và Setters
-
     public int getRouteId() {
         return routeId;
     }
 
     public void setRouteId(int routeId) {
         this.routeId = routeId;
+    }
+
+    public Integer getStartLocationId() {
+        return startLocationId;
+    }
+
+    public void setStartLocationId(Integer startLocationId) {
+        this.startLocationId = startLocationId;
+    }
+
+    public Integer getEndLocationId() {
+        return endLocationId;
+    }
+
+    public void setEndLocationId(Integer endLocationId) {
+        this.endLocationId = endLocationId;
     }
 
     public String getStartLocation() {
@@ -67,28 +81,11 @@ public class AdminRoutes {
         this.distanceKm = distanceKm;
     }
 
-    public String getEstimatedTime() {
+    public int getEstimatedTime() {
         return estimatedTime;
     }
 
-    public void setEstimatedTime(String estimatedTime) {
+    public void setEstimatedTime(int estimatedTime) {
         this.estimatedTime = estimatedTime;
     }
-
-    public Integer getStartLocationId() {
-        return startLocationId;
-    }
-
-    public void setStartLocationId(Integer startLocationId) {
-        this.startLocationId = startLocationId;
-    }
-
-    public Integer getEndLocationId() {
-        return endLocationId;
-    }
-
-    public void setEndLocationId(Integer endLocationId) {
-        this.endLocationId = endLocationId;
-    }
-
 }

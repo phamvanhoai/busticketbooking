@@ -6,8 +6,7 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@include file="/WEB-INF/include/admin/admin-header.jsp" %>
-
-
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
 <body class="bg-gray-50">
     <div class="p-8 bg-white rounded-xl shadow-lg mt-10">
@@ -15,98 +14,231 @@
         <form action="${pageContext.request.contextPath}/admin/routes" method="post" class="space-y-6">
             <input type="hidden" name="action" value="create" />
 
-            <!-- Origin -->
+            <!-- Origin (Start Location) -->
             <div>
-                <label for="origin" class="block mb-1 font-medium">Origin</label>
-                <input
-                    id="origin"
-                    name="origin"
-                    type="text"
-                    required
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-[#EF5222]"
-                    />
-            </div>
-
-            <!-- Destination -->
-            <div>
-                <label for="destination" class="block mb-1 font-medium">Destination</label>
-                <input
-                    id="destination"
-                    name="destination"
-                    type="text"
-                    required
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-[#EF5222]"
-                    />
-            </div>
-
-            <!-- Estimated Time (Hours and Minutes) -->
-            <div class="flex space-x-4">
-                <!-- Hours -->
-                <div class="flex-1">
-                    <label for="hours" class="block mb-1 font-medium">Estimated Time (Hours)</label>
-                    <input
-                        id="hours"
-                        name="hours"
-                        type="number"
-                        min="0"
-                        value="00"
-                        required
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-[#EF5222]"
-                        placeholder="Enter hours"
-                        />
-                </div>
-
-                <!-- Minutes -->
-                <div class="flex-1">
-                    <label for="minutes" class="block mb-1 font-medium">Estimated Time (Minutes)</label>
-                    <input
-                        id="minutes"
-                        name="minutes"
-                        type="number"
-                        min="0"
-                        value="00"
-                        required
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-[#EF5222]"
-                        placeholder="Enter minutes"
-                        />
-                </div>
-            </div>
-
-
-            <!-- Vehicle Type -->
-            <div>
-                <label for="vehicleType" class="block mb-1 font-medium">Vehicle Type</label>
-                <select
-                    id="vehicleType"
-                    name="vehicleType"
-                    required
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-[#EF5222]"
-                    >
-                    <option value="" disabled selected>Select vehicle type</option>
-                    <option value="Seat">Seat</option>
-                    <option value="Bunk">Bunk</option>
-                    <option value="Limousine">Limousine</option>
+                <label for="startLocationId" class="block mb-1 font-medium">Origin</label>
+                <select id="startLocationId" name="startLocationId" required
+                        class="w-full border rounded-lg px-4 py-2 focus:outline-[#EF5222]">
+                    <option value="" disabled selected>Select origin</option>
+                    <c:forEach var="loc" items="${locations}">
+                        <option value="${loc.locationId}">${loc.locationName}</option>
+                    </c:forEach>
                 </select>
             </div>
 
+            <!-- Destination (End Location) -->
+            <div>
+                <label for="endLocationId" class="block mb-1 font-medium">Destination</label>
+                <select id="endLocationId" name="endLocationId" required
+                        class="w-full border rounded-lg px-4 py-2 focus:outline-[#EF5222]">
+                    <option value="" disabled selected>Select destination</option>
+                    <c:forEach var="loc" items="${locations}">
+                        <option value="${loc.locationId}">${loc.locationName}</option>
+                    </c:forEach>
+                </select>
+            </div>
+
+            <!-- Distance (km) -->
+            <div>
+                <label for="distance" class="block mb-1 font-medium">Distance (km)</label>
+                <input
+                    id="distance"
+                    name="distance"
+                    type="number"
+                    step="any"
+                    required
+                    class="w-full border rounded-lg px-4 py-2 focus:outline-[#EF5222]"
+                    placeholder="e.g. 1700"
+                    />
+            </div>
+
+            <!-- Estimated Time -->
+            <div class="flex space-x-4">
+                <div class="flex-1">
+                    <label for="hours" class="block mb-1 font-medium">Hours</label>
+                    <input id="hours" name="hours" type="number" min="0" value="0" required
+                           class="w-full border rounded-lg px-4 py-2 focus:outline-[#EF5222]"/>
+                </div>
+                <div class="flex-1">
+                    <label for="minutes" class="block mb-1 font-medium">Minutes</label>
+                    <input id="minutes" name="minutes" type="number" min="0" max="59" value="0" required
+                           class="w-full border rounded-lg px-4 py-2 focus:outline-[#EF5222]"/>
+                </div>
+            </div>
+
+            <!-- Route Stops -->
+            <div>
+                <h3 class="text-xl font-semibold mb-2">Route Stops</h3>
+                <table id="stops-table" class="w-full table-auto border-collapse mb-4">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="px-4 py-2 text-left">#</th>
+                            <th class="px-4 py-2 text-left">Location</th>
+                            <th class="px-4 py-2 text-left">Dwell (min)</th>
+                            <th class="px-4 py-2 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="stop-row">
+                            <td class="px-4 py-2 stop-index">1</td>
+                            <td class="px-4 py-2">
+                                <select name="stops[0].locationId" required
+                                        class="w-full border rounded px-2 py-1">
+                                    <option value="" disabled selected>Select stop</option>
+                                    <c:forEach var="loc" items="${locations}">
+                                        <option value="${loc.locationId}">${loc.locationName}</option>
+                                    </c:forEach>
+                                </select>
+                            </td>
+                            <td class="px-4 py-2">
+                                <input type="number" name="stops[0].dwellMinutes" min="0" value="5" required
+                                       class="w-full border rounded px-2 py-1"/>
+                            </td>
+                            <td class="px-4 py-2 text-right space-x-2">
+                                <button type="button" class="move-up" title="Move up">↑</button>
+                                <button type="button" class="move-down" title="Move down">↓</button>
+                                <button type="button" class="remove-stop text-red-600" title="Remove">✕</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button type="button" id="addStop" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
+                    + Add Stop
+                </button>
+            </div>
+
+            
+            <!-- Route Prices -->
+            <div>
+                <h3 class="text-xl font-semibold mb-2">Route Prices</h3>
+                <table id="prices-table" class="w-full table-auto border-collapse mb-4">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="px-4 py-2 text-left">#</th>
+                            <th class="px-4 py-2 text-left">Vehicle Class</th>
+                            <th class="px-4 py-2 text-left">Price (₫)</th>
+                            <th class="px-4 py-2 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="price-row">
+                            <td class="px-4 py-2 price-index">1</td>
+                            <td class="px-4 py-2">
+                                <select name="prices[0].busTypeId" required class="w-full border rounded px-2 py-1">
+                                    <option value="" disabled selected>Select class</option>
+                                    <c:forEach var="bt" items="${busTypes}">
+                                        <option value="${bt.busTypeId}">${bt.busTypeName}</option>
+                                    </c:forEach>
+                                </select>
+                            </td>
+                            <td class="px-4 py-2">
+                                <input type="number" name="prices[0].price" step="0.01" required
+                                       class="w-full border rounded px-2 py-1" placeholder="e.g. 500000" />
+                            </td>
+                            <td class="px-4 py-2 text-right space-x-2">
+                                <button type="button" class="remove-price text-red-600">✕</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button type="button" id="addPrice"
+                        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
+                    + Add Price
+                </button>
+            </div>
+
+
             <!-- Actions -->
             <div class="flex justify-end gap-4 pt-4">
-                <a href="${pageContext.servletContext.contextPath}/admin/routes"><button
-                        type="button"
-                        class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold px-6 py-2 rounded-lg"
-                        >
+                <a href="${pageContext.servletContext.contextPath}/admin/routes">
+                    <button type="button" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold px-6 py-2 rounded-lg">
                         Cancel
-                    </button></a> 
-                <button
-                    type="submit"
-                    class="bg-[#EF5222] hover:bg-orange-600 text-white font-semibold px-6 py-2 rounded-lg"
-                    >
+                    </button>
+                </a>
+                <button type="submit" class="bg-[#EF5222] hover:bg-orange-600 text-white font-semibold px-6 py-2 rounded-lg">
                     Create
                 </button>
             </div>
         </form>
     </div>
+    <script>
+        const priceTbody = document.querySelector('#prices-table tbody');
+        const priceTemplate = document.querySelector('.price-row');
 
+        function updatePrices() {
+            priceTbody.querySelectorAll('.price-row').forEach((row, idx) => {
+                row.querySelector('.price-index').textContent = idx + 1;
+                row.querySelector('select').name = `prices[${idx}].busTypeId`;
+                row.querySelector('input').name = `prices[${idx}].price`;
+            });
+        }
+
+        document.getElementById('addPrice').addEventListener('click', () => {
+            const clone = priceTemplate.cloneNode(true);
+            clone.querySelector('.remove-price')
+                    .addEventListener('click', () => {
+                        clone.remove();
+                        updatePrices();
+                    });
+            priceTbody.appendChild(clone);
+            updatePrices();
+        });
+
+        priceTemplate.querySelector('.remove-price')
+                .addEventListener('click', (e) => {
+                    priceTemplate.remove();
+                    updatePrices();
+                });
+    </script>
+
+
+
+    <script>
+        let stopIndex = 0;
+        const tableBody = document.querySelector('#stops-table tbody');
+        const templateRow = document.querySelector('.stop-row');
+
+        function updateStops() {
+            const rows = Array.from(tableBody.querySelectorAll('.stop-row'));
+            rows.forEach((row, idx) => {
+                row.querySelector('.stop-index').textContent = idx + 1;
+                row.querySelector('select').name = `stops[${idx}].locationId`;
+                row.querySelector('input').name = `stops[${idx}].dwellMinutes`;
+            });
+        }
+
+        function addRow() {
+            stopIndex++;
+            const clone = templateRow.cloneNode(true);
+            tableBody.appendChild(clone);
+            attachRowEvents(clone);
+            updateStops();
+        }
+
+        function attachRowEvents(row) {
+            row.querySelector('.remove-stop').addEventListener('click', () => {
+                row.remove();
+                updateStops();
+            });
+            row.querySelector('.move-up').addEventListener('click', () => {
+                const prev = row.previousElementSibling;
+                if (prev) {
+                    tableBody.insertBefore(row, prev);
+                    updateStops();
+                }
+            });
+            row.querySelector('.move-down').addEventListener('click', () => {
+                const next = row.nextElementSibling;
+                if (next) {
+                    tableBody.insertBefore(next, row);
+                    updateStops();
+                }
+            });
+        }
+
+        document.getElementById('addStop').addEventListener('click', addRow);
+        document.querySelectorAll('.stop-row').forEach(attachRowEvents);
+    </script>
     <%-- CONTENT HERE--%>
 
     <%@include file="/WEB-INF/include/admin/admin-footer.jsp" %>
