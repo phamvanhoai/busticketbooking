@@ -20,8 +20,10 @@ public class StaffTrip {
     private String startLocation;
     private String endLocation;
 
+    private String routeName;
+
     public String getFormattedTripId() {
-        return String.format("TRIP %05d", tripId);  // 1 → TRIP 01, 12 → TRIP 12
+        return String.format("TRIP %04d", tripId);
     }
 
     public int getTripId() {
@@ -70,5 +72,13 @@ public class StaffTrip {
 
     public void setEndLocation(String endLocation) {
         this.endLocation = endLocation;
+    }
+
+    public String getRouteName() {
+        return routeName;
+    }
+
+    public void setRouteName(String routeName) {
+        this.routeName = routeName;
     }
 }
