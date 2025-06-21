@@ -5,6 +5,7 @@
 
 package busticket.controller;
 
+import busticket.model.AdminBusTypes;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -17,6 +18,14 @@ import jakarta.servlet.http.HttpServletResponse;
  * @author Pham Van Hoai - CE181744
  */
 public class AdminBusTypesServlet extends HttpServlet {
+
+    private static boolean updateBusType(AdminBusTypes updatedBusType) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    private static boolean addBusType(AdminBusTypes newBusType) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
  
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /** 
@@ -59,7 +68,37 @@ public class AdminBusTypesServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        
+       // Check if it's an edit request
+        if (request.getParameter("editId") != null) {
+            int busTypeId = Integer.parseInt(request.getParameter("editId"));
+            String busTypeName = request.getParameter("busTypeName");
+            String busTypeDescription = request.getParameter("busTypeDescription");
+
+            AdminBusTypes updatedBusType = new AdminBusTypes(busTypeId, busTypeName, busTypeDescription);
+            boolean updated = AdminBusTypesServlet.updateBusType(updatedBusType);
+
+            if (updated) {
+                response.sendRedirect(request.getContextPath() + "/admin/bus-types");
+            } else {
+                request.setAttribute("error", "Failed to update bus type.");
+                request.getRequestDispatcher("/WEB-INF/admin/bus-types/edit-bus-type.jsp").forward(request, response);
+            }
+        } else {
+            // Add new bus type
+            String busTypeName = request.getParameter("busTypeName");
+            String busTypeDescription = request.getParameter("busTypeDescription");
+
+            AdminBusTypes newBusType = new AdminBusTypes(0, busTypeName, busTypeDescription);
+            boolean added;
+            added = AdminBusTypesServlet.addBusType(newBusType);
+
+            if (added) {
+                response.sendRedirect(request.getContextPath() + "/admin/bus-types");
+            } else {
+                request.setAttribute("error", "Failed to add new bus type.");
+                request.getRequestDispatcher("/WEB-INF/admin/bus-types/add-bus-type.jsp").forward(request, response);
+            }
+        }
     }
 
     /** 
