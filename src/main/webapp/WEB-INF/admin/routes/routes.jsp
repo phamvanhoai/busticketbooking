@@ -65,9 +65,11 @@
                             </td>
                             <td class="py-2 px-4">
                                 <div class="flex items-center gap-4">
-                                    <button class="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm">
-                                        <i class="fas fa-eye"></i> View
-                                    </button>
+                                    <a href="${pageContext.servletContext.contextPath}/admin/routes?detail=${route.routeId}">
+                                        <button class="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                    </a>
                                     <a href="${pageContext.servletContext.contextPath}/admin/routes?editId=${route.routeId}">
                                         <button class="flex items-center gap-1 text-yellow-600 hover:text-yellow-800 text-sm">
                                             <i class="fas fa-edit"></i> Edit

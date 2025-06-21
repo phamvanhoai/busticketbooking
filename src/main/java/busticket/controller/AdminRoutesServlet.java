@@ -96,6 +96,24 @@ public class AdminRoutesServlet extends HttpServlet {
                         .forward(request, response);
                 return;
             }
+            
+            // --- Show detail form ---
+            String detailId = request.getParameter("detail");
+            if (detailId != null) {
+                int routeId = Integer.parseInt(detailId);
+                loadFormData(request, routeId);
+                // Lấy estimatedTime (phút) từ model
+                AdminRoutes route = adminRoutesDAO.getRouteById(routeId);
+                int totalMinutes = route.getEstimatedTime();
+                int hours = totalMinutes / 60;        // chia lấy phần nguyên
+                int minutes = totalMinutes % 60;        // phần dư
+
+                request.setAttribute("routeHours", hours);
+                request.setAttribute("routeMinutes", minutes);
+                request.getRequestDispatcher("/WEB-INF/admin/routes/view-route-details.jsp")
+                        .forward(request, response);
+                return;
+            }
 
             // --- List with pagination ---
             int perPage = 10;
@@ -110,6 +128,7 @@ public class AdminRoutesServlet extends HttpServlet {
             List<AdminRoutes> routes = adminRoutesDAO.getAllRoutes(offset, perPage);
             int total = adminRoutesDAO.countRoutes();
             int totalPages = (int) Math.ceil((double) total / perPage);
+            
 
             request.setAttribute("routes", routes);
             request.setAttribute("currentPage", page);
