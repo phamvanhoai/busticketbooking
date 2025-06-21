@@ -4,13 +4,8 @@
  */
 package busticket.controller;
 
-<<<<<<< Updated upstream
-import busticket.DAO.BookingDAO;
-import busticket.model.Tickets;
-=======
 import busticket.DAO.StaffManageBookingDAO;
 import busticket.model.StaffTicket;
->>>>>>> Stashed changes
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -27,11 +22,9 @@ import java.util.List;
 public class StaffManageBookingsServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-<<<<<<< Updated upstream
-    private final BookingDAO dao = new BookingDAO();
-=======
+
     private final StaffManageBookingDAO dao = new StaffManageBookingDAO();
->>>>>>> Stashed changes
+
 
     /**
      * Handles the HTTP <code>GET</code> method.
@@ -44,18 +37,7 @@ public class StaffManageBookingsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-<<<<<<< Updated upstream
-        // Retrieve all bookings
-        List<Tickets> all = dao.getAllBookings();
 
-        // Read search and status parameters
-        String q = request.getParameter("q");
-        String status = request.getParameter("status");
-
-        // Filter in-memory
-        List<Tickets> filtered = new ArrayList<>();
-        for (Tickets b : all) {
-=======
 
         String uri = request.getRequestURI();
         String contextPath = request.getContextPath();
@@ -100,7 +82,6 @@ public class StaffManageBookingsServlet extends HttpServlet {
         // Filter
         List<StaffTicket> filtered = new ArrayList<>();
         for (StaffTicket b : all) {
->>>>>>> Stashed changes
             boolean matchesSearch = (q == null || q.isEmpty())
                     || b.getTicketId().toLowerCase().contains(q.toLowerCase())
                     || b.getUserName().toLowerCase().contains(q.toLowerCase());
@@ -112,14 +93,6 @@ public class StaffManageBookingsServlet extends HttpServlet {
             }
         }
 
-<<<<<<< Updated upstream
-        // Set attributes for JSP
-        request.setAttribute("bookings", filtered);
-        request.setAttribute("q", q);
-        request.setAttribute("status", status);
-
-        // Forward to JSP view
-=======
         // Pagination logic
         int limit = 10;
         int totalItems = filtered.size();
@@ -139,7 +112,6 @@ public class StaffManageBookingsServlet extends HttpServlet {
         request.setAttribute("numOfPages", totalPages);
         request.setAttribute("baseUrlWithSearch", contextPath + "/staff/manage-bookings");
 
->>>>>>> Stashed changes
         request.getRequestDispatcher("/WEB-INF/staff/manage-bookings/manage-bookings.jsp")
                 .forward(request, response);
     }
@@ -155,15 +127,7 @@ public class StaffManageBookingsServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-<<<<<<< Updated upstream
-        // Read form parameters
-        String q = request.getParameter("q");
-        String status = request.getParameter("status");
 
-        // Build redirect URL including parameters
-        String redirectUrl = request.getContextPath() + "/staff/manage-bookings";
-        boolean hasQuery = false;
-=======
         // Read form inputs
         String q = request.getParameter("q");
         String status = request.getParameter("status");
@@ -172,15 +136,12 @@ public class StaffManageBookingsServlet extends HttpServlet {
         String redirectUrl = request.getContextPath() + "/staff/manage-bookings";
         boolean hasQuery = false;
 
->>>>>>> Stashed changes
+
         if (q != null && !q.isEmpty()) {
             redirectUrl += "?q=" + q;
             hasQuery = true;
         }
-<<<<<<< Updated upstream
-=======
 
->>>>>>> Stashed changes
         if (status != null && !status.isEmpty()) {
             redirectUrl += hasQuery ? "&" : "?";
             redirectUrl += "status=" + status;
