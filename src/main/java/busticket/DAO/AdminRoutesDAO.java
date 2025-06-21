@@ -83,18 +83,17 @@ public class AdminRoutesDAO extends DBContext {
      * Tạo mới 1 route và trả về route_id được sinh tự động
      */
     public int createRoute(AdminRoutes route) throws SQLException {
-        String sql = "INSERT INTO Routes ("
-                + "    start_location_id, end_location_id, distance_km, estimated_time, route_status"
-                + ") VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Routes "
+                + "(start_location_id, end_location_id, distance_km, estimated_time, route_status) "
+                + "VALUES(?,?,?,?,?)";
         try ( PreparedStatement ps = getConnection()
                 .prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, route.getStartLocationId());
             ps.setInt(2, route.getEndLocationId());
             ps.setDouble(3, route.getDistanceKm());
             ps.setInt(4, route.getEstimatedTime());
-            ps.setString(5, route.getRouteStatus());  // thêm status
+            ps.setString(5, route.getRouteStatus());
             ps.executeUpdate();
-
             try ( ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
                     return rs.getInt(1);
@@ -191,7 +190,7 @@ public class AdminRoutesDAO extends DBContext {
                     route.setEndLocation(rs.getString("end_location"));
                     route.setDistanceKm(rs.getDouble("distance_km"));
                     route.setEstimatedTime(rs.getInt("estimated_time"));
-                    route.setRouteStatus(rs.getString("route_status"));  // gán status
+                    route.setRouteStatus(rs.getString("route_status"));  
                 }
             }
         } catch (SQLException e) {

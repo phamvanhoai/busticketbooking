@@ -35,6 +35,19 @@ public class AdminRoutes {
         this.routeStatus = routeStatus;
     }
 
+    public AdminRoutes(int routeId, Integer startLocationId, Integer endLocationId, String startLocation, String endLocation, double distanceKm, int estimatedTime, String routeStatus) {
+        this.routeId = routeId;
+        this.startLocationId = startLocationId;
+        this.endLocationId = endLocationId;
+        this.startLocation = startLocation;
+        this.endLocation = endLocation;
+        this.distanceKm = distanceKm;
+        this.estimatedTime = estimatedTime;
+        this.routeStatus = routeStatus;
+    }
+    
+    
+
     public int getRouteId() {
         return routeId;
     }

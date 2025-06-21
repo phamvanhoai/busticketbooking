@@ -17,7 +17,7 @@
         <script src="https://cdn.tailwindcss.com"></script>
         <!-- Font Awesome -->
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/all.min.css">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js">
+<!--        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js">-->
         <style>
             /* Hide the dropdown by default */
             .dropdown-content {
