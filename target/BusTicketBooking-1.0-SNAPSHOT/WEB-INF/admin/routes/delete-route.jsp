@@ -10,7 +10,7 @@
 <body class="bg-gray-50">
   <form action="${pageContext.request.contextPath}/admin/routes" method="post">
     <input type="hidden" name="action" value="delete" />
-    <input type="hidden" name="route_id" value="${route.routeId}" />
+    <input type="hidden" name="routeId" value="${route.routeId}" />
 
     <div class="bg-gray-50 p-10 rounded-3xl shadow-xl mt-8">
       <h1 class="text-3xl font-bold mb-8" style="color: #EF5222;">

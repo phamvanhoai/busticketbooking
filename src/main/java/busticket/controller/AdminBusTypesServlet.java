@@ -2,16 +2,23 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
-
 package busticket.controller;
 
+import busticket.DAO.AdminBusTypesDAO;
 import busticket.model.AdminBusTypes;
+import busticket.model.AdminSeatTemplate;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -19,17 +26,10 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 public class AdminBusTypesServlet extends HttpServlet {
 
-    private static boolean updateBusType(AdminBusTypes updatedBusType) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    private static boolean addBusType(AdminBusTypes newBusType) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
- 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /** 
+    /**
      * Handles the HTTP <code>GET</code> method.
+     *
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
@@ -37,29 +37,68 @@ public class AdminBusTypesServlet extends HttpServlet {
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
+            throws ServletException, IOException {
+
+        AdminBusTypesDAO adminBusTypesDAO = new AdminBusTypesDAO();
+        // Lấy tham số hành động (action)
+        String action = request.getParameter("action");
         if (request.getParameter("add") != null) {
             request.getRequestDispatcher("/WEB-INF/admin/bus-types/add-bus-type.jsp").forward(request, response);
             return;
         }
-        
+
         if (request.getParameter("delete") != null) {
             request.getRequestDispatcher("/WEB-INF/admin/bus-types/delete-bus-type.jsp").forward(request, response);
             return;
         }
-        
+
         if (request.getParameter("editId") != null) {
             request.getRequestDispatcher("/WEB-INF/admin/bus-types/edit-bus-type.jsp").forward(request, response);
             return;
         }
-        
+
+        // --- PHÂN TRANG ---
+        int currentPage = 1, rowsPerPage = 10;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null) {
+            try {
+                currentPage = Integer.parseInt(pageParam);
+            } catch (NumberFormatException e) {
+                /* giữ page=1 */ }
+        }
+        int offset = (currentPage - 1) * rowsPerPage;
+
+        try {
+            // 1. Lấy danh sách bus types phân trang
+            List<AdminBusTypes> busTypes = adminBusTypesDAO.getBusTypes(offset, rowsPerPage);
+            request.setAttribute("busTypes", busTypes);
+
+            // 2. Tạo map seat templates nếu cần hiển thị
+            Map<Integer, List<AdminSeatTemplate>> templatesMap = new HashMap<>();
+            for (AdminBusTypes bt : busTypes) {
+                templatesMap.put(bt.getBusTypeId(),
+                        adminBusTypesDAO.getSeatTemplatesForType(bt.getBusTypeId()));
+            }
+            request.setAttribute("templatesMap", templatesMap);
+
+            // 3. Tính toán tổng số trang
+            int total = adminBusTypesDAO.getTotalBusTypesCount();
+            int totalPages = (int) Math.ceil((double) total / rowsPerPage);
+            request.setAttribute("currentPage", currentPage);
+            request.setAttribute("totalPages", totalPages);
+
+        } catch (SQLException e) {
+            throw new ServletException(e);
+        }
+
         request.getRequestDispatcher("/WEB-INF/admin/bus-types/bus-types.jsp")
                 .forward(request, response);
-        
-    } 
 
-    /** 
+    }
+
+    /**
      * Handles the HTTP <code>POST</code> method.
+     *
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
@@ -67,42 +106,13 @@ public class AdminBusTypesServlet extends HttpServlet {
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-       // Check if it's an edit request
-        if (request.getParameter("editId") != null) {
-            int busTypeId = Integer.parseInt(request.getParameter("editId"));
-            String busTypeName = request.getParameter("busTypeName");
-            String busTypeDescription = request.getParameter("busTypeDescription");
+            throws ServletException, IOException {
 
-            AdminBusTypes updatedBusType = new AdminBusTypes(busTypeId, busTypeName, busTypeDescription);
-            boolean updated = AdminBusTypesServlet.updateBusType(updatedBusType);
-
-            if (updated) {
-                response.sendRedirect(request.getContextPath() + "/admin/bus-types");
-            } else {
-                request.setAttribute("error", "Failed to update bus type.");
-                request.getRequestDispatcher("/WEB-INF/admin/bus-types/edit-bus-type.jsp").forward(request, response);
-            }
-        } else {
-            // Add new bus type
-            String busTypeName = request.getParameter("busTypeName");
-            String busTypeDescription = request.getParameter("busTypeDescription");
-
-            AdminBusTypes newBusType = new AdminBusTypes(0, busTypeName, busTypeDescription);
-            boolean added;
-            added = AdminBusTypesServlet.addBusType(newBusType);
-
-            if (added) {
-                response.sendRedirect(request.getContextPath() + "/admin/bus-types");
-            } else {
-                request.setAttribute("error", "Failed to add new bus type.");
-                request.getRequestDispatcher("/WEB-INF/admin/bus-types/add-bus-type.jsp").forward(request, response);
-            }
-        }
     }
 
-    /** 
+    /**
      * Returns a short description of the servlet.
+     *
      * @return a String containing servlet description
      */
     @Override

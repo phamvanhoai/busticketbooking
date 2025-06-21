@@ -146,6 +146,6 @@
                 url="${baseUrl}" />
         </div>
     </div>
-</div>
-<%-- CONTENT HERE--%>
-<%@include file="/WEB-INF/include/admin/admin-footer.jsp" %>
+
+    <%-- CONTENT HERE--%>
+    <%@include file="/WEB-INF/include/admin/admin-footer.jsp" %>

@@ -6,120 +6,73 @@ package busticket.DAO;
 
 import busticket.db.DBContext;
 import busticket.model.AdminBusTypes;
+import busticket.model.AdminSeatTemplate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
  * @author Pham Van Hoai - CE181744
  */
 public class AdminBusTypesDAO extends DBContext {
-   private static final Logger LOGGER = Logger.getLogger(AdminBusTypesDAO.class.getName());
 
-    // Get all bus types
-    public List<AdminBusTypes> getAllBusTypes() {
-        List<AdminBusTypes> busTypes = new ArrayList<>();
-        String query = "SELECT bus_type_id, bus_type_name, bus_type_description FROM Bus_Types";
-
-        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                AdminBusTypes busType = new AdminBusTypes(
-                        rs.getInt("bus_type_id"),
-                        rs.getString("bus_type_name"),
-                        rs.getString("bus_type_description")
-                );
-                busTypes.add(busType);
+    public List<AdminBusTypes> getBusTypes(int offset, int limit) throws SQLException {
+        String sql = "SELECT bus_type_id, bus_type_name, bus_type_description "
+                + "FROM Bus_Types "
+                + "ORDER BY bus_type_id "
+                + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        List<AdminBusTypes> list = new ArrayList<>();
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, offset);
+            ps.setInt(2, limit);
+            try ( ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new AdminBusTypes(
+                            rs.getInt("bus_type_id"),
+                            rs.getString("bus_type_name"),
+                            rs.getString("bus_type_description")
+                    ));
+                }
             }
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error retrieving all bus types", e);
         }
-
-        return busTypes;
+        return list;
     }
 
-    // Get a specific bus type by ID
-    public AdminBusTypes getBusTypeById(int busTypeId) {
-        AdminBusTypes busType = null;
-        String query = "SELECT bus_type_id, bus_type_name, bus_type_description FROM Bus_Types WHERE bus_type_id = ?";
-
-        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setInt(1, busTypeId);
-            ResultSet rs = stmt.executeQuery();
+    // Đếm tổng số bus types
+    public int getTotalBusTypesCount() throws SQLException {
+        String sql = "SELECT COUNT(*) FROM Bus_Types";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
-                busType = new AdminBusTypes(
-                        rs.getInt("bus_type_id"),
-                        rs.getString("bus_type_name"),
-                        rs.getString("bus_type_description")
-                );
+                return rs.getInt(1);
             }
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error retrieving bus type by ID", e);
         }
-
-        return busType;
+        return 0;
     }
 
-    // Add a new bus type
-    public boolean addBusType(AdminBusTypes busType) {
-        String query = "INSERT INTO Bus_Types (bus_type_name, bus_type_description) VALUES (?, ?)";
-
-        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, busType.getBusTypeName());
-            stmt.setString(2, busType.getBusTypeDescription());
-            int rowsAffected = stmt.executeUpdate();
-            if (rowsAffected > 0) {
-                LOGGER.log(Level.INFO, "Successfully added new bus type: " + busType.getBusTypeName());
-                return true;
+    // 2. Lấy seat templates cho 1 bus type
+    public List<AdminSeatTemplate> getSeatTemplatesForType(int busTypeId) throws SQLException {
+        String sql = "SELECT st.seat_template_id, st.code, st.level "
+                + "FROM Bus_Type_Seat_Template btst "
+                + "  JOIN Seat_Templates st ON btst.seat_template_id = st.seat_template_id "
+                + "WHERE btst.bus_type_id = ? AND btst.is_active = 1 "
+                + "ORDER BY st.level, st.code";
+        List<AdminSeatTemplate> list = new ArrayList<>();
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, busTypeId);
+            try ( ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new AdminSeatTemplate(
+                            rs.getInt("seat_template_id"),
+                            rs.getString("code"),
+                            rs.getString("level")
+                    ));
+                }
             }
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error adding new bus type", e);
         }
-
-        return false;
-    }
-
-    // Update an existing bus type
-    public boolean updateBusType(AdminBusTypes busType) {
-        String query = "UPDATE Bus_Types SET bus_type_name = ?, bus_type_description = ? WHERE bus_type_id = ?";
-
-        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, busType.getBusTypeName());
-            stmt.setString(2, busType.getBusTypeDescription());
-            stmt.setInt(3, busType.getBusTypeId());
-            int rowsAffected = stmt.executeUpdate();
-            if (rowsAffected > 0) {
-                LOGGER.log(Level.INFO, "Successfully updated bus type with ID: " + busType.getBusTypeId());
-                return true;
-            }
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error updating bus type", e);
-        }
-
-        return false;
-    }
-
-    // Delete a bus type by ID
-    public boolean deleteBusType(int busTypeId) {
-        String query = "DELETE FROM Bus_Types WHERE bus_type_id = ?";
-
-        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setInt(1, busTypeId);
-            int rowsAffected = stmt.executeUpdate();
-            if (rowsAffected > 0) {
-                LOGGER.log(Level.INFO, "Successfully deleted bus type with ID: " + busTypeId);
-                return true;
-            }
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error deleting bus type", e);
-        }
-
-        return false;
+        return list;
     }
 }

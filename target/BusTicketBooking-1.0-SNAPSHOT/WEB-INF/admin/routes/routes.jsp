@@ -31,6 +31,7 @@
                         <th class="py-2 px-4">Destination</th>
                         <th class="py-2 px-4">Estimated Time</th>
                         <th class="py-2 px-4">Distance</th>
+                        <th class="py-2 px-4">Status</th>
                         <th class="py-2 px-4">Actions</th>
                     </tr>
                 </thead>
@@ -43,11 +44,32 @@
                             <td class="py-2 px-4">${route.endLocation}</td>
                             <td class="py-2 px-4">${route.estimatedTime}</td>
                             <td class="py-2 px-4">${route.distanceKm} km</td>
+                            <td class="px-4 py-3">
+                                <c:choose>
+                                    <c:when test="${route.routeStatus == 'Inactive'}">
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-red-100 text-red-600">
+                                            Inactive
+                                        </span>
+                                    </c:when>
+                                    <c:when test="${route.routeStatus == 'Active'}">
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-green-100 text-green-700">
+                                            Active
+                                        </span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-gray-100 text-gray-700">
+                                            ${route.routeStatus}
+                                        </span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
                             <td class="py-2 px-4">
                                 <div class="flex items-center gap-4">
-                                    <button class="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm">
-                                        <i class="fas fa-eye"></i> View
-                                    </button>
+                                    <a href="${pageContext.servletContext.contextPath}/admin/routes?detail=${route.routeId}">
+                                        <button class="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                    </a>
                                     <a href="${pageContext.servletContext.contextPath}/admin/routes?editId=${route.routeId}">
                                         <button class="flex items-center gap-1 text-yellow-600 hover:text-yellow-800 text-sm">
                                             <i class="fas fa-edit"></i> Edit
