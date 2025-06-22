@@ -11,6 +11,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,7 +60,7 @@ public class AdminBusTypesDAO extends DBContext {
         String sql = "SELECT st.seat_template_id, st.code, st.level "
                 + "FROM Bus_Type_Seat_Template btst "
                 + "  JOIN Seat_Templates st ON btst.seat_template_id = st.seat_template_id "
-                + "WHERE btst.bus_type_id = ? AND btst.is_active = 1 "
+                + "WHERE btst.bus_type_id = ? AND btst.bus_type_seat_template_is_active = 1 "
                 + "ORDER BY st.level, st.code";
         List<AdminSeatTemplate> list = new ArrayList<>();
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -75,4 +77,59 @@ public class AdminBusTypesDAO extends DBContext {
         }
         return list;
     }
+    
+    
+    
+    // Insert BusType and return generated bus_type_id
+    public int insertBusType(AdminBusTypes bt) throws SQLException {
+        String sql = "INSERT INTO Bus_Types(bus_type_name, bus_type_description) VALUES(?,?)";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, bt.getBusTypeName());
+            ps.setString(2, bt.getBusTypeDescription());
+            ps.executeUpdate();
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        }
+        throw new SQLException("Failed to insert bus type, no ID obtained.");
+    }
+
+    // Lookup seat_template_id by code
+    public Integer getSeatTemplateIdByCode(String code) throws SQLException {
+        String sql = "SELECT seat_template_id FROM Seat_Templates WHERE code = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, code);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt("seat_template_id");
+            }
+        }
+        return null;
+    }
+
+    // Insert one seat position or aisle
+    public void insertSeatPosition(int busTypeId, String zone,
+                                   int row, int col, boolean isAisle,
+                                   int ord, Integer seatTemplateId) throws SQLException {
+        String sql = "INSERT INTO Bus_Type_Seat_Template(" +
+                     "bus_type_id, seat_template_id, bus_type_seat_template_is_active, " +
+                     "bus_type_seat_template_zone, bus_type_seat_template_row, " +
+                     "bus_type_seat_template_col, bus_type_seat_template_is_aisle, " +
+                     "bus_type_seat_template_order) VALUES (?,?,?,?,?,?,?,?)";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, busTypeId);
+            if (seatTemplateId != null) ps.setInt(2, seatTemplateId);
+            else ps.setNull(2, Types.INTEGER);
+            ps.setBoolean(3, true);
+            ps.setString(4, zone);
+            ps.setInt(5, row);
+            ps.setInt(6, col);
+            ps.setBoolean(7, isAisle);
+            ps.setInt(8, ord);
+            ps.executeUpdate();
+        }
+    }
+
 }

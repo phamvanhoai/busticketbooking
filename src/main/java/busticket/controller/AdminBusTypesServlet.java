@@ -13,6 +13,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -107,7 +108,27 @@ public class AdminBusTypesServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        String action = request.getParameter("action");
+        AdminBusTypesDAO adminBusTypesDAO = new AdminBusTypesDAO();
+        HttpSession session = request.getSession();
 
+        try {
+            if ("add".equals(action)) {
+                session.setAttribute("success", "Location added successfully!");
+
+            } else if ("edit".equals(action)) {
+                session.setAttribute("success", "Location updated successfully!");
+
+            } else if ("delete".equals(action)) {
+                session.setAttribute("success", "Location deleted successfully!");
+            }
+
+        } catch (Exception ex) {
+            session.setAttribute("error", "Error processing location: " + ex.getMessage());
+        }
+
+        response.sendRedirect(request.getContextPath() + "/admin/bus-types");
     }
 
     /**
