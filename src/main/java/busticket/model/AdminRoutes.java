@@ -1,30 +1,49 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package busticket.model;
+ */package busticket.model;
 
-/**
- *
- * @author Pham Van Hoai - CE181744
- */
 public class AdminRoutes {
+
     private int routeId;
+    private Integer startLocationId;
+    private Integer endLocationId;
     private String startLocation;
     private String endLocation;
     private double distanceKm;
-    private String estimatedTime;
-    private Integer startLocationId;
-    private Integer endLocationId;
+    private int estimatedTime;      // in minutes
+    private String routeStatus;   // ← thêm
 
     public AdminRoutes() {
     }
 
-    //get route for Admin add trip
+    // Constructor ngắn để show danh sách
     public AdminRoutes(int routeId, String startLocation, String endLocation) {
         this.routeId = routeId;
         this.startLocation = startLocation;
         this.endLocation = endLocation;
+    }
+
+    // Full constructor nếu cần
+    public AdminRoutes(int routeId, String startLocation, String endLocation,
+            double distanceKm, int estimatedTime, String routeStatus) {
+        this.routeId = routeId;
+        this.startLocation = startLocation;
+        this.endLocation = endLocation;
+        this.distanceKm = distanceKm;
+        this.estimatedTime = estimatedTime;
+        this.routeStatus = routeStatus;
+    }
+
+    public AdminRoutes(int routeId, Integer startLocationId, Integer endLocationId, String startLocation, String endLocation, double distanceKm, int estimatedTime, String routeStatus) {
+        this.routeId = routeId;
+        this.startLocationId = startLocationId;
+        this.endLocationId = endLocationId;
+        this.startLocation = startLocation;
+        this.endLocation = endLocation;
+        this.distanceKm = distanceKm;
+        this.estimatedTime = estimatedTime;
+        this.routeStatus = routeStatus;
     }
     
     
@@ -35,6 +54,22 @@ public class AdminRoutes {
 
     public void setRouteId(int routeId) {
         this.routeId = routeId;
+    }
+
+    public Integer getStartLocationId() {
+        return startLocationId;
+    }
+
+    public void setStartLocationId(Integer startLocationId) {
+        this.startLocationId = startLocationId;
+    }
+
+    public Integer getEndLocationId() {
+        return endLocationId;
+    }
+
+    public void setEndLocationId(Integer endLocationId) {
+        this.endLocationId = endLocationId;
     }
 
     public String getStartLocation() {
@@ -61,28 +96,20 @@ public class AdminRoutes {
         this.distanceKm = distanceKm;
     }
 
-    public String getEstimatedTime() {
+    public int getEstimatedTime() {
         return estimatedTime;
     }
 
-    public void setEstimatedTime(String estimatedTime) {
+    public void setEstimatedTime(int estimatedTime) {
         this.estimatedTime = estimatedTime;
     }
 
-    public Integer getStartLocationId() {
-        return startLocationId;
+    public String getRouteStatus() {
+        return routeStatus;
     }
 
-    public void setStartLocationId(Integer startLocationId) {
-        this.startLocationId = startLocationId;
-    }
-
-    public Integer getEndLocationId() {
-        return endLocationId;
-    }
-
-    public void setEndLocationId(Integer endLocationId) {
-        this.endLocationId = endLocationId;
+    public void setRouteStatus(String routeStatus) {
+        this.routeStatus = routeStatus;
     }
     
     

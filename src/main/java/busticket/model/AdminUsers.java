@@ -12,7 +12,7 @@ import java.sql.Timestamp;
  * @author Nguyen Thanh Truong - CE180140
  */
 public class AdminUsers {
-    // Khai báo các biến cho các cột trong bảng users
+
     private int user_id;
     private String name;
     private String email;
@@ -25,7 +25,12 @@ public class AdminUsers {
     private String address;
     private Timestamp created_at;
 
+    public String getFormattedId() {
+        return String.format("ACC %04d", user_id);
+    }
+
     public AdminUsers() {
+
     }
 
     public AdminUsers(int user_id, String name, String email, String password, String phone, String role, String status, Timestamp birthdate, String gender, String address, Timestamp created_at) {
@@ -54,7 +59,7 @@ public class AdminUsers {
         this.address = address;
         this.created_at = created_at;
     }
-    
+
     public AdminUsers(String name, String email, String phone, String role, String status, Timestamp birthdate, String gender, String address) {
         this.name = name;
         this.email = email;
@@ -77,8 +82,6 @@ public class AdminUsers {
         this.created_at = created_at;
     }
 
-    
-    
     public AdminUsers(int user_id, String name, String email, String phone, String role, String status, Timestamp birthdate, String gender, String address) {
         this.user_id = user_id;
         this.name = name;
@@ -95,7 +98,6 @@ public class AdminUsers {
         this.user_id = user_id;
         this.name = name;
     }
-
 
     public int getUser_id() {
         return user_id;
@@ -185,5 +187,4 @@ public class AdminUsers {
         this.created_at = created_at;
     }
 
-    
 }

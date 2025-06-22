@@ -90,7 +90,7 @@ public class AdminPaginationHandler extends TagSupport {
             for (int i = startPage; i <= endPage; i++) {
                 if (i == currentPage) {
                     pagination.append(String.format(
-                        "<button class=\"px-4 py-2 bg-orange-500 text-white rounded-lg\">%d</button>", i
+                        "<button class=\"px-4 py-2 bg-[#EF5222] text-white rounded-lg\">%d</button>", i
                     ));
                 } else {
                     pagination.append(String.format(

@@ -27,10 +27,10 @@ public class AdminTripsDAO extends DBContext {
 
     public List<AdminTrips> getAllTrips(String route, String busType, String driver, int offset, int limit) {
         List<AdminTrips> trips = new ArrayList<>();
-        StringBuilder query = new StringBuilder(
+        StringBuilder sql = new StringBuilder(
                 "SELECT "
                 + " t.trip_id, "
-                + " CONCAT(r.start_location, N' → ', r.end_location) AS route, "
+                + " CONCAT(ls.location_name, ' → ', le.location_name) AS route, "
                 + " CAST(t.departure_time AS date) AS trip_date, "
                 + " CONVERT(varchar(5), t.departure_time, 108) AS trip_time, "
                 + " bt.bus_type_name AS bus_type, "
@@ -38,26 +38,28 @@ public class AdminTripsDAO extends DBContext {
                 + " t.bus_id, "
                 + " t.trip_status AS status "
                 + "FROM Trips t "
-                + " JOIN Routes r          ON t.route_id = r.route_id "
-                + " JOIN Buses b           ON t.bus_id   = b.bus_id "
-                + " JOIN Bus_Types bt      ON b.bus_type_id = bt.bus_type_id "
-                + " JOIN Drivers d         ON t.driver_id = d.driver_id "
-                + " JOIN Users u           ON d.user_id    = u.user_id "
+                + " JOIN Routes r               ON t.route_id = r.route_id "
+                + " JOIN Locations ls           ON r.start_location_id = ls.location_id "
+                + " JOIN Locations le           ON r.end_location_id   = le.location_id "
+                + " JOIN Buses b                ON t.bus_id   = b.bus_id "
+                + " JOIN Bus_Types bt           ON b.bus_type_id = bt.bus_type_id "
+                + " JOIN Drivers d              ON t.driver_id = d.driver_id "
+                + " JOIN Users u                ON d.user_id    = u.user_id "
                 + "WHERE 1=1"
         );
 
         if (route != null && !route.isEmpty()) {
-            query.append(" AND CONCAT(r.start_location, ' → ', r.end_location) LIKE ?");
+            sql.append(" AND (ls.location_name + ' → ' + le.location_name) LIKE ?");
         }
         if (busType != null && !busType.isEmpty()) {
-            query.append(" AND bt.bus_type_name LIKE ?");
+            sql.append(" AND bt.bus_type_name LIKE ?");
         }
         if (driver != null && !driver.isEmpty()) {
-            query.append(" AND d.driver_id LIKE ?");
+            sql.append(" AND u.user_name LIKE ?");
         }
-        query.append(" ORDER BY t.trip_id ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        sql.append(" ORDER BY t.trip_id ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
 
-        try ( PreparedStatement ps = getConnection().prepareStatement(query.toString())) {
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql.toString())) {
             int idx = 1;
             if (route != null && !route.isEmpty()) {
                 ps.setString(idx++, "%" + route + "%");
@@ -71,106 +73,110 @@ public class AdminTripsDAO extends DBContext {
             ps.setInt(idx++, offset);
             ps.setInt(idx, limit);
 
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                trips.add(new AdminTrips(
-                        rs.getInt("trip_id"),
-                        rs.getString("route"),
-                        rs.getDate("trip_date"),
-                        rs.getString("trip_time"),
-                        rs.getString("bus_type"),
-                        rs.getString("driver"),
-                        rs.getInt("bus_id"),
-                        rs.getString("status")
-                ));
+            try ( ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    trips.add(new AdminTrips(
+                            rs.getInt("trip_id"),
+                            rs.getString("route"),
+                            rs.getDate("trip_date"),
+                            rs.getString("trip_time"),
+                            rs.getString("bus_type"),
+                            rs.getString("driver"),
+                            rs.getInt("bus_id"),
+                            rs.getString("status")
+                    ));
+                }
             }
         } catch (SQLException ex) {
-            Logger.getLogger(AdminTripsDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AdminTripsDAO.class.getName())
+                    .log(Level.SEVERE, null, ex);
         }
         return trips;
     }
 
     public int getTotalTripsCount(String route, String busType, String driver) {
-        // Xây dựng câu truy vấn đếm tổng số chuyến đi với các điều kiện lọc
-        StringBuilder query = new StringBuilder(
-                "SELECT COUNT(*) FROM Trips t "
-                + "JOIN Routes r ON t.route_id = r.route_id "
-                + "JOIN Buses b ON t.bus_id = b.bus_id "
-                + "JOIN Bus_Types bt ON b.bus_type_id = bt.bus_type_id "
-                + "JOIN Drivers d ON t.driver_id = d.driver_id "
-                + "JOIN Users u ON d.user_id = u.user_id "
+        StringBuilder sql = new StringBuilder(
+                "SELECT COUNT(*) "
+                + "FROM Trips t "
+                + " JOIN Routes r               ON t.route_id = r.route_id "
+                + " JOIN Locations ls           ON r.start_location_id = ls.location_id "
+                + " JOIN Locations le           ON r.end_location_id   = le.location_id "
+                + " JOIN Buses b                ON t.bus_id   = b.bus_id "
+                + " JOIN Bus_Types bt           ON b.bus_type_id = bt.bus_type_id "
+                + " JOIN Drivers d              ON t.driver_id = d.driver_id "
+                + " JOIN Users u                ON d.user_id    = u.user_id "
                 + "WHERE 1=1"
         );
 
-        // Thêm điều kiện lọc nếu có
         if (route != null && !route.isEmpty()) {
-            query.append(" AND CONCAT(r.start_location, ' → ', r.end_location) LIKE ?");
+            sql.append(" AND (ls.location_name + ' → ' + le.location_name) LIKE ?");
         }
         if (busType != null && !busType.isEmpty()) {
-            query.append(" AND bt.bus_type_name LIKE ?");
+            sql.append(" AND bt.bus_type_name LIKE ?");
         }
         if (driver != null && !driver.isEmpty()) {
-            query.append(" AND d.driver_id LIKE ?");
+            sql.append(" AND u.user_name LIKE ?");
         }
 
-        // Thực thi câu truy vấn và trả về tổng số chuyến đi
-        try ( PreparedStatement ps = getConnection().prepareStatement(query.toString())) {
-            int paramIndex = 1;
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql.toString())) {
+            int idx = 1;
             if (route != null && !route.isEmpty()) {
-                ps.setString(paramIndex++, "%" + route + "%");
+                ps.setString(idx++, "%" + route + "%");
             }
             if (busType != null && !busType.isEmpty()) {
-                ps.setString(paramIndex++, "%" + busType + "%");
+                ps.setString(idx++, "%" + busType + "%");
             }
             if (driver != null && !driver.isEmpty()) {
-                ps.setString(paramIndex++, "%" + driver + "%");
+                ps.setString(idx++, "%" + driver + "%");
             }
 
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1);  // Trả về tổng số chuyến đi
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
             }
         } catch (SQLException ex) {
-            Logger.getLogger(AdminTripsDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AdminTripsDAO.class.getName())
+                    .log(Level.SEVERE, null, ex);
         }
         return 0;
     }
 
-    /**
-     * Thêm một trip mới, mặc định trip_status = 'Scheduled'
-     */
-    public void addTrip(int routeId, int busId, int driverId, Timestamp departureTime, String status) throws SQLException {
-        String sql = "INSERT INTO Trips(route_id, bus_id, driver_id, departure_time, trip_status) "
-                + "VALUES(?, ?, ?, ?, ?)";
+    // 1) Thêm trip (không thay đổi)
+    public void addTrip(int routeId, int busId, int driverId, Timestamp departureTime, String status)
+            throws SQLException {
+        String sql = "INSERT INTO Trips(route_id, bus_id, driver_id, departure_time, trip_status) VALUES(?, ?, ?, ?, ?)";
         try ( PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, routeId);
             ps.setInt(2, busId);
             ps.setInt(3, driverId);
             ps.setTimestamp(4, departureTime);
-            ps.setString(5, status);   // dùng status từ form
+            ps.setString(5, status);
             ps.executeUpdate();
         }
     }
 
+// 2) Lấy thông tin trip cơ bản để edit/view list
     public AdminTrips getTripById(int tripId) throws SQLException {
-        String sql
-                = "SELECT "
+        String sql = "SELECT "
                 + "  t.trip_id, "
                 + "  t.route_id, "
-                + "  CONCAT(r.start_location, N' → ', r.end_location) AS route, "
-                + "  CAST(t.departure_time AS DATE)    AS tripDate, "
+                + "  CONCAT(ls.location_name, ' → ', le.location_name) AS route, "
+                + "  CAST(t.departure_time AS DATE) AS tripDate, "
                 + "  CONVERT(VARCHAR(5), t.departure_time, 108) AS tripTime, "
                 + "  t.bus_id, "
-                + "  bt.bus_type_name    AS busType, "
+                + "  bt.bus_type_name AS busType, "
                 + "  t.driver_id, "
-                + "  u.user_name         AS driver, "
-                + "  t.trip_status       AS status "
+                + "  u.user_name AS driver, "
+                + "  t.trip_status AS status "
                 + "FROM Trips t "
-                + "  JOIN Routes r      ON t.route_id = r.route_id "
-                + "  JOIN Buses b       ON t.bus_id   = b.bus_id "
-                + "  JOIN Bus_Types bt  ON b.bus_type_id = bt.bus_type_id "
-                + "  JOIN Drivers d     ON t.driver_id = d.driver_id "
-                + "  JOIN Users u       ON d.user_id = u.user_id "
+                + " JOIN Routes r   ON t.route_id = r.route_id "
+                + " JOIN Locations ls ON r.start_location_id = ls.location_id "
+                + " JOIN Locations le ON r.end_location_id   = le.location_id "
+                + " JOIN Buses b    ON t.bus_id   = b.bus_id "
+                + " JOIN Bus_Types bt ON b.bus_type_id = bt.bus_type_id "
+                + " JOIN Drivers d ON t.driver_id = d.driver_id "
+                + " JOIN Users u   ON d.user_id    = u.user_id "
                 + "WHERE t.trip_id = ?";
 
         try ( PreparedStatement ps = getConnection().prepareStatement(sql)) {
@@ -195,60 +201,53 @@ public class AdminTripsDAO extends DBContext {
         return null;
     }
 
+// 3) Lấy chi tiết đầy đủ để hiện trang detail
     public AdminTrips getTripDetailById(int tripId) throws SQLException {
-        String sql
-                = "SELECT "
+        String sql = "SELECT "
                 + "  t.trip_id, "
-                + "  CONCAT(r.start_location, N' → ', r.end_location) AS route, "
-                + "  r.start_location     AS startLocation, "
-                + "  r.end_location       AS endLocation, "
-                + "  CAST(t.departure_time AS DATE)             AS tripDate, "
+                + "  CONCAT(ls.location_name, ' → ', le.location_name) AS route, "
+                + "  ls.location_name AS startLocation, "
+                + "  le.location_name AS endLocation, "
+                + "  CAST(t.departure_time AS DATE) AS tripDate, "
                 + "  CONVERT(VARCHAR(5), t.departure_time, 108) AS tripTime, "
-                + "  CONVERT(VARCHAR(8), r.estimated_time, 108) AS duration, "
-                + "  CONVERT(VARCHAR(5), "
-                + "    DATEADD(MINUTE, "
-                + "      DATEDIFF(MINUTE, 0, r.estimated_time), "
-                + "      t.departure_time"
-                + "    ), 108"
-                + "  )                                          AS arrivalTime, "
-                + "  bt.bus_type_name   AS busType, "
-                + "  b.plate_number     AS plateNumber, "
-                + "  b.capacity         AS capacity, "
-                + "  (SELECT COUNT(*) FROM Tickets tk "
-                + "     WHERE tk.trip_id = t.trip_id "
-                + "       AND tk.ticket_status = 'Booked'"
-                + "  )                  AS bookedSeats, "
-                + "  u.user_name        AS driver, "
-                + "  t.trip_status      AS status "
+                + "  r.estimated_time AS durationMinutes, "
+                + "  CONVERT(VARCHAR(5), DATEADD(MINUTE, r.estimated_time, t.departure_time), 108) AS arrivalTime, "
+                + "  bt.bus_type_name AS busType, "
+                + "  b.plate_number AS plateNumber, "
+                + "  b.capacity AS capacity, "
+                + "  (SELECT COUNT(*) FROM Tickets tk WHERE tk.trip_id = t.trip_id AND tk.ticket_status = 'Booked') AS bookedSeats, "
+                + "  u.user_name AS driver, "
+                + "  t.trip_status AS status "
                 + "FROM Trips t "
                 + " JOIN Routes r     ON t.route_id = r.route_id "
+                + " JOIN Locations ls ON r.start_location_id = ls.location_id "
+                + " JOIN Locations le ON r.end_location_id   = le.location_id "
                 + " JOIN Buses b      ON t.bus_id   = b.bus_id "
                 + " JOIN Bus_Types bt ON b.bus_type_id = bt.bus_type_id "
                 + " JOIN Drivers d    ON t.driver_id = d.driver_id "
-                + " JOIN Users u      ON d.user_id = u.user_id "
+                + " JOIN Users u      ON d.user_id    = u.user_id "
                 + "WHERE t.trip_id = ?";
 
         try ( PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, tripId);
             try ( ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    // Trả về model
-                    return new AdminTrips(
-                            rs.getInt("trip_id"),
-                            rs.getString("route"),
-                            rs.getString("startLocation"),
-                            rs.getString("endLocation"),
-                            rs.getDate("tripDate"),
-                            rs.getString("tripTime"),
-                            rs.getString("arrivalTime"),
-                            rs.getString("duration"),
-                            rs.getString("busType"),
-                            rs.getString("plateNumber"),
-                            rs.getInt("capacity"),
-                            rs.getInt("bookedSeats"),
-                            rs.getString("driver"),
-                            rs.getString("status")
-                    );
+                    AdminTrips detail = new AdminTrips();
+                    detail.setTripId(rs.getInt("trip_id"));
+                    detail.setRoute(rs.getString("route"));
+                    detail.setStartLocation(rs.getString("startLocation"));
+                    detail.setEndLocation(rs.getString("endLocation"));
+                    detail.setTripDate(rs.getDate("tripDate"));
+                    detail.setTripTime(rs.getString("tripTime"));
+                    detail.setDuration(rs.getInt("durationMinutes"));
+                    detail.setArrivalTime(rs.getString("arrivalTime"));
+                    detail.setBusType(rs.getString("busType"));
+                    detail.setPlateNumber(rs.getString("plateNumber"));
+                    detail.setCapacity(rs.getInt("capacity"));
+                    detail.setBookedSeats(rs.getInt("bookedSeats"));
+                    detail.setDriver(rs.getString("driver"));
+                    detail.setStatus(rs.getString("status"));
+                    return detail;
                 }
             }
         }
@@ -337,10 +336,20 @@ public class AdminTripsDAO extends DBContext {
         }
     }
 
-    // Lấy tất cả routes
+    /**
+     * Lấy tất cả routes (với tên start/end lấy từ Locations)
+     */
     public List<AdminRoutes> getAllRoutes() {
         List<AdminRoutes> list = new ArrayList<>();
-        String sql = "SELECT route_id, start_location, end_location FROM Routes";
+        String sql = ""
+                + "SELECT "
+                + "  r.route_id, "
+                + "  ls.location_name AS start_location, "
+                + "  le.location_name AS end_location "
+                + "FROM Routes r "
+                + "JOIN Locations ls ON r.start_location_id = ls.location_id "
+                + "JOIN Locations le ON r.end_location_id   = le.location_id "
+                + "ORDER BY r.route_id";
         try ( PreparedStatement ps = getConnection().prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(new AdminRoutes(
@@ -350,7 +359,7 @@ public class AdminTripsDAO extends DBContext {
                 ));
             }
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            Logger.getLogger(AdminRoutesDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return list;
     }
