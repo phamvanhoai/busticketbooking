@@ -58,9 +58,6 @@
                                 </c:choose>
                             </td>
                             <td class="px-6 py-4 space-x-4">
-                                <a href="${pageContext.servletContext.contextPath}/admin/buses?viewId=${bus.busId}" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm">
-                                    <i class="fas fa-eye"></i> View
-                                </a>
                                 <a href="${pageContext.servletContext.contextPath}/admin/buses?editId=${bus.busId}" class="inline-flex items-center gap-1 text-yellow-600 hover:text-yellow-800 text-sm">
                                     <i class="fas fa-edit"></i> Edit
                                 </a>

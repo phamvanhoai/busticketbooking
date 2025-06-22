@@ -5,6 +5,7 @@
 package busticket.controller;
 
 import busticket.DAO.AdminUsersDAO;
+import busticket.model.AdminDrivers;
 import busticket.model.AdminUsers;
 import busticket.util.InputValidator;
 import busticket.util.PasswordUtils;
@@ -13,12 +14,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.sql.PreparedStatement;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.util.Date;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -41,69 +44,91 @@ public class AdminUsersServlet extends HttpServlet {
 
         AdminUsersDAO adminUserDAO = new AdminUsersDAO();
 
-        // Check if the request contains ?add → forward to the Add User form
-        if (request.getParameter("add") != null) {
+        String uri = request.getRequestURI();
+        String contextPath = request.getContextPath();
+        String path = uri.substring(contextPath.length());
+
+        // Route: Show Add User form
+        if (path.equals("/admin/users/add")) {
             request.getRequestDispatcher("/WEB-INF/admin/users/add-user.jsp").forward(request, response);
             return;
         }
 
-        // Handle request to edit a user if ?editId is present
-        String editId = request.getParameter("editId");
-        if (editId != null) {
+        // Route: Show Edit User form
+        if (path.equals("/admin/users/edit")) {
             try {
-                int userId = Integer.parseInt(editId);
+                int userId = Integer.parseInt(request.getParameter("id"));
                 AdminUsers user = adminUserDAO.getUserById(userId);
-
-                // If user not found → redirect to 404 page
                 if (user == null) {
-                    response.sendRedirect(request.getContextPath() + "/pages/404.jsp");
+                    response.sendRedirect(contextPath + "/pages/404.jsp");
                     return;
                 }
-
-                // Set user data and forward to the edit-user.jsp page
                 request.setAttribute("user", user);
+
+                // Load extra driver info if user is a Driver
+                if ("Driver".equals(user.getRole())) {
+                    AdminDrivers driverInfo = adminUserDAO.getDriverByUserId(userId);
+                    request.setAttribute("driverInfo", driverInfo);
+                }
                 request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp").forward(request, response);
                 return;
-
             } catch (NumberFormatException e) {
-                // If editId is invalid (not a number) → redirect to user list
-                response.sendRedirect(request.getContextPath() + "/admin/users");
+                response.sendRedirect(contextPath + "/admin/users");
                 return;
             }
         }
 
-        // Retrieve search query from the query string (?search=...)
-        String searchQuery = request.getParameter("search");
-
-        // Pagination setup: default to 10 users per page
-        int usersPerPage = 10;
-        int currentPage = 1;
-        if (request.getParameter("page") != null) {
+        // Route: Show User Details
+        if (path.equals("/admin/users/view")) {
             try {
-                currentPage = Integer.parseInt(request.getParameter("page"));
+                int userId = Integer.parseInt(request.getParameter("id"));
+                AdminUsers user = adminUserDAO.getUserById(userId);
+                if (user == null) {
+                    response.sendRedirect(contextPath + "/pages/404.jsp");
+                    return;
+                }
+                request.setAttribute("user", user);
+                if ("Driver".equals(user.getRole())) {
+                    AdminDrivers driverInfo = adminUserDAO.getDriverByUserId(userId);
+                    request.setAttribute("driverInfo", driverInfo);
+                }
+                request.getRequestDispatcher("/WEB-INF/admin/users/view-user.jsp").forward(request, response);
+                return;
             } catch (NumberFormatException e) {
-                currentPage = 1; // Fall back to page 1 if the page parameter is invalid
+                response.sendRedirect(contextPath + "/admin/users");
+                return;
             }
         }
+
+        // Default route: list users with pagination and filtering
+        String searchQuery = request.getParameter("search");
+        String roleFilter = request.getParameter("role");
+
+        int usersPerPage = 10;
+        int currentPage = 1;
+        try {
+            String pageStr = request.getParameter("page");
+            if (pageStr != null && pageStr.matches("\\d+")) {
+                currentPage = Integer.parseInt(pageStr);
+            }
+        } catch (NumberFormatException ignored) {
+        }
+
         int offset = (currentPage - 1) * usersPerPage;
-
-        // Retrieve paginated user list (with optional search filter)
-        List<AdminUsers> adminUsers = adminUserDAO.getAllAdminUsers(searchQuery, offset, usersPerPage);
-        int totalUsers = adminUserDAO.countUsersByFilter(searchQuery);
+        List<AdminUsers> adminUsers = adminUserDAO.getAllAdminUsers(searchQuery, roleFilter, offset, usersPerPage);
+        int totalUsers = adminUserDAO.countAllAdminUsers(searchQuery, roleFilter);
         int totalPages = (int) Math.ceil((double) totalUsers / usersPerPage);
-
-        // Calculate the number of users currently displayed (used for stats)
         int currentTotalUsers = (currentPage < totalPages ? usersPerPage * currentPage : totalUsers);
 
-        // Set attributes for rendering in JSP
-        request.setAttribute("users", adminUsers);                     // List of users
-        request.setAttribute("totalUsers", totalUsers);               // Total number of users
-        request.setAttribute("searchQuery", searchQuery);             // Search query (if any)
-        request.setAttribute("totalPages", totalPages);               // Total number of pages
-        request.setAttribute("currentPage", currentPage);             // Current page number
-        request.setAttribute("currentTotalUsers", currentTotalUsers); // Users currently displayed
+        // Set attributes for UI rendering
+        request.setAttribute("users", adminUsers);
+        request.setAttribute("search", searchQuery);
+        request.setAttribute("role", roleFilter);
+        request.setAttribute("totalUsers", totalUsers);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("currentPage", currentPage);
+        request.setAttribute("currentTotalUsers", currentTotalUsers);
 
-        // Forward to the user list page
         request.getRequestDispatcher("/WEB-INF/admin/users/users.jsp").forward(request, response);
     }
 
@@ -121,21 +146,22 @@ public class AdminUsersServlet extends HttpServlet {
 
         String action = request.getParameter("action");
         AdminUsersDAO adminUsersDAO = new AdminUsersDAO();
-        boolean redirected = false; // Used to prevent multiple forwards or redirects
+        boolean redirected = false;
 
         try {
-            // Handle account creation
             if ("add".equals(action)) {
+                // === Handle Add User ===
                 String name = request.getParameter("name");
                 String email = request.getParameter("email");
                 String password = request.getParameter("password");
                 String confirmPassword = request.getParameter("confirmPassword");
                 String role = request.getParameter("role");
                 String status = request.getParameter("status");
+                String phone = request.getParameter("phone");
 
                 List<String> errorMessages = new ArrayList<>();
 
-                // Validate input fields
+                // === Validation ===
                 if (name == null || name.isEmpty()) {
                     errorMessages.add("Full Name is required.");
                 }
@@ -151,17 +177,28 @@ public class AdminUsersServlet extends HttpServlet {
                 if (!password.equals(confirmPassword)) {
                     errorMessages.add("Passwords do not match.");
                 }
-                if (adminUsersDAO.isEmailExists(email)) {
-                    errorMessages.add("Email already exists!");
-                }
                 if (!InputValidator.isEmailValid(email)) {
-                    errorMessages.add("Invalid email format. Example: user@example.com");
+                    errorMessages.add("Invalid email format.");
                 }
                 if (!InputValidator.isPasswordValid(password)) {
-                    errorMessages.add("Password must be at least 8 characters with 1 letter & 1 number.");
+                    errorMessages.add("Password must be at least 8 characters, including 1 letter and 1 number.");
+                }
+                if (adminUsersDAO.isEmailExists(email)) {
+                    errorMessages.add("Email already exists.");
+                }
+                if (phone != null && !phone.trim().isEmpty()) {
+                    if (!InputValidator.isVietnamesePhoneValid(phone)) {
+                        errorMessages.add("Invalid Vietnamese phone number.");
+                    } else if (adminUsersDAO.isPhoneExists(phone)) {
+                        errorMessages.add("Phone number already exists.");
+                    }
                 }
 
-                // If there are validation errors, return to the add-user form
+                List<String> validRoles = Arrays.asList("Staff", "Admin", "Customer", "Driver");
+                if (!validRoles.contains(role)) {
+                    errorMessages.add("Invalid role selected.");
+                }
+
                 if (!errorMessages.isEmpty()) {
                     request.setAttribute("errors", errorMessages);
                     request.getRequestDispatcher("/WEB-INF/admin/users/add-user.jsp").forward(request, response);
@@ -169,89 +206,186 @@ public class AdminUsersServlet extends HttpServlet {
                     return;
                 }
 
-                // Create new user with hashed password
-                String hashedPassword = PasswordUtils.hashPassword(password);
-                Timestamp createdAt = Timestamp.from(Instant.now());
-                AdminUsers user = new AdminUsers(0, name, email, hashedPassword, role, status, createdAt);
+                // Optional fields
+                String gender = request.getParameter("gender");
+                String address = request.getParameter("address");
+                Timestamp birthdate = null;
+                try {
+                    String birthdateStr = request.getParameter("birthdate");
+                    if (birthdateStr != null && !birthdateStr.trim().isEmpty()) {
+                        birthdate = new Timestamp(new SimpleDateFormat("yyyy-MM-dd").parse(birthdateStr).getTime());
+                    }
+                } catch (ParseException ignored) {
+                }
 
-                int isAdded = adminUsersDAO.addUser(user);
-                if (isAdded > 0) {
-                    request.setAttribute("message", "Account created successfully!");
-                    request.getRequestDispatcher("/WEB-INF/admin/users/users.jsp").forward(request, response);
+                // Create AdminUsers object
+                Timestamp createdAt = Timestamp.from(Instant.now());
+                String hashedPassword = PasswordUtils.hashPassword(password);
+                AdminUsers user = new AdminUsers(0, name, email, hashedPassword, phone, role, status != null ? status : "Active", birthdate, gender, address, createdAt);
+
+                // Insert user
+                int newUserId = adminUsersDAO.addUser(user);
+
+                // Insert driver info if role is Driver
+                if (newUserId > 0 && "Driver".equals(role)) {
+                    AdminDrivers driver = new AdminDrivers();
+                    driver.setUserId(newUserId);
+                    driver.setLicenseNumber(request.getParameter("licenseNumber"));
+                    driver.setLicenseClass(request.getParameter("licenseClass"));
+                    try {
+                        String hireDateStr = request.getParameter("hireDate");
+                        if (hireDateStr != null && !hireDateStr.isEmpty()) {
+                            driver.setHireDate(java.sql.Date.valueOf(hireDateStr));
+                        }
+                    } catch (IllegalArgumentException ignored) {
+                    }
+                    driver.setDriverStatus("Active");
+
+                    int driverAdded = adminUsersDAO.addDriver(driver);
+                    if (driverAdded == 0) {
+                        request.setAttribute("error", "Failed to create driver information.");
+                        request.getRequestDispatcher("/WEB-INF/admin/users/add-user.jsp").forward(request, response);
+                        redirected = true;
+                        return;
+                    }
+                }
+
+                // Redirect to list page after successful insert
+                if (newUserId > 0) {
+                    response.sendRedirect(request.getContextPath() + "/admin/users?message=created");
                 } else {
-                    request.setAttribute("error", "Add failed. Please try again.");
+                    request.setAttribute("error", "Failed to create account.");
                     request.getRequestDispatcher("/WEB-INF/admin/users/add-user.jsp").forward(request, response);
                 }
                 redirected = true;
+            }
 
-                // Handle account editing
-            } else if ("edit".equals(action)) {
-                // Get form parameters
+            if ("edit".equals(action)) {
+                // === Handle Edit User ===
                 int userId = Integer.parseInt(request.getParameter("userId"));
+                AdminUsers user = adminUsersDAO.getUserById(userId);
+                if (user == null) {
+                    response.sendRedirect(request.getContextPath() + "/pages/404.jsp");
+                    return;
+                }
+
+                // Get form data
                 String name = request.getParameter("name");
                 String email = request.getParameter("email");
                 String phone = request.getParameter("phone");
                 String role = request.getParameter("role");
-                String gender = request.getParameter("gender");
-                String birthdateStr = request.getParameter("birthdate");
-                String address = request.getParameter("address");
                 String status = request.getParameter("status");
-
-                List<String> errorMessages = new ArrayList<>();
-
-                // Basic validation
-                if (name == null || name.isEmpty() || email == null || email.isEmpty()
-                        || role == null || role.isEmpty() || status == null || status.isEmpty()) {
-                    errorMessages.add("Please enter all required fields.");
+                String gender = request.getParameter("gender");
+                String address = request.getParameter("address");
+                Timestamp birthdate = null;
+                try {
+                    String birthdateStr = request.getParameter("birthdate");
+                    if (birthdateStr != null && !birthdateStr.trim().isEmpty()) {
+                        birthdate = new Timestamp(new SimpleDateFormat("yyyy-MM-dd").parse(birthdateStr).getTime());
+                    }
+                } catch (ParseException ignored) {
                 }
 
-                // Parse birthdate (input type="date" returns format yyyy-MM-dd)
-                Timestamp birthdateTimestamp = null;
-                if (birthdateStr != null && !birthdateStr.isEmpty()) {
-                    try {
-                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                        sdf.setLenient(false);
-                        Date parsedDate = sdf.parse(birthdateStr);
-                        birthdateTimestamp = new Timestamp(parsedDate.getTime());
-                    } catch (ParseException e) {
-                        errorMessages.add("Invalid birthdate format! Please use the date picker.");
+                // Validate form
+                List<String> errorMessages = new ArrayList<>();
+                if (name == null || name.trim().isEmpty()) {
+                    errorMessages.add("Full Name is required.");
+                }
+                if (email == null || email.trim().isEmpty()) {
+                    errorMessages.add("Email is required.");
+                } else if (!InputValidator.isEmailValid(email)) {
+                    errorMessages.add("Invalid email format.");
+                } else if (!email.equals(user.getEmail()) && adminUsersDAO.isEmailExists(email)) {
+                    errorMessages.add("Email already exists.");
+                }
+                if (phone != null && !phone.trim().isEmpty()) {
+                    if (!InputValidator.isVietnamesePhoneValid(phone)) {
+                        request.setAttribute("message", "Invalid Vietnamese phone number.");
+                        request.setAttribute("messageType", "error");
+                        request.setAttribute("user", user);
+                        if ("Driver".equals(user.getRole())) {
+                            AdminDrivers driverInfo = adminUsersDAO.getDriverByUserId(userId);
+                            request.setAttribute("driverInfo", driverInfo);
+                        }
+                        request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp").forward(request, response);
+                        return;
+                    } else if (!phone.equals(user.getPhone()) && adminUsersDAO.isPhoneExists(phone)) {
+                        request.setAttribute("message", "Phone number already exists.");
+                        request.setAttribute("messageType", "error");
+                        request.setAttribute("user", user);
+                        if ("Driver".equals(user.getRole())) {
+                            AdminDrivers driverInfo = adminUsersDAO.getDriverByUserId(userId);
+                            request.setAttribute("driverInfo", driverInfo);
+                        }
+                        request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp").forward(request, response);
+                        return;
                     }
                 }
 
-                // If errors exist, return to edit form with error messages
+                if (!Arrays.asList("Staff", "Admin", "Customer", "Driver").contains(role)) {
+                    errorMessages.add("Invalid role selected.");
+                }
+
                 if (!errorMessages.isEmpty()) {
-                    request.setAttribute("error", String.join("<br>", errorMessages));
-                    request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp?userId=" + userId).forward(request, response);
+                    request.setAttribute("errors", errorMessages);
+                    request.setAttribute("user", user);
+                    if ("Driver".equals(user.getRole())) {
+                        AdminDrivers driverInfo = adminUsersDAO.getDriverByUserId(userId);
+                        request.setAttribute("driverInfo", driverInfo);
+                    }
+                    request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp").forward(request, response);
                     redirected = true;
                     return;
                 }
 
-                // Construct updated user object
-                AdminUsers user = new AdminUsers(userId, name, email, phone, role, status, birthdateTimestamp, gender, address);
+                // Update user
+                user.setName(name);
+                user.setEmail(email);
+                user.setPhone(phone);
+                user.setRole(role);
+                user.setStatus(status);
+                user.setGender(gender);
+                user.setAddress(address);
+                user.setBirthdate(birthdate);
+                adminUsersDAO.updateUser(user);
 
-                // Update user in database
-                int result = adminUsersDAO.updateUser(user);
+                // Handle driver info if role is Driver
+                if ("Driver".equals(role)) {
+                    AdminDrivers driver = adminUsersDAO.getDriverByUserId(userId);
+                    if (driver == null) {
+                        driver = new AdminDrivers();
+                        driver.setUserId(userId);
+                    }
+                    driver.setLicenseNumber(request.getParameter("licenseNumber"));
+                    driver.setLicenseClass(request.getParameter("licenseClass"));
+                    try {
+                        String hireDateStr = request.getParameter("hireDate");
+                        if (hireDateStr != null && !hireDateStr.isEmpty()) {
+                            driver.setHireDate(java.sql.Date.valueOf(hireDateStr));
+                        }
+                    } catch (IllegalArgumentException ignored) {
+                    }
 
-                if (result > 0) {
-                    // Redirect to user list with success message
-                    response.sendRedirect(request.getContextPath() + "/admin/users?message=updated");
-                } else {
-                    // Forward back to edit page with failure message
-                    request.setAttribute("error", "Update failed. Please try again.");
-                    request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp?userId=" + userId).forward(request, response);
+                    driver.setDriverStatus(request.getParameter("driverStatus"));
+
+                    if (driver.getDriverId() > 0) {
+                        adminUsersDAO.updateDriver(driver);
+                    } else {
+                        adminUsersDAO.addDriver(driver);
+                    }
+                } else if ("Driver".equals(user.getRole()) && !"Driver".equals(role)) {
+                    // If changed from Driver → Other role, deactivate driver info
+                    adminUsersDAO.setDriverStatusInactiveByUserId(userId);
                 }
 
+                response.sendRedirect(request.getContextPath() + "/admin/users?message=updated");
                 redirected = true;
             }
 
         } catch (Exception e) {
-            // Handle unexpected exceptions
-            request.setAttribute("error", "Error occurred during processing!");
-        }
-
-        // Redirect to the main user list if no forward has occurred
-        if (!redirected) {
-            response.sendRedirect(request.getContextPath() + "/admin/users");
+            e.printStackTrace();
+            request.setAttribute("error", "System error occurred.");
+            request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp").forward(request, response);
         }
     }
 

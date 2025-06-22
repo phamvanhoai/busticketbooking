@@ -5,17 +5,21 @@
 package busticket.controller;
 
 import busticket.DAO.DriverTripDAO;
-import busticket.DAO.StaffDriverDAO;
-import busticket.DAO.TripDAO;
+import busticket.DAO.StaffAssignDriverDAO;
 import busticket.model.Driver;
-import busticket.model.Trip;
+import busticket.model.StaffTrip;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -35,15 +39,65 @@ public class StaffAssignDriverTripServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        TripDAO tripDAO = new TripDAO();
-        StaffDriverDAO driverDAO = new StaffDriverDAO();
+        // Retrieve filter parameters
+        String search = request.getParameter("search");
+        String date = request.getParameter("date");
+        String routeId = request.getParameter("routeId");
+        String status = request.getParameter("status");
 
-        List<Trip> tripList = tripDAO.getAllAvailableTrips();
-        List<Driver> driverList = driverDAO.getAllDrivers();
+        // Pagination setup
+        int page = 1;
+        int pageSize = 10;
+        String pageRaw = request.getParameter("page");
+        if (pageRaw != null && pageRaw.matches("\\d+")) {
+            page = Integer.parseInt(pageRaw);
+        }
+        int offset = (page - 1) * pageSize;
 
-        request.setAttribute("trips", tripList);
-        request.setAttribute("drivers", driverList);
+        // DAO for trip and driver data
+        StaffAssignDriverDAO dao = new StaffAssignDriverDAO();
 
+        // Count total rows matching filter criteria
+        int totalRows = dao.countAvailableTrips(search, date, routeId, status);
+        int totalPages = (int) Math.ceil(totalRows * 1.0 / pageSize);
+
+        // Fetch filtered, paginated list of trips
+        List<StaffTrip> trips = dao.getAvailableTripsWithPaging(search, date, routeId, status, offset, pageSize);
+
+        // Fetch dropdown data for filters
+        request.setAttribute("distinctRoutes", dao.getDistinctRoutes());
+        request.setAttribute("drivers", dao.getAvailableDrivers());
+
+        // Set request attributes for JSP rendering
+        request.setAttribute("trips", trips);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("numOfPages", totalPages);
+        request.setAttribute("search", search);
+        request.setAttribute("date", date);
+        request.setAttribute("routeId", routeId);
+        request.setAttribute("status", status);
+
+        // Construct base URL for pagination component
+        StringBuilder base = new StringBuilder(request.getContextPath()).append("/staff/assign-driver-trip");
+        List<String> q = new ArrayList<>();
+        if (search != null && !search.isEmpty()) {
+            q.add("search=" + search);
+        }
+        if (date != null && !date.isEmpty()) {
+            q.add("date=" + date);
+        }
+        if (routeId != null && !routeId.isEmpty()) {
+            q.add("routeId=" + routeId);
+        }
+        if (status != null && !status.isEmpty()) {
+            q.add("status=" + status);
+        }
+        if (!q.isEmpty()) {
+            base.append("?").append(String.join("&", q));
+        }
+        request.setAttribute("baseUrlWithSearch", base.toString());
+
+        // Forward to JSP for rendering
         request.getRequestDispatcher("/WEB-INF/staff/driver-trip/assign-driver-to-trip.jsp")
                 .forward(request, response);
     }
@@ -59,32 +113,40 @@ public class StaffAssignDriverTripServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Read submitted form parameters
         String tripId = request.getParameter("tripId");
         String driverId = request.getParameter("driverId");
 
+        // Validate inputs
         if (tripId == null || driverId == null || tripId.isEmpty() || driverId.isEmpty()) {
             request.getSession().setAttribute("error", "Please select both Trip and Driver.");
             response.sendRedirect(request.getContextPath() + "/staff/assign-driver-trip");
             return;
         }
 
-        DriverTripDAO dao = new DriverTripDAO();
-
         int tripIdInt = Integer.parseInt(tripId);
         int driverIdInt = Integer.parseInt(driverId);
 
+        StaffAssignDriverDAO dao = new StaffAssignDriverDAO();
+
+        // Check if assignment exists: update or create
         if (dao.isDriverAssigned(tripIdInt)) {
-            request.getSession().setAttribute("error", "This trip already has a driver assigned.");
+            boolean updated = dao.updateDriverAssignment(driverIdInt, tripIdInt);
+            if (updated) {
+                request.getSession().setAttribute("success", "Driver assignment updated successfully.");
+            } else {
+                request.getSession().setAttribute("error", "Failed to update driver assignment.");
+            }
         } else {
-            boolean success = dao.assignDriverToTrip(driverIdInt, tripIdInt);
-            if (success) {
+            boolean assigned = dao.assignDriverToTrip(driverIdInt, tripIdInt);
+            if (assigned) {
                 request.getSession().setAttribute("success", "Driver assigned to trip successfully.");
             } else {
-                request.getSession().setAttribute("error", "Failed to assign driver. Please try again.");
+                request.getSession().setAttribute("error", "Failed to assign driver.");
             }
         }
 
-        // Redirect to avoid duplicate form error when F5
+        // Redirect to avoid form resubmission (Post-Redirect-Get pattern)
         response.sendRedirect(request.getContextPath() + "/staff/assign-driver-trip");
     }
 

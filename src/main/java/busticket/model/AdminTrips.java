@@ -20,7 +20,7 @@ public class AdminTrips {
     private Date tripDate;
     private String tripTime;
     private String arrivalTime;
-    private String duration;
+    private int duration;
     private int busId;
     private String busType;
     private String plateNumber;
@@ -60,7 +60,7 @@ public class AdminTrips {
     }
     
     //getTripDetailById
-    public AdminTrips(int tripId, String route, String startLocation, String endLocation, Date tripDate, String tripTime, String arrivalTime, String duration, String busType, String plateNumber, int capacity, int bookedSeats, String driver, String status) {
+    public AdminTrips(int tripId, String route, String startLocation, String endLocation, Date tripDate, String tripTime, String arrivalTime, int duration, String busType, String plateNumber, int capacity, int bookedSeats, String driver, String status) {
         this.tripId = tripId;
         this.route = route;
         this.startLocation = startLocation;
@@ -144,11 +144,11 @@ public class AdminTrips {
         this.arrivalTime = arrivalTime;
     }
 
-    public String getDuration() {
+    public int getDuration() {
         return duration;
     }
 
-    public void setDuration(String duration) {
+    public void setDuration(int duration) {
         this.duration = duration;
     }
 

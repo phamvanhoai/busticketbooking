@@ -26,7 +26,7 @@ public class UsersDAO extends DBContext {
      * Update the password for a specific user.
      *
      * @param userId The ID of the user.
-     * @param newPassword The new (already hashed) password to store.
+     * @param newPassword The new hashed password to store.
      */
     public void updatePassword(int userId, String newPassword) {
         String query = "UPDATE Users SET password = ? WHERE user_id = ?";
@@ -47,7 +47,7 @@ public class UsersDAO extends DBContext {
     }
 
     /**
-     * Mark a password reset token as used (after successful reset).
+     * Mark a password reset token as used after a successful reset.
      *
      * @param token The token to mark as used.
      */
@@ -63,11 +63,10 @@ public class UsersDAO extends DBContext {
     }
 
     /**
-     * Retrieve user information based on a valid, unexpired password reset
-     * token.
+     * Retrieve a user associated with a valid and non-expired reset token.
      *
-     * @param token The reset token from the URL.
-     * @return The associated User object if valid, null otherwise.
+     * @param token The reset token from the reset link.
+     * @return The corresponding user if the token is valid; null otherwise.
      */
     public Users getUserByResetToken(String token) {
         String query = "SELECT * FROM Users u "
@@ -103,23 +102,23 @@ public class UsersDAO extends DBContext {
     }
 
     /**
-     * Store a newly generated reset token in the database.
+     * Store a newly generated reset token for a specific user.
      *
-     * @param userId ID of the user requesting password reset.
-     * @param resetToken The generated token string.
+     * @param userId ID of the user.
+     * @param resetToken The generated reset token.
      */
     public void storeResetToken(int userId, String resetToken) {
         String query = "INSERT INTO Password_Reset_Tokens (user_id, token, token_created_at, token_expires_at, token_used) VALUES (?, ?, ?, ?, ?)";
 
         Timestamp createdAt = Timestamp.from(Instant.now());
-        Timestamp expiresAt = Timestamp.from(Instant.now().plus(1, ChronoUnit.HOURS)); // expires in 1 hour
+        Timestamp expiresAt = Timestamp.from(Instant.now().plus(1, ChronoUnit.HOURS));
 
         try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
             ps.setInt(1, userId);
             ps.setString(2, resetToken);
             ps.setTimestamp(3, createdAt);
             ps.setTimestamp(4, expiresAt);
-            ps.setBoolean(5, false); // token initially unused
+            ps.setBoolean(5, false);
             ps.executeUpdate();
         } catch (SQLException ex) {
             Logger.getLogger(UsersDAO.class.getName()).log(Level.SEVERE, null, ex);
@@ -127,10 +126,10 @@ public class UsersDAO extends DBContext {
     }
 
     /**
-     * Retrieve a user from the database by email address.
+     * Retrieve a user by their email address.
      *
      * @param email The email to search for.
-     * @return The User object if found, or null otherwise.
+     * @return A User object if found; null otherwise.
      */
     public Users getUserByEmail(String email) {
         String query = "SELECT * FROM Users WHERE user_email = ?";
@@ -161,10 +160,10 @@ public class UsersDAO extends DBContext {
     }
 
     /**
-     * Check if an email is already registered in the database.
+     * Check if a given email address is already used in the system.
      *
      * @param email The email address to check.
-     * @return True if email exists, false otherwise.
+     * @return true if email exists, false otherwise.
      */
     public boolean isEmailExists(String email) {
         String query = "SELECT COUNT(user_id) FROM Users WHERE user_email = ?";
@@ -179,11 +178,12 @@ public class UsersDAO extends DBContext {
     }
 
     /**
-     * Perform user login using email and password (hashed comparison).
+     * Perform login authentication based on email and password.
      *
-     * @param email The user's email.
-     * @param password The raw password entered by the user.
-     * @return The User object if login successful, or null otherwise.
+     * @param email The user's email address.
+     * @param password The raw password to be verified.
+     * @return The corresponding User object if credentials are valid; null
+     * otherwise.
      */
     public Users login(String email, String password) {
         try {
@@ -193,7 +193,6 @@ public class UsersDAO extends DBContext {
             if (rs.next()) {
                 String hashedPassword = rs.getString("password");
 
-                // Validate password using PasswordUtils
                 if (hashedPassword == null || hashedPassword.isEmpty()
                         || !PasswordUtils.checkPassword(password, hashedPassword)) {
                     return null;
@@ -220,10 +219,10 @@ public class UsersDAO extends DBContext {
     }
 
     /**
-     * Register (sign up) a new user into the system.
+     * Register a new user in the system.
      *
-     * @param user A User object with the necessary fields filled.
-     * @return The number of rows affected (1 if success, 0 if failure).
+     * @param user The User object containing signup information.
+     * @return Number of rows affected; 1 if success, 0 otherwise.
      */
     public int signup(Users user) {
         try {
@@ -234,7 +233,7 @@ public class UsersDAO extends DBContext {
             Object[] params = {
                 user.getName(),
                 user.getEmail(),
-                user.getPassword(), // Already hashed
+                user.getPassword(),
                 user.getRole(),
                 user.getStatus(),
                 timestamp
