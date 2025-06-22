@@ -8,10 +8,6 @@
 <%@ page import="busticket.model.StaffTicket" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@ page import="busticket.model.StaffTicket" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <!-- Include shared header for staff layout (top bar, styles, etc.) -->
 <%@include file="/WEB-INF/include/staff/staff-header.jsp" %>

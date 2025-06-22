@@ -7,7 +7,6 @@ package busticket.controller;
 import busticket.DAO.StaffManageBookingDAO;
 import busticket.model.StaffTicket;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
