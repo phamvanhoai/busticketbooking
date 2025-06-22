@@ -109,12 +109,8 @@
         <servlet-class>busticket.controller.HomeViewTripsServlet</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>DriverLicenseServlet</servlet-name>
-        <servlet-class>busticket.controller.DriverLicenseServlet</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>AdminLocationsServlet</servlet-name>
-        <servlet-class>busticket.controller.AdminLocationsServlet</servlet-class>
+        <servlet-name>SatffPrintTicketBookingServlet</servlet-name>
+        <servlet-class>busticket.controller.SatffPrintTicketBookingServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
@@ -195,6 +191,7 @@
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>StaffManageBookingsServlet</servlet-name>
+        <url-pattern>/staff/view-booking</url-pattern>
         <url-pattern>/staff/manage-bookings</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
@@ -226,12 +223,8 @@
         <url-pattern>/view-trips</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>DriverLicenseServlet</servlet-name>
-        <url-pattern>/driver/driver-license</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>AdminLocationsServlet</servlet-name>
-        <url-pattern>/admin/locations</url-pattern>
+        <servlet-name>SatffPrintTicketBookingServlet</servlet-name>
+        <url-pattern>/staff/print-ticket</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
