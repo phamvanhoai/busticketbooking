@@ -188,7 +188,7 @@
 
                 <!-- Information fields in grid layout -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-gray-800 text-[15px]">
-                    <div><span class="font-semibold">User ID:</span> ${user.user_id}</div>
+                    <div><span class="font-semibold">User ID:</span> ${user.formattedId}</div>
                     <div><span class="font-semibold">Phone:</span> ${user.phone}</div>
                     <div><span class="font-semibold">Email:</span> ${user.email}</div>
                     <div><span class="font-semibold">Gender:</span> ${user.gender}</div>
