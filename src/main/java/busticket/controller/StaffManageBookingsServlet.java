@@ -6,7 +6,9 @@ package busticket.controller;
 
 import busticket.DAO.StaffManageBookingDAO;
 import busticket.model.StaffTicket;
+import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
+import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,9 +23,7 @@ import java.util.List;
 public class StaffManageBookingsServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-
     private final StaffManageBookingDAO dao = new StaffManageBookingDAO();
-
 
     /**
      * Handles the HTTP <code>GET</code> method.
@@ -36,13 +36,12 @@ public class StaffManageBookingsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-
+        // Parse the path from the URI
         String uri = request.getRequestURI();
         String contextPath = request.getContextPath();
         String path = uri.substring(contextPath.length());
 
-        // View booking details
+        // Handle booking detail view
         if (path.equals("/staff/view-booking")) {
             String ticketId = request.getParameter("id");
             if (ticketId == null || ticketId.trim().isEmpty()) {
@@ -50,25 +49,28 @@ public class StaffManageBookingsServlet extends HttpServlet {
                 return;
             }
 
+            // Retrieve ticket by ID
             StaffTicket booking = dao.getBookingById(ticketId);
             if (booking == null) {
                 response.sendRedirect(contextPath + "/pages/404.jsp");
                 return;
             }
 
+            // Pass data to view
             request.setAttribute("booking", booking);
-            request.getRequestDispatcher("/WEB-INF/staff/manage-bookings/view-booking.jsp").forward(request, response);
+            request.setAttribute("distinctRoutes", dao.getDistinctRoutes());
+            request.getRequestDispatcher("/WEB-INF/staff/manage-bookings/view-booking.jsp")
+                    .forward(request, response);
             return;
         }
 
-        // List bookings with filter + pagination
-        List<StaffTicket> all = dao.getAllBookings();
+        // Handle filtering and pagination of bookings list
+        String q = request.getParameter("q");             // search keyword
+        String date = request.getParameter("date");       // filter by date
+        String routeId = request.getParameter("routeId"); // filter by route
+        String status = request.getParameter("status");   // filter by payment status
+        String pageParam = request.getParameter("page");  // current page
 
-        String q = request.getParameter("q");
-        String status = request.getParameter("status");
-        String pageParam = request.getParameter("page");
-
-        // Parse page
         int page = 1;
         try {
             page = (pageParam != null) ? Integer.parseInt(pageParam) : 1;
@@ -78,18 +80,12 @@ public class StaffManageBookingsServlet extends HttpServlet {
         } catch (NumberFormatException ignored) {
         }
 
-        // Filter
-        List<StaffTicket> filtered = new ArrayList<>();
-        for (StaffTicket b : all) {
-            boolean matchesSearch = (q == null || q.isEmpty())
-                    || b.getTicketId().toLowerCase().contains(q.toLowerCase())
-                    || b.getUserName().toLowerCase().contains(q.toLowerCase());
-            boolean matchesStatus = (status == null || status.isEmpty())
-                    || b.getPaymentStatus().equalsIgnoreCase(status);
+        // Get filtered bookings
+        List<StaffTicket> filtered = dao.getFilteredBookings(q, date, routeId);
 
-            if (matchesSearch && matchesStatus) {
-                filtered.add(b);
-            }
+        // Further filter by payment status if specified
+        if (status != null && !status.isEmpty() && !status.equalsIgnoreCase("All Status")) {
+            filtered.removeIf(t -> !t.getPaymentStatus().equalsIgnoreCase(status));
         }
 
         // Pagination logic
@@ -103,13 +99,16 @@ public class StaffManageBookingsServlet extends HttpServlet {
                 Math.min(offset + limit, totalItems)
         );
 
-        // Set data for JSP
+        // Send data to JSP for rendering
         request.setAttribute("bookings", paged);
         request.setAttribute("q", q);
         request.setAttribute("status", status);
+        request.setAttribute("date", date);
+        request.setAttribute("routeId", routeId);
         request.setAttribute("currentPage", page);
         request.setAttribute("numOfPages", totalPages);
         request.setAttribute("baseUrlWithSearch", contextPath + "/staff/manage-bookings");
+        request.setAttribute("distinctRoutes", dao.getDistinctRoutes());
 
         request.getRequestDispatcher("/WEB-INF/staff/manage-bookings/manage-bookings.jsp")
                 .forward(request, response);
@@ -126,28 +125,7 @@ public class StaffManageBookingsServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        // Read form inputs
-        String q = request.getParameter("q");
-        String status = request.getParameter("status");
-
-        // Build redirect URL with query parameters
-        String redirectUrl = request.getContextPath() + "/staff/manage-bookings";
-        boolean hasQuery = false;
-
-
-        if (q != null && !q.isEmpty()) {
-            redirectUrl += "?q=" + q;
-            hasQuery = true;
-        }
-
-        if (status != null && !status.isEmpty()) {
-            redirectUrl += hasQuery ? "&" : "?";
-            redirectUrl += "status=" + status;
-        }
-
-        // Redirect to GET handler
-        response.sendRedirect(redirectUrl);
+        doGet(request, response); // Delegate POST to GET handler
     }
 
     /**
