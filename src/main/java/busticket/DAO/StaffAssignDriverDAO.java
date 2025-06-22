@@ -45,7 +45,6 @@ public class StaffAssignDriverDAO extends DBContext {
                 + "LEFT JOIN Users u ON d.user_id = u.user_id "
                 + "WHERE 1=1 ");
 
-        // Apply optional filters
         if (search != null && !search.isEmpty()) {
             sql.append("AND (CAST(t.trip_id AS VARCHAR) LIKE ? OR CAST(t.route_id AS VARCHAR) LIKE ?) ");
         }

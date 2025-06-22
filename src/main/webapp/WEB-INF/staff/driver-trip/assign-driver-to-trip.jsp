@@ -1,3 +1,9 @@
+<%-- 
+    Document   : assign-driver-to-trip.jsp
+    Description: JSP page to list and manage all user accounts
+    Author     : Nguyen Thanh Truong - CE180140
+--%>
+
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.util.List"%>
 <%@page import="busticket.model.StaffTrip"%>
@@ -5,6 +11,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fbus" uri="/WEB-INF/tags/implicit.tld" %>
+
 <!-- Flatpickr CSS & JS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -12,12 +19,9 @@
     <!-- Header layout for Staff -->
     <%@include file="/WEB-INF/include/staff/staff-header.jsp" %>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/all.min.css">
-
         <body class="bg-[#f9fafb]">
-
             <div class="px-4 mt-10">
                 <h2 class="text-3xl font-bold text-orange-600 mb-6">Assign Driver to Trip</h2>
-
                 <!-- Success Message -->
                 <c:if test="${not empty sessionScope.success}">
                     <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded mb-4 flex items-center gap-2">
@@ -26,7 +30,6 @@
                     </div>
                     <c:remove var="success" scope="session"/>
                 </c:if>
-
                 <!-- Error Message -->
                 <c:if test="${not empty sessionScope.error}">
                     <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded mb-4 flex items-center gap-2">
@@ -35,7 +38,6 @@
                     </div>
                     <c:remove var="error" scope="session"/>
                 </c:if>
-
                 <!-- Spinner while loading -->
                 <div id="loading-spinner" class="flex justify-center items-center py-6 hidden">
                     <svg class="animate-spin h-6 w-6 text-orange-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -44,10 +46,8 @@
                     </svg>
                     <span class="ml-3 text-sm text-gray-600">Loading trips...</span>
                 </div>
-
                 <!-- Filter Form: Search / Date / Route / Status -->
                 <form id="filterForm" method="get" class="flex flex-wrap items-center gap-4 mb-6">
-
                     <!-- Search by ID or Route -->
                     <div class="flex-grow flex gap-2 min-w-[250px]">
                         <input type="text" name="search" value="${search}" 
@@ -58,7 +58,6 @@
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
-
                     <!-- Date filter using flatpickr -->
                     <div class="relative">
                         <input id="datepicker" name="date" type="text"
@@ -70,7 +69,6 @@
                             <i class="fas fa-calendar-alt"></i>
                         </span>
                     </div>
-
                     <!-- Route filter -->
                     <div class="relative">
                         <span class="absolute left-3 top-2.5 text-gray-400">
@@ -85,7 +83,6 @@
                             </c:forEach>
                         </select>
                     </div>
-
                     <!-- Status filter -->
                     <div class="relative">
                         <span class="absolute left-3 top-2.5 text-gray-400">
@@ -97,7 +94,6 @@
                             <option value="NotAssigned" ${status == 'NotAssigned' ? "selected" : ""}>Not Assigned</option>
                         </select>
                     </div>
-
                     <!-- Reset Filters Button -->
                     <div>
                         <button type="button"
@@ -108,7 +104,6 @@
                         </button>
                     </div>
                 </form>
-
                 <!-- Trip Listing Table -->
                 <div class="bg-white shadow-lg rounded-xl overflow-x-auto">
                     <table class="min-w-full text-left text-sm">
@@ -157,7 +152,6 @@
                                     </td>
                                 </tr>
                             </c:forEach>
-
                             <!-- No data case -->
                             <c:if test="${empty trips}">
                                 <tr>
@@ -175,12 +169,10 @@
                         </tbody>
                     </table>
                 </div>
-
                 <!-- Pagination -->
                 <div class="flex justify-center space-x-2 mt-6">
                     <fbus:adminpagination currentPage="${currentPage}" totalPages="${numOfPages}" url="${baseUrlWithSearch}" />
                 </div>
-
                 <!-- Modal for assigning driver -->
                 <div id="assign-modal" class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50" style="display: none;">
                     <form action="assign-driver-trip" method="post" class="bg-white p-6 rounded-xl shadow-xl w-full max-w-md relative">
@@ -200,7 +192,6 @@
                     </form>
                 </div>
             </div>
-
             <!-- JS for Modal and Filters -->
             <script>
                 function openAssignModal(tripId) {
@@ -229,7 +220,6 @@
                     });
                 });
             </script>
-
             <!-- Initialize flatpickr + reset filter logic -->
             <script>
                 function resetFilters() {
@@ -259,7 +249,6 @@
                     }
                 });
             </script>
-
             <!-- Staff footer -->
             <%@include file="/WEB-INF/include/staff/staff-footer.jsp" %>
         </body>
