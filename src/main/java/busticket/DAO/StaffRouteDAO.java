@@ -23,15 +23,14 @@ public class StaffRouteDAO extends DBContext {
      * Retrieves a list of all routes in the system with route ID and route
      * name. The route name is formatted as: "StartLocation → EndLocation"
      *
-     * @return List of StaffRoute containing route ID and route name
+     * @return List of StaffRoute objects
      * @throws SQLException if any SQL error occurs
      */
     public List<StaffRoute> getAllRoutes() throws SQLException {
         List<StaffRoute> routeList = new ArrayList<>();
 
-        // SQL: Join with Locations to get human-readable location_name for both start and end
         String sql = "SELECT r.route_id, "
-                + "       CONCAT(ls.location_name, ' → ', le.location_name) AS route_name "
+                + "       CONCAT(ls.location_name, ' &rarr; ', le.location_name) AS route_name "
                 + "FROM Routes r "
                 + "JOIN Locations ls ON r.start_location_id = ls.location_id "
                 + "JOIN Locations le ON r.end_location_id = le.location_id";
@@ -50,31 +49,28 @@ public class StaffRouteDAO extends DBContext {
     }
 
     /**
-     * Retrieves all route names from the database. Each route name is formatted
-     * as: "Start Location → End Location".
+     * Retrieves a distinct list of route names for dropdowns. Format:
+     * "StartLocation → EndLocation"
      *
-     * @return a list of route name strings (e.g., "Hà Nội → TP Hồ Chí Minh").
-     * Returns empty list if no routes found or exception occurs.
+     * @return List of route name strings
      */
     public List<String> getAllRouteNames() {
         List<String> routeNames = new ArrayList<>();
 
-        String sql = "SELECT start_location, end_location FROM Routes";
+        String sql = "SELECT DISTINCT CONCAT(ls.location_name, ' &rarr; ', le.location_name) AS route_name "
+                + "FROM Routes r "
+                + "JOIN Locations ls ON r.start_location_id = ls.location_id "
+                + "JOIN Locations le ON r.end_location_id = le.location_id "
+                + "ORDER BY route_name";
 
-        try (
-                 Connection conn = getConnection(); // Connect to DB
-                  PreparedStatement ps = conn.prepareStatement(sql); // Prepare SQL
-                  ResultSet rs = ps.executeQuery(); // Execute query
-                ) {
-            // Iterate through result set and format each route name
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
+
             while (rs.next()) {
-                String start = rs.getString("start_location");
-                String end = rs.getString("end_location");
-                routeNames.add(start + " → " + end); // Format: Start → End
+                routeNames.add(rs.getString("route_name"));
             }
 
-        } catch (Exception e) {
-            e.printStackTrace(); // You may replace this with logging
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
         return routeNames;
