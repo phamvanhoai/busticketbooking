@@ -70,55 +70,58 @@
                         </span>
                     </div>
                     <!-- Route filter -->
-                    <div class="relative">
-                        <span class="absolute left-3 top-2.5 text-gray-400">
-                            <i class="fas fa-filter"></i>
-                        </span>
-                        <select name="routeId" class="w-full border rounded-lg px-4 py-2 pl-10">
+                    <div class="relative w-[200px]">
+                        <select name="routeId"
+                                class="appearance-none w-full border rounded-lg px-4 py-2 pr-10 focus:outline-orange-500 text-sm">
                             <option value="">All Routes</option>
                             <c:forEach var="route" items="${distinctRoutes}">
-                                <option value="${route.routeId}" ${routeId == route.routeId ? "selected" : ""}>
+                                <option value="${route.routeId}" <c:if test="${route.routeId == routeId}">selected</c:if>>
                                     ${route.routeName}
                                 </option>
                             </c:forEach>
                         </select>
+                        <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
+                            <i class="fas fa-filter text-sm"></i>
+                        </span>
                     </div>
                     <!-- Status filter -->
-                    <div class="relative">
-                        <span class="absolute left-3 top-2.5 text-gray-400">
-                            <i class="fas fa-filter"></i>
-                        </span>
-                        <select name="status" class="w-full border rounded-lg px-4 py-2 pl-10">
+                    <div class="relative w-[160px]">
+                        <select name="status"
+                                class="appearance-none w-full border rounded-lg px-4 py-2 pr-10 focus:outline-orange-500 text-sm">
                             <option value="">All Status</option>
-                            <option value="Assigned" ${status == 'Assigned' ? "selected" : ""}>Assigned</option>
-                            <option value="NotAssigned" ${status == 'NotAssigned' ? "selected" : ""}>Not Assigned</option>
-                        </select>
-                    </div>
-                    <!-- Reset Filters Button -->
-                    <div>
-                        <button type="button"
-                                onclick="resetFilters()"
-                                class="text-sm px-4 py-2 border border-orange-400 text-orange-600 rounded-lg hover:bg-orange-100 transition flex items-center gap-2">
-                            <i class="fas fa-sync-alt"></i>
-                            Reset Filters
-                        </button>
-                    </div>
-                </form>
-                <!-- Trip Listing Table -->
-                <div class="bg-white shadow-lg rounded-xl overflow-x-auto">
-                    <table class="min-w-full text-left text-sm">
-                        <thead class="bg-orange-100 text-orange-700">
-                            <tr>
-                                <th class="py-2 px-4">Trip ID</th>
-                                <th class="py-2 px-4">Route</th>
-                                <th class="py-2 px-4">Date</th>
-                                <th class="py-2 px-4">Status</th>
-                                <th class="py-2 px-4">Assigned Driver</th>
-                                <th class="py-2 px-4">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Trip rows -->
+                            <option value="Assigned" <c:if test="${status == 'Assigned'}">selected</c:if>>Assigned</option>
+                            <option value="NotAssigned" <c:if test="${status == 'NotAssigned'}">selected</c:if>>Not Assigned</option>
+                            </select>
+                            <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
+                                <i class="fas fa-filter text-sm"></i>
+                            </span>
+                        </div>
+
+                        <!-- Reset Filters Button -->
+                        <div>
+                            <button type="button"
+                                    onclick="resetFilters()"
+                                    class="text-sm px-4 py-2 border border-orange-400 text-orange-600 rounded-lg hover:bg-orange-100 transition flex items-center gap-2">
+                                <i class="fas fa-sync-alt"></i>
+                                Reset Filters
+                            </button>
+                        </div>
+                    </form>
+                    <!-- Trip Listing Table -->
+                    <div class="bg-white shadow-lg rounded-xl overflow-x-auto">
+                        <table class="min-w-full text-left text-sm">
+                            <thead class="bg-orange-100 text-orange-700">
+                                <tr>
+                                    <th class="py-2 px-4">Trip ID</th>
+                                    <th class="py-2 px-4">Route</th>
+                                    <th class="py-2 px-4">Date</th>
+                                    <th class="py-2 px-4">Status</th>
+                                    <th class="py-2 px-4">Assigned Driver</th>
+                                    <th class="py-2 px-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Trip rows -->
                             <c:forEach var="trip" items="${trips}">
                                 <tr class="border-t hover:bg-gray-50">
                                     <td class="py-2 px-4">${trip.formattedTripId}</td>
@@ -216,18 +219,15 @@
                 document.querySelectorAll("#filterForm select, #filterForm input[name='date'], #filterForm input[name='search']").forEach(el => {
                     el.addEventListener("change", () => {
                         showLoading();
-                        el.form.submit();
+                        document.getElementById("filterForm").submit(); // fixed
                     });
                 });
-            </script>
-            <!-- Initialize flatpickr + reset filter logic -->
-            <script>
+
                 function resetFilters() {
                     const form = document.getElementById("filterForm");
                     form.reset();
-                    const fp = flatpickrInstance;
-                    if (fp)
-                        fp.clear();
+                    if (flatpickrInstance)
+                        flatpickrInstance.clear();
                     window.location.href = "<c:url value='/staff/assign-driver-trip'/>";
                 }
 
@@ -249,6 +249,7 @@
                     }
                 });
             </script>
+
             <!-- Staff footer -->
             <%@include file="/WEB-INF/include/staff/staff-footer.jsp" %>
         </body>

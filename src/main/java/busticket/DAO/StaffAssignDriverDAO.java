@@ -341,18 +341,20 @@ public class StaffAssignDriverDAO extends DBContext {
      */
     public List<StaffRoute> getDistinctRoutes() {
         List<StaffRoute> list = new ArrayList<>();
-        String sql = "SELECT DISTINCT r.route_id, "
-                + "l1.location_name AS start_location, "
-                + "l2.location_name AS end_location "
+        String sql = "SELECT MIN(r.route_id) AS route_id, "
+                + "l1.location_name + ' &rarr; ' + l2.location_name AS route_name "
                 + "FROM Routes r "
                 + "JOIN Locations l1 ON r.start_location_id = l1.location_id "
-                + "JOIN Locations l2 ON r.end_location_id = l2.location_id";
+                + "JOIN Locations l2 ON r.end_location_id = l2.location_id "
+                + "GROUP BY l1.location_name, l2.location_name "
+                + "ORDER BY route_name";
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
+
             while (rs.next()) {
-                int id = rs.getInt("route_id");
-                String name = rs.getString("start_location") + " → " + rs.getString("end_location");
-                list.add(new StaffRoute(id, name));
+                int routeId = rs.getInt("route_id");
+                String routeName = rs.getString("route_name");
+                list.add(new StaffRoute(routeId, routeName));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -360,4 +362,5 @@ public class StaffAssignDriverDAO extends DBContext {
 
         return list;
     }
+
 }
