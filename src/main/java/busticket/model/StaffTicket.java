@@ -4,6 +4,7 @@
  */
 package busticket.model;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 /**
@@ -20,14 +21,28 @@ public class StaffTicket {
     private String driverName;
     private String busType;
     private String paymentStatus;
+    private BigDecimal invoiceAmount;
+    private String paymentMethod;
+    private Timestamp paidAt;
+    private String routeId;
+
+    public String getFormattedTicketId() {
+        try {
+            return String.format("BKG %04d", Integer.parseInt(ticketId));
+        } catch (NumberFormatException e) {
+            return "BKG" + ticketId;
+        }
+    }
 
     public StaffTicket() {
     }
 
-    public StaffTicket(String ticketId, String userName, String routeName,
-            Timestamp departureTime, String seatCode,
-            String driverName, String busType, String paymentStatus) {
+    public StaffTicket(String ticketId, String formattedTicketId, String userName,
+            String routeName, Timestamp departureTime,
+            String seatCode, String driverName, String busType,
+            String paymentStatus) {
         this.ticketId = ticketId;
+
         this.userName = userName;
         this.routeName = routeName;
         this.departureTime = departureTime;
@@ -35,15 +50,6 @@ public class StaffTicket {
         this.driverName = driverName;
         this.busType = busType;
         this.paymentStatus = paymentStatus;
-    }
-
-    public String getFormattedTicketId() {
-        try {
-            int id = Integer.parseInt(ticketId.replaceAll("\\D", ""));
-            return String.format("BKG %04d", id);
-        } catch (NumberFormatException e) {
-            return ticketId;
-        }
     }
 
     public String getTicketId() {
@@ -109,4 +115,37 @@ public class StaffTicket {
     public void setPaymentStatus(String paymentStatus) {
         this.paymentStatus = paymentStatus;
     }
+
+    public BigDecimal getInvoiceAmount() {
+        return invoiceAmount;
+    }
+
+    public void setInvoiceAmount(BigDecimal invoiceAmount) {
+        this.invoiceAmount = invoiceAmount;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public Timestamp getPaidAt() {
+        return paidAt;
+    }
+
+    public void setPaidAt(Timestamp paidAt) {
+        this.paidAt = paidAt;
+    }
+
+    public String getRouteId() {
+        return routeId;
+    }
+
+    public void setRouteId(String routeId) {
+        this.routeId = routeId;
+    }
+
 }
