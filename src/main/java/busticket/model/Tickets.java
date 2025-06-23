@@ -8,97 +8,106 @@ import java.sql.Timestamp;
 
 /**
  *
- * @author Nguyen Thanh Truong - CE180140
+ * @author Pham Van Hoai - CE181744
  */
 public class Tickets {
-
-    private String ticketId;
-    private String userName;
-    private String routeName;
-    private Timestamp departureTime;
-    private String seatCode;
-    private String driverName;
-    private String busType;
-    private String paymentStatus;
+    private int ticketId;
+    private int tripId;
+    private int userId;
+    private String ticketStatus;
+    private Timestamp checkIn;
+    private Timestamp checkOut;
+    private String ticketCode;
+    private int pickupLocationId;
+    private int dropoffLocationId;
 
     public Tickets() {
     }
 
-    public Tickets(String ticketId, String userName, String routeName,
-            Timestamp departureTime, String seatCode,
-            String driverName, String busType, String paymentStatus) {
+    public Tickets(int ticketId, int tripId, int userId, String ticketStatus, Timestamp checkIn, Timestamp checkOut, String ticketCode, int pickupLocationId, int dropoffLocationId) {
         this.ticketId = ticketId;
-        this.userName = userName;
-        this.routeName = routeName;
-        this.departureTime = departureTime;
-        this.seatCode = seatCode;
-        this.driverName = driverName;
-        this.busType = busType;
-        this.paymentStatus = paymentStatus;
+        this.tripId = tripId;
+        this.userId = userId;
+        this.ticketStatus = ticketStatus;
+        this.checkIn = checkIn;
+        this.checkOut = checkOut;
+        this.ticketCode = ticketCode;
+        this.pickupLocationId = pickupLocationId;
+        this.dropoffLocationId = dropoffLocationId;
     }
 
-    public String getTicketId() {
+    
+    
+    public int getTicketId() {
         return ticketId;
     }
 
-    public void setTicketId(String ticketId) {
+    public void setTicketId(int ticketId) {
         this.ticketId = ticketId;
     }
 
-    public String getUserName() {
-        return userName;
+    public int getTripId() {
+        return tripId;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setTripId(int tripId) {
+        this.tripId = tripId;
     }
 
-    public String getRouteName() {
-        return routeName;
+    public int getUserId() {
+        return userId;
     }
 
-    public void setRouteName(String routeName) {
-        this.routeName = routeName;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
-    public Timestamp getDepartureTime() {
-        return departureTime;
+    public String getTicketStatus() {
+        return ticketStatus;
     }
 
-    public void setDepartureTime(Timestamp departureTime) {
-        this.departureTime = departureTime;
+    public void setTicketStatus(String ticketStatus) {
+        this.ticketStatus = ticketStatus;
     }
 
-    public String getSeatCode() {
-        return seatCode;
+    public Timestamp getCheckIn() {
+        return checkIn;
     }
 
-    public void setSeatCode(String seatCode) {
-        this.seatCode = seatCode;
+    public void setCheckIn(Timestamp checkIn) {
+        this.checkIn = checkIn;
     }
 
-    public String getDriverName() {
-        return driverName;
+    public Timestamp getCheckOut() {
+        return checkOut;
     }
 
-    public void setDriverName(String driverName) {
-        this.driverName = driverName;
+    public void setCheckOut(Timestamp checkOut) {
+        this.checkOut = checkOut;
     }
 
-    public String getBusType() {
-        return busType;
+    public String getTicketCode() {
+        return ticketCode;
     }
 
-    public void setBusType(String busType) {
-        this.busType = busType;
+    public void setTicketCode(String ticketCode) {
+        this.ticketCode = ticketCode;
     }
 
-    public String getPaymentStatus() {
-        return paymentStatus;
+    public int getPickupLocationId() {
+        return pickupLocationId;
     }
 
-    public void setPaymentStatus(String paymentStatus) {
-        this.paymentStatus = paymentStatus;
+    public void setPickupLocationId(int pickupLocationId) {
+        this.pickupLocationId = pickupLocationId;
     }
 
+    public int getDropoffLocationId() {
+        return dropoffLocationId;
+    }
+
+    public void setDropoffLocationId(int dropoffLocationId) {
+        this.dropoffLocationId = dropoffLocationId;
+    }
+    
 }
