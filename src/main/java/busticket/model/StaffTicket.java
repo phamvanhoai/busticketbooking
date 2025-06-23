@@ -4,7 +4,6 @@
  */
 package busticket.model;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 /**
@@ -13,43 +12,26 @@ import java.sql.Timestamp;
  */
 public class StaffTicket {
 
+    private int stt;
     private String ticketId;
-    private String userName;
     private String routeName;
     private Timestamp departureTime;
     private String seatCode;
     private String driverName;
     private String busType;
     private String paymentStatus;
-    private BigDecimal invoiceAmount;
-    private String paymentMethod;
-    private Timestamp paidAt;
-    private String routeId;
+    private double invoiceAmount;
+    private int invoiceId;
+    private String invoiceCode;
+    private String customerName;
+    private String qrCodeBase64;
 
-    public String getFormattedTicketId() {
-        try {
-            return String.format("BKG %04d", Integer.parseInt(ticketId));
-        } catch (NumberFormatException e) {
-            return "BKG" + ticketId;
-        }
+    public int getStt() {
+        return stt;
     }
 
-    public StaffTicket() {
-    }
-
-    public StaffTicket(String ticketId, String formattedTicketId, String userName,
-            String routeName, Timestamp departureTime,
-            String seatCode, String driverName, String busType,
-            String paymentStatus) {
-        this.ticketId = ticketId;
-
-        this.userName = userName;
-        this.routeName = routeName;
-        this.departureTime = departureTime;
-        this.seatCode = seatCode;
-        this.driverName = driverName;
-        this.busType = busType;
-        this.paymentStatus = paymentStatus;
+    public void setStt(int stt) {
+        this.stt = stt;
     }
 
     public String getTicketId() {
@@ -58,14 +40,6 @@ public class StaffTicket {
 
     public void setTicketId(String ticketId) {
         this.ticketId = ticketId;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
     }
 
     public String getRouteName() {
@@ -116,36 +90,44 @@ public class StaffTicket {
         this.paymentStatus = paymentStatus;
     }
 
-    public BigDecimal getInvoiceAmount() {
+    public double getInvoiceAmount() {
         return invoiceAmount;
     }
 
-    public void setInvoiceAmount(BigDecimal invoiceAmount) {
+    public void setInvoiceAmount(double invoiceAmount) {
         this.invoiceAmount = invoiceAmount;
     }
 
-    public String getPaymentMethod() {
-        return paymentMethod;
+    public int getInvoiceId() {
+        return invoiceId;
     }
 
-    public void setPaymentMethod(String paymentMethod) {
-        this.paymentMethod = paymentMethod;
+    public void setInvoiceId(int invoiceId) {
+        this.invoiceId = invoiceId;
     }
 
-    public Timestamp getPaidAt() {
-        return paidAt;
+    public String getInvoiceCode() {
+        return invoiceCode;
     }
 
-    public void setPaidAt(Timestamp paidAt) {
-        this.paidAt = paidAt;
+    public void setInvoiceCode(String invoiceCode) {
+        this.invoiceCode = invoiceCode;
     }
 
-    public String getRouteId() {
-        return routeId;
+    public String getCustomerName() {
+        return customerName;
     }
 
-    public void setRouteId(String routeId) {
-        this.routeId = routeId;
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getQrCodeBase64() {
+        return qrCodeBase64;
+    }
+
+    public void setQrCodeBase64(String qrCodeBase64) {
+        this.qrCodeBase64 = qrCodeBase64;
     }
 
 }
