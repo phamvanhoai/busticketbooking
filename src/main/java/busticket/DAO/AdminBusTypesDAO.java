@@ -6,12 +6,11 @@ package busticket.DAO;
 
 import busticket.db.DBContext;
 import busticket.model.AdminBusTypes;
-import busticket.model.AdminSeatTemplate;
+import busticket.model.AdminSeatPosition;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,10 +21,12 @@ import java.util.List;
  */
 public class AdminBusTypesDAO extends DBContext {
 
+    /**
+     * 1. Lấy danh sách Bus Types có phân trang
+     */
     public List<AdminBusTypes> getBusTypes(int offset, int limit) throws SQLException {
         String sql = "SELECT bus_type_id, bus_type_name, bus_type_description "
-                + "FROM Bus_Types "
-                + "ORDER BY bus_type_id "
+                + "FROM Bus_Types ORDER BY bus_type_id "
                 + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         List<AdminBusTypes> list = new ArrayList<>();
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -44,7 +45,9 @@ public class AdminBusTypesDAO extends DBContext {
         return list;
     }
 
-    // Đếm tổng số bus types
+    /**
+     * 2. Đếm tổng số Bus_Types
+     */
     public int getTotalBusTypesCount() throws SQLException {
         String sql = "SELECT COUNT(*) FROM Bus_Types";
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
@@ -55,79 +58,167 @@ public class AdminBusTypesDAO extends DBContext {
         return 0;
     }
 
-    // 2. Lấy seat templates cho 1 bus type
-    public List<AdminSeatTemplate> getSeatTemplatesForType(int busTypeId) throws SQLException {
-        String sql = "SELECT st.seat_template_id, st.code, st.level "
-                + "FROM Bus_Type_Seat_Template btst "
-                + "  JOIN Seat_Templates st ON btst.seat_template_id = st.seat_template_id "
-                + "WHERE btst.bus_type_id = ? AND btst.bus_type_seat_template_is_active = 1 "
-                + "ORDER BY st.level, st.code";
-        List<AdminSeatTemplate> list = new ArrayList<>();
+    /**
+     * 3. Thêm mới Bus_Type và trả về ID
+     */
+    public int insertBusType(AdminBusTypes model) throws SQLException {
+        String sql = "INSERT INTO Bus_Types (bus_type_name, bus_type_description, "
+                + "rowsDown, colsDown, prefixDown, "
+                + "rowsUp, colsUp, prefixUp) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?); "
+                + "SELECT SCOPE_IDENTITY()";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, model.getBusTypeName());
+            ps.setString(2, model.getBusTypeDescription());
+            ps.setInt(3, model.getRowsDown());
+            ps.setInt(4, model.getColsDown());
+            ps.setString(5, model.getPrefixDown());
+            ps.setInt(6, model.getRowsUp());
+            ps.setInt(7, model.getColsUp());
+            ps.setString(8, model.getPrefixUp());
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        throw new SQLException("Insert bus type failed, no ID obtained.");
+    }
+
+    /**
+     * 4. Chèn từng ô ghế vào Bus_Type_Seat_Template (không còn cột is_aisle)
+     */
+    public void insertSeatPosition(int busTypeId,
+            String zone,
+            int row,
+            int col,
+            int templateOrder,
+            String seatCode) throws SQLException {
+        String sql = "INSERT INTO Bus_Type_Seat_Template "
+                + "(bus_type_id, bus_type_seat_template_zone, "
+                + " bus_type_seat_template_row, bus_type_seat_template_col, "
+                + " bus_type_seat_template_order, bus_type_seat_code) "
+                + "VALUES (?,?,?,?,?,?)";
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, busTypeId);
+            ps.setString(2, zone);
+            ps.setInt(3, row);
+            ps.setInt(4, col);
+            ps.setInt(5, templateOrder);
+            if (seatCode != null) {
+                ps.setString(6, seatCode);
+            } else {
+                ps.setNull(6, Types.NVARCHAR);
+            }
+            ps.executeUpdate();
+        }
+    }
+
+    /**
+     * 5. Xóa Bus_Type và các vị trí ghế liên quan
+     */
+    public void deleteBusType(int busTypeId) throws SQLException {
+        String delSeats = "DELETE FROM Bus_Type_Seat_Template WHERE bus_type_id = ?";
+        String delType = "DELETE FROM Bus_Types WHERE bus_type_id = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps1 = conn.prepareStatement(delSeats);  PreparedStatement ps2 = conn.prepareStatement(delType)) {
+            conn.setAutoCommit(false);
+            ps1.setInt(1, busTypeId);
+            ps1.executeUpdate();
+            ps2.setInt(1, busTypeId);
+            ps2.executeUpdate();
+            conn.commit();
+        }
+    }
+
+    /**
+     * Lấy thông tin 1 Bus Type theo ID
+     */
+    public AdminBusTypes getBusTypeById(int id) throws SQLException {
+        String sql = "SELECT bus_type_id, bus_type_name, bus_type_description, "
+                + "rowsDown, colsDown, prefixDown, "
+                + "rowsUp, colsUp, prefixUp "
+                + "FROM Bus_Types WHERE bus_type_id = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    AdminBusTypes busType = new AdminBusTypes();
+                    busType.setBusTypeId(rs.getInt("bus_type_id"));
+                    busType.setBusTypeName(rs.getString("bus_type_name"));
+                    busType.setBusTypeDescription(rs.getString("bus_type_description"));
+                    busType.setRowsDown(rs.getInt("rowsDown"));
+                    busType.setColsDown(rs.getInt("colsDown"));
+                    busType.setPrefixDown(rs.getString("prefixDown"));
+                    busType.setRowsUp(rs.getInt("rowsUp"));
+                    busType.setColsUp(rs.getInt("colsUp"));
+                    busType.setPrefixUp(rs.getString("prefixUp"));
+                    return busType;
+                }
+            }
+        }
+        return null;  // Nếu không tìm thấy
+    }
+
+    /**
+     * Cập nhật name + description cho Bus_Type
+     */
+    public void updateBusType(AdminBusTypes model) throws SQLException {
+        String sql = "UPDATE Bus_Types SET bus_type_name = ?, bus_type_description = ? "
+                + "WHERE bus_type_id = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, model.getBusTypeName());
+            ps.setString(2, model.getBusTypeDescription());
+            ps.setInt(3, model.getBusTypeId());
+            ps.executeUpdate();
+        }
+    }
+
+    public List<AdminSeatPosition> getSeatPositionsForBusType(int busTypeId, String zone) throws SQLException {
+        String sql = "SELECT * FROM Bus_Type_Seat_Template WHERE bus_type_id = ? AND bus_type_seat_template_zone = ? ORDER BY bus_type_seat_template_order";
+        List<AdminSeatPosition> list = new ArrayList<>();
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, busTypeId);
+            ps.setString(2, zone);
             try ( ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    list.add(new AdminSeatTemplate(
-                            rs.getInt("seat_template_id"),
-                            rs.getString("code"),
-                            rs.getString("level")
-                    ));
+                    AdminSeatPosition seat = new AdminSeatPosition();
+                    seat.setBusTypeId(rs.getInt("bus_type_id"));
+                    seat.setZone(rs.getString("bus_type_seat_template_zone"));
+                    seat.setRow(rs.getInt("bus_type_seat_template_row"));
+                    seat.setCol(rs.getInt("bus_type_seat_template_col"));
+                    seat.setCode(rs.getString("bus_type_seat_code"));
+                    list.add(seat);
                 }
             }
         }
         return list;
     }
-    
-    
-    
-    // Insert BusType and return generated bus_type_id
-    public int insertBusType(AdminBusTypes bt) throws SQLException {
-        String sql = "INSERT INTO Bus_Types(bus_type_name, bus_type_description) VALUES(?,?)";
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, bt.getBusTypeName());
-            ps.setString(2, bt.getBusTypeDescription());
+
+    // Cập nhật thông tin ghế
+    public void updateSeatPosition(int busTypeId, String zone, int row, int col, String seatCode) throws SQLException {
+        String sql = "UPDATE Bus_Type_Seat_Template SET bus_type_seat_code = ? "
+                + "WHERE bus_type_id = ? AND bus_type_seat_template_zone = ? "
+                + "AND bus_type_seat_template_row = ? AND bus_type_seat_template_col = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, seatCode);
+            ps.setInt(2, busTypeId);
+            ps.setString(3, zone);
+            ps.setInt(4, row);
+            ps.setInt(5, col);
             ps.executeUpdate();
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) return rs.getInt(1);
-            }
         }
-        throw new SQLException("Failed to insert bus type, no ID obtained.");
     }
 
-    // Lookup seat_template_id by code
-    public Integer getSeatTemplateIdByCode(String code) throws SQLException {
-        String sql = "SELECT seat_template_id FROM Seat_Templates WHERE code = ?";
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, code);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt("seat_template_id");
-            }
-        }
-        return null;
-    }
-
-    // Insert one seat position or aisle
-    public void insertSeatPosition(int busTypeId, String zone,
-                                   int row, int col, boolean isAisle,
-                                   int ord, Integer seatTemplateId) throws SQLException {
-        String sql = "INSERT INTO Bus_Type_Seat_Template(" +
-                     "bus_type_id, seat_template_id, bus_type_seat_template_is_active, " +
-                     "bus_type_seat_template_zone, bus_type_seat_template_row, " +
-                     "bus_type_seat_template_col, bus_type_seat_template_is_aisle, " +
-                     "bus_type_seat_template_order) VALUES (?,?,?,?,?,?,?,?)";
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+    // Xóa ghế
+    public void deleteSeatPosition(int busTypeId, String zone, int row, int col) throws SQLException {
+        String sql = "DELETE FROM Bus_Type_Seat_Template WHERE bus_type_id = ? "
+                + "AND bus_type_seat_template_zone = ? AND bus_type_seat_template_row = ? "
+                + "AND bus_type_seat_template_col = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, busTypeId);
-            if (seatTemplateId != null) ps.setInt(2, seatTemplateId);
-            else ps.setNull(2, Types.INTEGER);
-            ps.setBoolean(3, true);
-            ps.setString(4, zone);
-            ps.setInt(5, row);
-            ps.setInt(6, col);
-            ps.setBoolean(7, isAisle);
-            ps.setInt(8, ord);
+            ps.setString(2, zone);
+            ps.setInt(3, row);
+            ps.setInt(4, col);
             ps.executeUpdate();
         }
     }
