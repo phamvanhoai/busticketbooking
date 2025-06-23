@@ -5,15 +5,17 @@
 package busticket.controller;
 
 import busticket.DAO.StaffManageBookingDAO;
+import busticket.DAO.StaffRouteDAO;
+import busticket.model.StaffRoute;
 import busticket.model.StaffTicket;
-import jakarta.servlet.RequestDispatcher;
-import java.io.IOException;
-import java.io.PrintWriter;
+
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -23,7 +25,10 @@ import java.util.List;
 public class StaffManageBookingsServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-    private final StaffManageBookingDAO dao = new StaffManageBookingDAO();
+    private final StaffManageBookingDAO bookingDAO = new StaffManageBookingDAO();
+
+    private static final int RECORDS_PER_PAGE = 10; // số bản ghi mỗi trang
+    private final StaffRouteDAO routeDAO = new StaffRouteDAO();
 
     /**
      * Handles the HTTP <code>GET</code> method.
@@ -36,82 +41,44 @@ public class StaffManageBookingsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Parse the path from the URI
-        String uri = request.getRequestURI();
-        String contextPath = request.getContextPath();
-        String path = uri.substring(contextPath.length());
-
-        // Handle booking detail view
-        if (path.equals("/staff/view-booking")) {
-            String ticketId = request.getParameter("id");
-            if (ticketId == null || ticketId.trim().isEmpty()) {
-                response.sendRedirect(contextPath + "/staff/manage-bookings");
-                return;
-            }
-
-            // Retrieve ticket by ID
-            StaffTicket booking = dao.getBookingById(ticketId);
-            if (booking == null) {
-                response.sendRedirect(contextPath + "/pages/404.jsp");
-                return;
-            }
-
-            // Pass data to view
-            request.setAttribute("booking", booking);
-            request.setAttribute("distinctRoutes", dao.getDistinctRoutes());
-            request.getRequestDispatcher("/WEB-INF/staff/manage-bookings/view-booking.jsp")
-                    .forward(request, response);
-            return;
-        }
-
-        // Handle filtering and pagination of bookings list
-        String q = request.getParameter("q");             // search keyword
-        String date = request.getParameter("date");       // filter by date
-        String routeId = request.getParameter("routeId"); // filter by route
-        String status = request.getParameter("status");   // filter by payment status
-        String pageParam = request.getParameter("page");  // current page
-
+        // Lấy filter params
+        String q = request.getParameter("q");
+        String routeId = request.getParameter("routeId");
+        String date = request.getParameter("date");
+        String status = request.getParameter("status");
+        String pageParam = request.getParameter("page");
         int page = 1;
         try {
-            page = (pageParam != null) ? Integer.parseInt(pageParam) : 1;
-            if (page < 1) {
-                page = 1;
-            }
-        } catch (NumberFormatException ignored) {
+            page = Integer.parseInt(pageParam);
+        } catch (Exception e) {
+            page = 1;
+        }
+        int recordsPerPage = 10;
+
+        try {
+            List<StaffTicket> tickets = bookingDAO.getFilteredTicketsByPage(q, routeId, date, status, page, recordsPerPage);
+            int totalRecords = bookingDAO.countFilteredTickets(q, routeId, date, status);
+            int numOfPages = (int) Math.ceil(totalRecords * 1.0 / recordsPerPage);
+
+            List<StaffRoute> distinctRoutes = routeDAO.getAllRoutes();
+
+            request.setAttribute("tickets", tickets);
+            request.setAttribute("numOfPages", numOfPages);
+            request.setAttribute("currentPage", page);
+            request.setAttribute("distinctRoutes", distinctRoutes);
+
+            // Đưa các tham số filter trở lại JSP
+            request.setAttribute("q", q);
+            request.setAttribute("routeId", routeId);
+            request.setAttribute("date", date);
+            request.setAttribute("status", status);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Error loading bookings: " + e.getMessage());
         }
 
-        // Get filtered bookings
-      List<StaffTicket> filtered = dao.getFilteredBookings(q, date, routeId, status);
-
-        // Further filter by payment status if specified
-        if (status != null && !status.isEmpty() && !status.equalsIgnoreCase("All Status")) {
-            filtered.removeIf(t -> !t.getPaymentStatus().equalsIgnoreCase(status));
-        }
-
-        // Pagination logic
-        int limit = 10;
-        int totalItems = filtered.size();
-        int totalPages = (int) Math.ceil((double) totalItems / limit);
-        int offset = (page - 1) * limit;
-
-        List<StaffTicket> paged = filtered.subList(
-                Math.min(offset, totalItems),
-                Math.min(offset + limit, totalItems)
-        );
-
-        // Send data to JSP for rendering
-        request.setAttribute("bookings", paged);
-        request.setAttribute("q", q);
-        request.setAttribute("status", status);
-        request.setAttribute("date", date);
-        request.setAttribute("routeId", routeId);
-        request.setAttribute("currentPage", page);
-        request.setAttribute("numOfPages", totalPages);
-        request.setAttribute("baseUrlWithSearch", contextPath + "/staff/manage-bookings");
-        request.setAttribute("distinctRoutes", dao.getDistinctRoutes());
-
-        request.getRequestDispatcher("/WEB-INF/staff/manage-bookings/manage-bookings.jsp")
-                .forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/staff/manage-bookings/manage-bookings.jsp").forward(request, response);
     }
 
     /**

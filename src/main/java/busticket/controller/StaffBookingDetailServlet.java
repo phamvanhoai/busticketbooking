@@ -22,7 +22,7 @@ import java.util.List;
  *
  * @author Nguyen Thanh Truong - CE180140
  */
-public class StaffPrintTicketBookingServlet extends HttpServlet {
+public class StaffBookingDetailServlet extends HttpServlet {
 
     private final StaffBookingDAO bookingDAO = new StaffBookingDAO();
 
@@ -37,14 +37,27 @@ public class StaffPrintTicketBookingServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.setCharacterEncoding("UTF-8");
-        response.setCharacterEncoding("UTF-8");
 
         String invoiceIdStr = request.getParameter("id");
         if (invoiceIdStr == null || invoiceIdStr.isEmpty()) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing booking ID");
             return;
         }
+
+        int currentPage = 1;
+        String pageStr = request.getParameter("page");
+        if (pageStr != null) {
+            try {
+                currentPage = Integer.parseInt(pageStr);
+                if (currentPage < 1) {
+                    currentPage = 1;
+                }
+            } catch (NumberFormatException e) {
+                currentPage = 1;
+            }
+        }
+
+        int pageSize = 5;
 
         try {
             int invoiceId = Integer.parseInt(invoiceIdStr);
@@ -54,12 +67,16 @@ public class StaffPrintTicketBookingServlet extends HttpServlet {
                 return;
             }
 
-            List<StaffTicket> ticketDetails = bookingDAO.getTicketsByInvoiceId(invoiceId);
+            int totalTickets = bookingDAO.countTicketsByInvoiceId(invoiceId);
+
+            int numOfPages = (int) Math.ceil((double) totalTickets / pageSize);
+
+            List<StaffTicket> ticketDetails = bookingDAO.getTicketsByInvoiceIdPaging(invoiceId, (currentPage - 1) * pageSize, pageSize);
 
             for (StaffTicket ticket : ticketDetails) {
                 try {
                     String qrText = "TicketID:" + ticket.getTicketId() + ";Invoice:" + bookingInfo.getInvoiceCode();
-                    String qrBase64 = QRCodeUtil.generateQRCodeBase64(qrText, 150, 150);
+                    String qrBase64 = QRCodeUtil.generateQRCodeBase64(qrText, 100, 100);
                     ticket.setQrCodeBase64(qrBase64);
                 } catch (Exception e) {
                     ticket.setQrCodeBase64("");
@@ -69,8 +86,11 @@ public class StaffPrintTicketBookingServlet extends HttpServlet {
 
             request.setAttribute("bookingInfo", bookingInfo);
             request.setAttribute("ticketDetails", ticketDetails);
+            request.setAttribute("currentPage", currentPage);
+            request.setAttribute("numOfPages", numOfPages);
+            request.setAttribute("baseUrlWithSearch", request.getRequestURI() + "?id=" + invoiceId);
 
-            request.getRequestDispatcher("/WEB-INF/staff/manage-bookings/print-ticket.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/staff/manage-bookings/view-booking.jsp").forward(request, response);
 
         } catch (NumberFormatException | SQLException e) {
             e.printStackTrace();
