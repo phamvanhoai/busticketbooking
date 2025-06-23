@@ -81,7 +81,7 @@ public class StaffManageBookingsServlet extends HttpServlet {
         }
 
         // Get filtered bookings
-        List<StaffTicket> filtered = dao.getFilteredBookings(q, date, routeId);
+      List<StaffTicket> filtered = dao.getFilteredBookings(q, date, routeId, status);
 
         // Further filter by payment status if specified
         if (status != null && !status.isEmpty() && !status.equalsIgnoreCase("All Status")) {

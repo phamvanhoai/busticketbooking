@@ -137,7 +137,7 @@ public class StaffManageBookingDAO extends DBContext {
      *
      * @return a list of StaffTicket objects containing booking details
      */
-    public List<StaffTicket> getFilteredBookings(String search, String date, String routeId) {
+    public List<StaffTicket> getFilteredBookings(String search, String date, String routeId, String status) {
         List<StaffTicket> list = new ArrayList<>();
 
         StringBuilder sql = new StringBuilder("SELECT t.ticket_id, u.user_name AS customer_name, "
@@ -163,32 +163,57 @@ public class StaffManageBookingDAO extends DBContext {
                 + "LEFT JOIN Invoices i ON ii.invoice_id = i.invoice_id "
                 + "WHERE 1=1 ");
 
-        if (search != null && !search.isEmpty()) {
-            sql.append("AND (t.ticket_id LIKE ? OR u.user_name LIKE ? OR ");
-            sql.append("ISNULL(ls.location_name, '') + ' &rarr; ' + ISNULL(le.location_name, '') LIKE ?) ");
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append("AND (");
+            sql.append("CAST(t.ticket_id AS VARCHAR) LIKE ? OR "); // 1
+            sql.append("RIGHT('0000' + CAST(t.ticket_id AS VARCHAR), 4) LIKE ? OR "); // 0001
+            sql.append("'BKG ' + RIGHT('0000' + CAST(t.ticket_id AS VARCHAR), 4) LIKE ? OR "); // BKG 0001
+            sql.append("'BKG' + RIGHT('0000' + CAST(t.ticket_id AS VARCHAR), 4) LIKE ? OR "); // BKG0001
+            sql.append("'BKG' LIKE ? OR "); // BKG
+            sql.append("u.user_name LIKE ? OR ");
+            sql.append("ISNULL(ls.location_name, '') + ' &rarr; ' + ISNULL(le.location_name, '') LIKE ? OR ");
+            sql.append("u2.user_name LIKE ?) ");
         }
+
         if (date != null && !date.isEmpty()) {
             sql.append("AND CAST(tr.departure_time AS DATE) = ? ");
         }
+
         if (routeId != null && !routeId.isEmpty()) {
             sql.append("AND r.route_id = ? ");
+        }
+
+        if (status != null && !status.isEmpty() && !status.equalsIgnoreCase("All Status")) {
+            sql.append("AND (CASE WHEN i.invoice_id IS NOT NULL THEN 'Paid' ELSE 'Unpaid' END) = ? ");
         }
 
         sql.append("ORDER BY t.ticket_id DESC");
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             int index = 1;
-            if (search != null && !search.isEmpty()) {
-                ps.setString(index++, "%" + search + "%");
-                ps.setString(index++, "%" + search + "%");
-                ps.setString(index++, "%" + search + "%");
+
+            if (search != null && !search.trim().isEmpty()) {
+                String keyword = "%" + search.trim() + "%";
+                ps.setString(index++, keyword); // CAST(t.ticket_id AS VARCHAR)
+                ps.setString(index++, keyword); // 0001
+                ps.setString(index++, keyword); // BKG 0001
+                ps.setString(index++, keyword); // BKG0001
+                ps.setString(index++, keyword); // BKG
+                ps.setString(index++, keyword); // user_name
+                ps.setString(index++, keyword); // route_name
+                ps.setString(index++, keyword); // driver_name
             }
 
             if (date != null && !date.isEmpty()) {
                 ps.setDate(index++, java.sql.Date.valueOf(date));
             }
+
             if (routeId != null && !routeId.isEmpty()) {
                 ps.setString(index++, routeId);
+            }
+
+            if (status != null && !status.isEmpty() && !status.equalsIgnoreCase("All Status")) {
+                ps.setString(index++, status);
             }
 
             ResultSet rs = ps.executeQuery();
@@ -205,6 +230,7 @@ public class StaffManageBookingDAO extends DBContext {
                 s.setInvoiceAmount(rs.getBigDecimal("invoice_total_amount"));
                 list.add(s);
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -219,11 +245,13 @@ public class StaffManageBookingDAO extends DBContext {
      */
     public List<StaffTicket> getDistinctRoutes() {
         List<StaffTicket> routes = new ArrayList<>();
-        String sql = "SELECT DISTINCT r.route_id, "
+        String sql = "SELECT MIN(r.route_id) AS route_id, "
                 + "ISNULL(ls.location_name, '') + ' &rarr; ' + ISNULL(le.location_name, '') AS route_name "
                 + "FROM Routes r "
                 + "JOIN Locations ls ON r.start_location_id = ls.location_id "
-                + "JOIN Locations le ON r.end_location_id = le.location_id";
+                + "JOIN Locations le ON r.end_location_id = le.location_id "
+                + "GROUP BY ls.location_name, le.location_name "
+                + "ORDER BY route_name";
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
 
@@ -239,5 +267,4 @@ public class StaffManageBookingDAO extends DBContext {
 
         return routes;
     }
-
 }
