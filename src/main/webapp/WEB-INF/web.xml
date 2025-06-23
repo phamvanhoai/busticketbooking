@@ -116,8 +116,9 @@
         <servlet-name>AdminLocationsServlet</servlet-name>
         <servlet-class>busticket.controller.AdminLocationsServlet</servlet-class>
     </servlet>
-    <servlet-name>SatffPrintTicketBookingServlet</servlet-name>
-        <servlet-class>busticket.controller.SatffPrintTicketBookingServlet</servlet-class>
+    <servlet>
+    <servlet-name>StaffPrintTicketBookingServlet</servlet-name>
+        <servlet-class>busticket.controller.StaffPrintTicketBookingServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
@@ -236,8 +237,9 @@
     <servlet-mapping>
         <servlet-name>AdminLocationsServlet</servlet-name>
         <url-pattern>/admin/locations</url-pattern>
-    </servlet-mapping><servlet-mapping>
-        <servlet-name>SatffPrintTicketBookingServlet</servlet-name>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>StaffPrintTicketBookingServlet</servlet-name>
         <url-pattern>/staff/print-ticket</url-pattern>
     </servlet-mapping>
     <session-config>

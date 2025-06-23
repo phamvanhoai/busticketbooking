@@ -30,7 +30,7 @@ import com.itextpdf.text.Phrase;
  *
  * @author Nguyen Thanh Truong - CE180140
  */
-@WebServlet(name = "SatffPrintTicketBookingServlet", urlPatterns = {"/SatffPrintTicketBookingServlet"})
+@WebServlet(name = "StaffPrintTicketBookingServlet", urlPatterns = {"/StaffPrintTicketBookingServlet"})
 public class StaffPrintTicketBookingServlet extends HttpServlet {
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
