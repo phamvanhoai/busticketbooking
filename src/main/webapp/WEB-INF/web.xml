@@ -179,7 +179,7 @@
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>TicketManagementServlet</servlet-name>
-        <url-pattern>/ticket-management/*</url-pattern>
+        <url-pattern>/ticket-management</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>ProfileManagementServlet</servlet-name>

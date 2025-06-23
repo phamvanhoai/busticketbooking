@@ -6,7 +6,6 @@
 package busticket.controller;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,35 +28,25 @@ public class TicketManagementServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        // Lấy đường dẫn từ URL (xóa phần base path như "/ticket-management")
-        String path = request.getPathInfo(); 
         
-        if (path == null) {
-            response.sendRedirect(request.getContextPath() + "/ticket-management/cancel-ticket");
+        // Lấy tham số hành động (action)
+        String action = request.getParameter("action");
+
+        if (request.getParameter("cancel") != null) {
+            request.getRequestDispatcher("/WEB-INF/admin/locations/add-location.jsp")
+                    .forward(request, response);
             return;
         }
 
-        // Dựa trên path để chuyển hướng tới các JSP khác nhau
-        switch (path) {
-            case "/cancel-ticket":
-                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/cancel-ticket.jsp").forward(request, response);
-                break;
-            case "/view-bookings":
-                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp").forward(request, response);
-                break;
-            // Thêm các trường hợp khác nếu cần
-            case "/booking-history":
-                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/booking-history.jsp").forward(request, response);
-                break;
-            case "/my-tickets":
-                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/my-tickets.jsp").forward(request, response);
-                break;
-            default:
-                // Nếu không khớp với bất kỳ URL nào, có thể redirect về trang mặc định
-                response.sendRedirect(request.getContextPath() + "/ticket-management/cancel-ticket");
-                break;
+        // View details
+        String detail = request.getParameter("detail");
+        if (detail != null) {
+            
         }
-    } 
+
+        request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp")
+                .forward(request, response);
+    }
 
     /** 
      * Handles the HTTP <code>POST</code> method.
