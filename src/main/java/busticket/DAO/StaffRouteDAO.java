@@ -20,20 +20,21 @@ import java.util.List;
 public class StaffRouteDAO extends DBContext {
 
     /**
-     * Retrieves a list of all routes in the system with route ID and route
-     * name. The route name is formatted as: "StartLocation → EndLocation"
+     * Retrieves a list of all available routes for staff use. Each route
+     * includes its ID and a formatted name in the format "Start → End".
      *
-     * @return List of StaffRoute objects
-     * @throws SQLException if any SQL error occurs
+     * @return a list of {@link StaffRoute} objects representing all routes in
+     * the system
+     * @throws SQLException if a database access error occurs
      */
     public List<StaffRoute> getAllRoutes() throws SQLException {
-        List<StaffRoute> routeList = new ArrayList<>();
+        List<StaffRoute> routes = new ArrayList<>();
 
-        String sql = "SELECT r.route_id, "
-                + "       CONCAT(ls.location_name, ' &rarr; ', le.location_name) AS route_name "
+        String sql = "SELECT r.route_id, ls.location_name + N' → ' + le.location_name AS route_name "
                 + "FROM Routes r "
                 + "JOIN Locations ls ON r.start_location_id = ls.location_id "
-                + "JOIN Locations le ON r.end_location_id = le.location_id";
+                + "JOIN Locations le ON r.end_location_id = le.location_id "
+                + "ORDER BY ls.location_name, le.location_name";
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
 
@@ -41,38 +42,10 @@ public class StaffRouteDAO extends DBContext {
                 StaffRoute route = new StaffRoute();
                 route.setRouteId(rs.getInt("route_id"));
                 route.setRouteName(rs.getString("route_name"));
-                routeList.add(route);
+                routes.add(route);
             }
         }
 
-        return routeList;
-    }
-
-    /**
-     * Retrieves a distinct list of route names for dropdowns. Format:
-     * "StartLocation → EndLocation"
-     *
-     * @return List of route name strings
-     */
-    public List<String> getAllRouteNames() {
-        List<String> routeNames = new ArrayList<>();
-
-        String sql = "SELECT DISTINCT CONCAT(ls.location_name, ' &rarr; ', le.location_name) AS route_name "
-                + "FROM Routes r "
-                + "JOIN Locations ls ON r.start_location_id = ls.location_id "
-                + "JOIN Locations le ON r.end_location_id = le.location_id "
-                + "ORDER BY route_name";
-
-        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                routeNames.add(rs.getString("route_name"));
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return routeNames;
+        return routes;
     }
 }
