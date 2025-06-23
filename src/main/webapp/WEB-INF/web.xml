@@ -109,8 +109,12 @@
         <servlet-class>busticket.controller.HomeViewTripsServlet</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>SatffPrintTicketBookingServlet</servlet-name>
-        <servlet-class>busticket.controller.SatffPrintTicketBookingServlet</servlet-class>
+        <servlet-name>StaffPrintTicketBookingServlet</servlet-name>
+        <servlet-class>busticket.controller.StaffPrintTicketBookingServlet</servlet-class>
+    </servlet>
+        <servlet>
+        <servlet-name>StaffBookingDetailServlet</servlet-name>
+        <servlet-class>busticket.controller.StaffBookingDetailServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
@@ -191,7 +195,6 @@
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>StaffManageBookingsServlet</servlet-name>
-        <url-pattern>/staff/view-booking</url-pattern>
         <url-pattern>/staff/manage-bookings</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
@@ -223,8 +226,12 @@
         <url-pattern>/view-trips</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>SatffPrintTicketBookingServlet</servlet-name>
+        <servlet-name>StaffPrintTicketBookingServlet</servlet-name>
         <url-pattern>/staff/print-ticket</url-pattern>
+    </servlet-mapping>
+        <servlet-mapping>
+        <servlet-name>StaffBookingDetailServlet</servlet-name>
+        <url-pattern>/staff/view-booking</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
