@@ -101,7 +101,6 @@
                                 <th class="py-2 px-4">Customer</th>
                                 <th class="py-2 px-4">Route</th>
                                 <th class="py-2 px-4">Departure</th>
-                                <th class="py-2 px-4">Seat</th>
                                 <th class="py-2 px-4">Driver</th>
                                 <th class="py-2 px-4">Status</th>
                                 <th class="py-2 px-4">Amount</th>
@@ -118,7 +117,6 @@
                                 <td class="py-2 px-4">
                                     <fmt:formatDate value="${ticket.departureTime}" pattern="dd/MM/yyyy HH:mm"/>
                                 </td>
-                                <td class="py-2 px-4">${ticket.seatCode}</td>
                                 <td class="py-2 px-4">${ticket.driverName}</td>
                                 <td class="py-2 px-4">
                                     <span class="px-3 py-1 text-sm rounded-full font-medium flex items-center gap-1
