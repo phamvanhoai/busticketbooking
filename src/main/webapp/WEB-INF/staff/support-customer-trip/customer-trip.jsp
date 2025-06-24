@@ -96,24 +96,36 @@
                                     </c:otherwise>
                                 </c:choose>
                             </td>
-                            <td class="px-6 py-4 flex items-center gap-2">
-                                <form action="${pageContext.request.contextPath}/staff/support-customer-trip" method="post" class="inline">
-                                    <input type="hidden" name="requestId"   value="${r.requestId}"/>
-                                    <input type="hidden" name="search"      value="${fn:escapeXml(search)}"/>
-                                    <input type="hidden" name="status"      value="${status}"/>
-                                    <input type="hidden" name="page"        value="${currentPage}"/>
-                                    <button name="action" value="approve"
-                                            class="text-green-600 hover:underline">Approve</button>
-                                </form>
-                                <form action="${pageContext.request.contextPath}/staff/support-customer-trip" method="post" class="inline">
-                                    <input type="hidden" name="requestId"   value="${r.requestId}"/>
-                                    <input type="hidden" name="search"      value="${fn:escapeXml(search)}"/>
-                                    <input type="hidden" name="status"      value="${status}"/>
-                                    <input type="hidden" name="page"        value="${currentPage}"/>
-                                    <button name="action" value="reject"
-                                            class="text-red-600 hover:underline">Reject</button>
-                                </form>
+                            <td class="px-6 py-4">
+                                <c:choose>
+                                    <c:when test="${r.requestStatus == 'Pending'}">
+                                        <div class="flex items-center gap-2">
+                                            <form action="${pageContext.request.contextPath}/staff/support-customer-trip"
+                                                  method="post" class="inline">
+                                                <input type="hidden" name="requestId" value="${r.requestId}"/>
+                                                <input type="hidden" name="search"    value="${fn:escapeXml(search)}"/>
+                                                <input type="hidden" name="status"    value="${status}"/>
+                                                <input type="hidden" name="page"      value="${currentPage}"/>
+                                                <button name="action" value="approve"
+                                                        class="text-green-600 hover:underline">Approve</button>
+                                            </form>
+                                            <form action="${pageContext.request.contextPath}/staff/support-customer-trip"
+                                                  method="post" class="inline">
+                                                <input type="hidden" name="requestId" value="${r.requestId}"/>
+                                                <input type="hidden" name="search"    value="${fn:escapeXml(search)}"/>
+                                                <input type="hidden" name="status"    value="${status}"/>
+                                                <input type="hidden" name="page"      value="${currentPage}"/>
+                                                <button name="action" value="reject"
+                                                        class="text-red-600 hover:underline">Reject</button>
+                                            </form>
+                                        </div>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="text-gray-500">—</span>
+                                    </c:otherwise>
+                                </c:choose>
                             </td>
+
                         </tr>
                     </c:forEach>
                 </tbody>

@@ -129,8 +129,9 @@ public class StaffSupportCustomerTripDAO extends DBContext {
     }
 
     /**
-     * Cập nhật status (Approved/Rejected) trên yêu cầu hủy hoá đơn, và nếu
-     * Approved thì đánh dấu hoá đơn là Cancelled.
+     * Cập nhật status (Approved/Rejected) trên yêu cầu hủy hoá đơn, nếu
+     * Approved thì đánh dấu hoá đơn là Cancelled, nếu Rejected thì đánh dấu hoá
+     * đơn về Paid.
      */
     public void updateStatus(int requestId, String newStatus, int staffId) {
         Connection conn = null;
@@ -139,8 +140,7 @@ public class StaffSupportCustomerTripDAO extends DBContext {
             conn.setAutoCommit(false);
 
             // 1) Cập nhật request
-            String sql1
-                    = "UPDATE Invoice_Cancel_Requests "
+            String sql1 = "UPDATE Invoice_Cancel_Requests "
                     + "SET request_status = ?, approved_by_staff_id = ?, approval_date = GETDATE() "
                     + "WHERE request_id = ?";
             try ( PreparedStatement ps1 = conn.prepareStatement(sql1)) {
@@ -150,15 +150,27 @@ public class StaffSupportCustomerTripDAO extends DBContext {
                 ps1.executeUpdate();
             }
 
-            // 2) Nếu approved, cập nhật luôn Invoice thành Cancelled
+            // 2) Cập nhật status của Invoice
             if ("Approved".equalsIgnoreCase(newStatus)) {
-                String sql2
-                        = "UPDATE Invoices "
+                String sql2 = "UPDATE Invoices "
                         + "SET invoice_status = 'Cancelled' "
-                        + "WHERE invoice_id = (SELECT invoice_id FROM Invoice_Cancel_Requests WHERE request_id = ?)";
+                        + "WHERE invoice_id = ("
+                        + "  SELECT invoice_id FROM Invoice_Cancel_Requests WHERE request_id = ?"
+                        + ")";
                 try ( PreparedStatement ps2 = conn.prepareStatement(sql2)) {
                     ps2.setInt(1, requestId);
                     ps2.executeUpdate();
+                }
+
+            } else if ("Rejected".equalsIgnoreCase(newStatus)) {
+                String sql3 = "UPDATE Invoices "
+                        + "SET invoice_status = 'Paid' "
+                        + "WHERE invoice_id = ("
+                        + "  SELECT invoice_id FROM Invoice_Cancel_Requests WHERE request_id = ?"
+                        + ")";
+                try ( PreparedStatement ps3 = conn.prepareStatement(sql3)) {
+                    ps3.setInt(1, requestId);
+                    ps3.executeUpdate();
                 }
             }
 

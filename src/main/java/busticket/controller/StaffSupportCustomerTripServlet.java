@@ -97,7 +97,7 @@ public class StaffSupportCustomerTripServlet extends HttpServlet {
             return;
         }
         busticket.model.Users currentUser = (busticket.model.Users) session.getAttribute("currentUser");
-        if (currentUser == null || !"Staff".equals(currentUser.getRole())|| !"Admin".equals(currentUser.getRole())) {
+        if (currentUser == null || !("Staff".equals(currentUser.getRole())|| "Admin".equals(currentUser.getRole()))) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
@@ -124,7 +124,7 @@ public class StaffSupportCustomerTripServlet extends HttpServlet {
         }
 
         String redirectUrl = request.getContextPath()
-                + "/staff/support-invoice-cancel?search="
+                + "/staff/support-customer-trip?search="
                 + URLEncoder.encode(search, "UTF-8")
                 + "&status=" + URLEncoder.encode(status, "UTF-8")
                 + "&page=" + URLEncoder.encode(page, "UTF-8");
