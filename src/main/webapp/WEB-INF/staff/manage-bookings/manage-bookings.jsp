@@ -218,5 +218,5 @@
                     });
                 }
             });
-        </script>
+        </script>s
         <%@include file="/WEB-INF/include/staff/staff-footer.jsp" %>
