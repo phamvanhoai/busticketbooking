@@ -10,40 +10,30 @@ package busticket.model;
  */
 public class Driver {
 
-    private String driverId;
-    private String fullName;
-    private String phone;
+    private int driverId;
+    private String driverName;
 
     public Driver() {
     }
 
-    public Driver(String driverId, String fullName, String phone) {
+    public Driver(int driverId, String driverName) {
         this.driverId = driverId;
-        this.fullName = fullName;
-        this.phone = phone;
+        this.driverName = driverName;
     }
 
-    public String getDriverId() {
+    public int getDriverId() {
         return driverId;
     }
 
-    public void setDriverId(String driverId) {
+    public void setDriverId(int driverId) {
         this.driverId = driverId;
     }
 
-    public String getFullName() {
-        return fullName;
+    public String getDriverName() {
+        return driverName;
     }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setDriverName(String driverName) {
+        this.driverName = driverName;
     }
 }

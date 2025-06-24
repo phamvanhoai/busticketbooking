@@ -13,17 +13,22 @@ import java.sql.Timestamp;
 public class StaffTrip {
 
     private int tripId;
-    private int routeId;
     private Timestamp departureTime;
-    private String assignedDriver;
-
-    private String startLocation;
-    private String endLocation;
-
     private String routeName;
+    private String driverName;
+    private String plateNumber;
+    private String busTypeName;
 
-    public String getFormattedTripId() {
-        return String.format("TRIP %04d", tripId);
+    public StaffTrip() {
+    }
+
+    public StaffTrip(int tripId, Timestamp departureTime, String routeName, String driverName, String plateNumber, String busTypeName) {
+        this.tripId = tripId;
+        this.departureTime = departureTime;
+        this.routeName = routeName;
+        this.driverName = driverName;
+        this.plateNumber = plateNumber;
+        this.busTypeName = busTypeName;
     }
 
     public int getTripId() {
@@ -34,14 +39,6 @@ public class StaffTrip {
         this.tripId = tripId;
     }
 
-    public int getRouteId() {
-        return routeId;
-    }
-
-    public void setRouteId(int routeId) {
-        this.routeId = routeId;
-    }
-
     public Timestamp getDepartureTime() {
         return departureTime;
     }
@@ -50,35 +47,35 @@ public class StaffTrip {
         this.departureTime = departureTime;
     }
 
-    public String getAssignedDriver() {
-        return assignedDriver;
-    }
-
-    public void setAssignedDriver(String assignedDriver) {
-        this.assignedDriver = assignedDriver;
-    }
-
-    public String getStartLocation() {
-        return startLocation;
-    }
-
-    public void setStartLocation(String startLocation) {
-        this.startLocation = startLocation;
-    }
-
-    public String getEndLocation() {
-        return endLocation;
-    }
-
-    public void setEndLocation(String endLocation) {
-        this.endLocation = endLocation;
-    }
-
     public String getRouteName() {
         return routeName;
     }
 
     public void setRouteName(String routeName) {
         this.routeName = routeName;
+    }
+
+    public String getDriverName() {
+        return driverName;
+    }
+
+    public void setDriverName(String driverName) {
+        this.driverName = driverName;
+    }
+
+    public String getPlateNumber() {
+        return plateNumber;
+    }
+
+    public void setPlateNumber(String plateNumber) {
+        this.plateNumber = plateNumber;
+    }
+
+    public String getBusTypeName() {
+        return busTypeName;
+    }
+
+    public void setBusTypeName(String busTypeName) {
+        this.busTypeName = busTypeName;
     }
 }
