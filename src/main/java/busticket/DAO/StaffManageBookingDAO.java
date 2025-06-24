@@ -175,7 +175,6 @@ public class StaffManageBookingDAO extends DBContext {
             sql.append("AND i.invoice_status = ? ");
             params.add(status.trim());
         }
-
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             for (int i = 0; i < params.size(); i++) {
                 Object param = params.get(i);
