@@ -76,18 +76,20 @@ public class AdminBusTypesServlet extends HttpServlet {
                 request.setAttribute("busType", busType);
 
                 // Lấy thông tin ghế đã lưu (tầng dưới và tầng trên)
+                // 2. Lấy danh sách ghế
                 List<AdminSeatPosition> seatsDown = adminBusTypesDAO.getSeatPositionsForBusType(id, "down");
                 List<AdminSeatPosition> seatsUp = adminBusTypesDAO.getSeatPositionsForBusType(id, "up");
 
-                // Truyền giá trị ghế từ cơ sở dữ liệu vào JSP
-                ObjectMapper objectMapper = new ObjectMapper();
-                String seatsDownJson = objectMapper.writeValueAsString(seatsDown);
-                String seatsUpJson = objectMapper.writeValueAsString(seatsUp);
+// 3. Đưa vào request để JSP dùng JSTL render server-side
+                request.setAttribute("busType", busType);
+                request.setAttribute("seatsDown", seatsDown);
+                request.setAttribute("seatsUp", seatsUp);
+                ObjectMapper mapper = new ObjectMapper();
+request.setAttribute("seatsDownJson", mapper.writeValueAsString(seatsDown));
+request.setAttribute("seatsUpJson",   mapper.writeValueAsString(seatsUp));
 
-                request.setAttribute("seatsDownJson", seatsDownJson);
-                request.setAttribute("seatsUpJson", seatsUpJson);
 
-                // Truyền các giá trị cấu hình (rows, cols, prefix) cho form
+// 4. Đưa cả cấu hình rows/cols/prefix để bảng biết kích thước
                 request.setAttribute("rowsDown", busType.getRowsDown());
                 request.setAttribute("colsDown", busType.getColsDown());
                 request.setAttribute("prefixDown", busType.getPrefixDown());
@@ -157,20 +159,40 @@ public class AdminBusTypesServlet extends HttpServlet {
 
         try {
             if ("add".equals(action)) {
-                // Lấy dữ liệu từ form
+                // 1. Lấy dữ liệu từ form
                 String name = request.getParameter("name");
                 String desc = request.getParameter("description");
                 String layoutDown = request.getParameter("layoutDown");
                 String layoutUp = request.getParameter("layoutUp");
 
-                // Thêm Bus_Type và lấy ID
-                AdminBusTypes model = new AdminBusTypes(name, desc);
+                // **MỚI**: đọc thêm cấu hình ghế
+                int rowsDown = Integer.parseInt(request.getParameter("rowsDown"));
+                int colsDown = Integer.parseInt(request.getParameter("colsDown"));
+                String prefixDown = request.getParameter("prefixDown");
+                int rowsUp = Integer.parseInt(request.getParameter("rowsUp"));
+                int colsUp = Integer.parseInt(request.getParameter("colsUp"));
+                String prefixUp = request.getParameter("prefixUp");
+
+                // 2. Khởi tạo model với đủ thông số
+                AdminBusTypes model = new AdminBusTypes();
+                model.setBusTypeName(name);
+                model.setBusTypeDescription(desc);
+                model.setRowsDown(rowsDown);
+                model.setColsDown(colsDown);
+                model.setPrefixDown(prefixDown);
+                model.setRowsUp(rowsUp);
+                model.setColsUp(colsUp);
+                model.setPrefixUp(prefixUp);
+
+                // 3. Thêm Bus_Type và lấy ID
                 int busTypeId = adminBusTypesDAO.insertBusType(model);
 
-                // Parse JSON và thêm ghế tầng dưới
+                // 4. Parse JSON layout và thêm chi tiết ghế tầng dưới
                 ObjectMapper mapper = new ObjectMapper();
-                TypeReference<List<Map<String, Object>>> ref = new TypeReference<List<Map<String, Object>>>() {
+                TypeReference<List<Map<String, Object>>> ref
+                        = new TypeReference<List<Map<String, Object>>>() {
                 };
+
                 List<Map<String, Object>> downSeats = mapper.readValue(layoutDown, ref);
                 int order = 1;
                 for (Map<String, Object> seat : downSeats) {
@@ -180,7 +202,7 @@ public class AdminBusTypesServlet extends HttpServlet {
                     adminBusTypesDAO.insertSeatPosition(busTypeId, "down", r, c, order++, code);
                 }
 
-                // Thêm ghế tầng trên
+                // 5. Tầng trên tương tự
                 List<Map<String, Object>> upSeats = mapper.readValue(layoutUp, ref);
                 order = 1;
                 for (Map<String, Object> seat : upSeats) {

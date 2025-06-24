@@ -3,64 +3,62 @@
     Created on : Jun 15, 2025, 1:53:58 AM
     Author     : Pham Van Hoai - CE181744
 --%>
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@include file="/WEB-INF/include/admin/admin-header.jsp" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ include file="/WEB-INF/include/admin/admin-header.jsp" %>
 
 
 <body class="bg-gray-50">
     <div class="mt-10">
         <h1 class="text-3xl font-bold text-[#EF5222] mb-6">Update Bus Type</h1>
-
         <div class="bg-white border border-[#EF5222] rounded-2xl shadow-lg p-8">
             <form action="${pageContext.request.contextPath}/admin/bus-types" method="post" class="space-y-6">
                 <input type="hidden" name="action" value="edit" />
-                <input type="hidden" id="bus-type-id" name="id" value="${busType.busTypeId}" />
+                <input type="hidden" name="id" value="${busType.busTypeId}" />
+                <input type="hidden" id="layoutDown" name="layoutDown" />
+                <input type="hidden" id="layoutUp" name="layoutUp" />
 
                 <!-- Name & Description -->
                 <div>
                     <label class="block text-gray-800 font-medium mb-2">Name</label>
-                    <input id="bus-type-name" name="name" type="text" value="${busType.busTypeName}" 
+                    <input name="name" type="text" value="${busType.busTypeName}" required
                            class="w-full border border-gray-300 rounded-xl px-5 py-4 focus:outline-none focus:ring" />
                 </div>
                 <div>
                     <label class="block text-gray-800 font-medium mb-2">Description</label>
-                    <textarea id="bus-type-desc" name="description" rows="3"
+                    <textarea name="description" rows="3"
                               class="w-full border border-gray-300 rounded-xl px-5 py-4 focus:outline-none focus:ring resize-none">${busType.busTypeDescription}</textarea>
                 </div>
 
-                <!-- Seats Configuration for each floor -->
+                <!-- Config inputs -->
                 <div class="grid md:grid-cols-2 gap-6">
-                    <!-- Downstairs -->
                     <div class="space-y-2">
                         <h2 class="font-medium">Downstairs Setup</h2>
                         <div class="flex gap-2 items-center">
                             <label>Rows×Cols:</label>
-                            <input id="rowsDown" name="rowsDown" type="number" value="${busType.rowsDown}" min="1" max="10" class="w-16 border rounded px-2 py-1"/>
+                            <input id="rowsDown" name="rowsDown" type="number" value="${rowsDown}" min="1" max="10" class="w-16 border rounded px-2 py-1" />
                             <span>×</span>
-                            <input id="colsDown" name="colsDown" type="number" value="${busType.colsDown}" min="1" max="10" class="w-16 border rounded px-2 py-1"/>
+                            <input id="colsDown" name="colsDown" type="number" value="${colsDown}" min="1" max="10" class="w-16 border rounded px-2 py-1" />
                         </div>
                         <div class="flex gap-2 items-center">
-                            <label>Row Prefix:</label>
-                            <input id="prefixDown" name="prefixDown" type="text" value="${busType.prefixDown}" maxlength="2" class="w-16 border rounded px-2 py-1"/>
+                            <label>Prefix:</label>
+                            <input id="prefixDown" name="prefixDown" type="text" value="${prefixDown}" maxlength="2" class="w-16 border rounded px-2 py-1" />
                         </div>
                         <button type="button" onclick="regenTable('down')" class="px-4 py-2 bg-[#EF5222] text-white rounded hover:bg-opacity-90">
                             Apply Downstairs
                         </button>
                     </div>
-
-                    <!-- Up floor -->
                     <div class="space-y-2">
                         <h2 class="font-medium">Up floor Setup</h2>
                         <div class="flex gap-2 items-center">
                             <label>Rows×Cols:</label>
-                            <input id="rowsUp" name="rowsUp" type="number" value="${busType.rowsUp}" min="1" max="10" class="w-16 border rounded px-2 py-1"/>
+                            <input id="rowsUp" name="rowsUp" type="number" value="${rowsUp}" min="1" max="10" class="w-16 border rounded px-2 py-1" />
                             <span>×</span>
-                            <input id="colsUp" name="colsUp" type="number" value="${busType.colsUp}" min="1" max="10" class="w-16 border rounded px-2 py-1"/>
+                            <input id="colsUp" name="colsUp" type="number" value="${colsUp}" min="1" max="10" class="w-16 border rounded px-2 py-1" />
                         </div>
                         <div class="flex gap-2 items-center">
-                            <label>Row Prefix:</label>
-                            <input id="prefixUp" name="prefixUp" type="text" value="${busType.prefixUp}" maxlength="2" class="w-16 border rounded px-2 py-1"/>
+                            <label>Prefix:</label>
+                            <input id="prefixUp" name="prefixUp" type="text" value="${prefixUp}" maxlength="2" class="w-16 border rounded px-2 py-1" />
                         </div>
                         <button type="button" onclick="regenTable('up')" class="px-4 py-2 bg-[#EF5222] text-white rounded hover:bg-opacity-90">
                             Apply Up floor
@@ -68,19 +66,76 @@
                     </div>
                 </div>
 
-                <!-- Tables -->
+                <!-- Downstairs Layout -->
                 <div class="mt-6">
                     <h2 class="font-semibold mb-2">Downstairs Layout</h2>
                     <div class="overflow-auto">
-                        <table id="table-down" class="table-auto border-collapse border border-gray-300 w-full text-center"></table>
+                        <table class="table-auto border-collapse border border-gray-300 w-full text-center">
+                            <thead>
+                                <tr>
+                                    <th class="border p-2 bg-gray-100 font-medium"></th>
+                                        <c:forEach var="c" begin="1" end="${colsDown}">
+                                        <th class="border p-2 bg-gray-100 font-medium">${c}</th>
+                                        </c:forEach>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:forEach var="r" begin="1" end="${rowsDown}">
+                                    <tr>
+                                        <th class="border p-2 bg-gray-100 font-medium">${prefixDown}${r}</th>
+                                            <c:forEach var="c" begin="1" end="${colsDown}">
+                                                <c:set var="found" value="" />
+                                                <c:forEach var="seat" items="${seatsDown}">
+                                                    <c:if test="${seat.row == r && seat.col == c}">
+                                                        <c:set var="found" value="${seat.code}" />
+                                                    </c:if>
+                                                </c:forEach>
+                                            <td class="border p-2 ${found ne '' ? 'bg-[#EF5222] text-white' : ''}">
+                                                ${found}
+                                            </td>
+                                        </c:forEach>
+                                    </tr>
+                                </c:forEach>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
+
+                <!-- Up floor Layout -->
                 <div class="mt-4">
                     <h2 class="font-semibold mb-2">Up floor Layout</h2>
                     <div class="overflow-auto">
-                        <table id="table-up" class="table-auto border-collapse border border-gray-300 w-full text-center"></table>
+                        <table class="table-auto border-collapse border border-gray-300 w-full text-center">
+                            <thead>
+                                <tr>
+                                    <th class="border p-2 bg-gray-100 font-medium"></th>
+                                        <c:forEach var="c" begin="1" end="${colsUp}">
+                                        <th class="border p-2 bg-gray-100 font-medium">${c}</th>
+                                        </c:forEach>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:forEach var="r" begin="1" end="${rowsUp}">
+                                    <tr>
+                                        <th class="border p-2 bg-gray-100 font-medium">${prefixUp}${r}</th>
+                                            <c:forEach var="c" begin="1" end="${colsUp}">
+                                                <c:set var="found" value="" />
+                                                <c:forEach var="seat" items="${seatsUp}">
+                                                    <c:if test="${seat.row == r && seat.col == c}">
+                                                        <c:set var="found" value="${seat.code}" />
+                                                    </c:if>
+                                                </c:forEach>
+                                            <td class="border p-2 ${found ne '' ? 'bg-[#EF5222] text-white' : ''}">
+                                                ${found}
+                                            </td>
+                                        </c:forEach>
+                                    </tr>
+                                </c:forEach>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
+
 
                 <!-- Actions -->
                 <div class="flex justify-end gap-4 mt-8">
@@ -95,80 +150,85 @@
         </div>
     </div>
 
+    <%-- JSON data from server --%>
     <script>
-        const layout = {down: [], up: []};
-
-        // Passing the serialized JSON data from the backend to JavaScript
-        <%
-          String seatsDownJson = (String) request.getAttribute("seatsDownJson");
-          String seatsUpJson = (String) request.getAttribute("seatsUpJson");
-        %>
-
-        layout.down = JSON.parse('<%= seatsDownJson %>');
-        layout.up = JSON.parse('<%= seatsUpJson %>');
+        // JSON data from server, embed safely using JSTL
+        const layout = {
+            down: JSON.parse('<c:out value="${seatsDownJson}" escapeXml="false"/>'),
+            up: JSON.parse('<c:out value="${seatsUpJson}" escapeXml="false"/>')
+        };
 
         function regenTable(zone) {
             const rows = +document.getElementById('rows' + capitalize(zone)).value;
             const cols = +document.getElementById('cols' + capitalize(zone)).value;
-            const prefix = document.getElementById('prefix' + capitalize(zone)).value;
-
+            const prefix = document.getElementById('prefix' + capitalize(zone)).value || '';
+            const arr = layout[zone];
             const table = document.getElementById('table-' + zone);
             table.innerHTML = '';
 
-            layout[zone] = layout[zone] || [];
-
             // header
             const thead = document.createElement('thead');
-            const headRow = document.createElement('tr');
-            headRow.appendChild(cell('th', '', true));
-            for (let c = 1; c <= cols; c++) {
-                headRow.appendChild(cell('th', c, true));
-            }
-            thead.appendChild(headRow);
+            const hr = document.createElement('tr');
+            hr.appendChild(createCell('th', '', true));
+            for (let c = 1; c <= cols; c++)
+                hr.appendChild(createCell('th', c, true));
+            thead.appendChild(hr);
             table.appendChild(thead);
 
             // body
             const tbody = document.createElement('tbody');
             for (let r = 1; r <= rows; r++) {
                 const tr = document.createElement('tr');
-                tr.appendChild(cell('th', prefix + r, true));
-
+                tr.appendChild(createCell('th', prefix + r, true));
                 for (let c = 1; c <= cols; c++) {
-                    const td = cell('td', '', false);
+                    const td = createCell('td', '', false);
                     td.dataset.r = r;
                     td.dataset.c = c;
                     td.onclick = () => toggleSeat(zone, td);
                     tr.appendChild(td);
                 }
-
                 tbody.appendChild(tr);
             }
-
             table.appendChild(tbody);
+
+            // populate existing codes
+            arr.forEach(s => {
+                const sel = `#table-${zone} td[data-r="${s.r}"][data-c="${s.c}"]`;
+                const td = document.querySelector(sel);
+                if (td) {
+                    td.innerText = s.code;
+                    td.classList.add('bg-[#EF5222]', 'text-white');
+                }
+            });
         }
 
-        function cell(tag, text, isHdr) {
+        function createCell(tag, text, isHdr) {
             const el = document.createElement(tag);
-            el.className = `${isHdr ? 'border p-2 bg-gray-100 font-medium' : 'border p-2 cursor-pointer hover:bg-gray-50'}`;
-            el.innerText = text;
+            if (isHdr) {
+                el.outerHTML = `<th class="border p-2 bg-gray-100 font-medium">${text}</th>`;
+            } else {
+                el.className = 'border p-2 cursor-pointer hover:bg-gray-50';
+                el.innerText = text;
+            }
             return el;
         }
 
-        function toggleSeat(zone, el) {
-            const {r, c} = el.dataset;
+        function toggleSeat(zone, td) {
+            const r = +td.dataset.r, c = +td.dataset.c;
             const arr = layout[zone];
-            const i = arr.findIndex(s => s.r == r && s.c == c);
-            if (i >= 0) {
-                arr.splice(i, 1);
-                el.innerText = '';
-                el.classList.remove('bg-[#EF5222]', 'text-white');
+            const idx = arr.findIndex(s => s.r === r && s.c === c);
+            if (idx >= 0) {
+                arr.splice(idx, 1);
+                td.innerText = '';
+                td.classList.remove('bg-[#EF5222]', 'text-white');
             } else {
-                const code = prompt('Seat code (eg ' + document.getElementById('prefix' + capitalize(zone)).value + r + '):');
+                const prefix = document.getElementById('prefix' + capitalize(zone)).value || '';
+                const code = prompt(`Seat code (e.g. ${prefix}${r}):`);
                 if (!code)
                     return;
                 arr.push({r, c, code});
-                el.innerText = code;
-                el.classList.add('bg-[#EF5222]', 'text-white');
+                td.innerText = code;
+                td.classList.add('bg-[#EF5222]', 'text-white');
             }
         }
 
@@ -176,73 +236,14 @@
             return s.charAt(0).toUpperCase() + s.slice(1);
         }
 
+        // init
+        regenTable('down');
+        regenTable('up');
+
         document.querySelector('form').onsubmit = () => {
             document.getElementById('layoutDown').value = JSON.stringify(layout.down);
             document.getElementById('layoutUp').value = JSON.stringify(layout.up);
         };
-
-        document.addEventListener('DOMContentLoaded', () => {
-            regenTable('down');
-            regenTable('up');
-        });
-    </script>
-    
-    <%-- Script to render seats data in the table --%>
-    <script>
-        // Convert the JSON data passed from the servlet into JavaScript arrays
-        var seatsDown = JSON.parse('${seatsDownJson}');
-        var seatsUp = JSON.parse('${seatsUpJson}');
-
-        // Function to generate the seat layout table dynamically
-        function renderSeatTable(zone, seats) {
-            const table = document.getElementById(`table-${zone}`);
-            const rows = seats.reduce((acc, seat) => {
-                const rowKey = seat.r;  // Nhóm ghế theo hàng
-                if (!acc[rowKey]) acc[rowKey] = [];
-                acc[rowKey].push(seat); // Thêm ghế vào hàng tương ứng
-                return acc;
-            }, {});
-
-            // Create header row
-            const headerRow = document.createElement('tr');
-            headerRow.appendChild(createCell('th', ''));
-            for (let c = 1; c <= 3; c++) { // Giả sử có tối đa 3 cột
-                headerRow.appendChild(createCell('th', c));
-            }
-            table.appendChild(headerRow);
-
-            // Create rows with seats
-            for (let rowKey in rows) {
-                const row = rows[rowKey];
-                const rowElement = document.createElement('tr');
-                rowElement.appendChild(createCell('th', rowKey));  // Hiển thị hàng
-
-                // Duyệt qua các cột
-                for (let col = 1; col <= 3; col++) {  // Giả sử mỗi hàng có 3 cột
-                    const seat = row.find(s => s.c === col);  // Tìm ghế ở vị trí tương ứng
-                    if (seat) {
-                        rowElement.appendChild(createCell('td', seat.code || ''));
-                    } else {
-                        rowElement.appendChild(createCell('td', ''));  // Nếu không có ghế, để trống
-                    }
-                }
-                table.appendChild(rowElement);
-            }
-        }
-
-        // Helper function to create table cells
-        function createCell(tag, text) {
-            const cell = document.createElement(tag);
-            cell.className = 'border p-2';
-            cell.innerText = text;
-            return cell;
-        }
-
-        // Render the tables for downstairs and upstairs
-        renderSeatTable('down', seatsDown);
-        renderSeatTable('up', seatsUp);
     </script>
 
-    <%-- CONTENT HERE--%>
-
-    <%@include file="/WEB-INF/include/admin/admin-footer.jsp" %>
+    <%@ include file="/WEB-INF/include/admin/admin-footer.jsp" %>
