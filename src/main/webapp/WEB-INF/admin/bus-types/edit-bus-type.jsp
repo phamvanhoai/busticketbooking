@@ -8,15 +8,27 @@
 <%@ include file="/WEB-INF/include/admin/admin-header.jsp" %>
 
 
-<body class="bg-gray-50">
+<body class="bg-gray-50 min-h-screen p-6">
     <div class="mt-10">
         <h1 class="text-3xl font-bold text-[#EF5222] mb-6">Update Bus Type</h1>
+
+        <c:if test="${not empty success}">
+            <div class="mb-4 p-4 bg-green-100 border border-green-300 text-green-800 rounded-lg">
+                ${success}
+            </div>
+        </c:if>
+        <c:if test="${not empty error}">
+            <div class="mb-4 p-4 bg-red-100 border border-red-300 text-red-800 rounded-lg">
+                ${error}
+            </div>
+        </c:if>
+
         <div class="bg-white border border-[#EF5222] rounded-2xl shadow-lg p-8">
-            <form action="${pageContext.request.contextPath}/admin/bus-types" method="post" class="space-y-6">
+            <form id="busTypeForm" action="${pageContext.request.contextPath}/admin/bus-types" method="post" class="space-y-6">
                 <input type="hidden" name="action" value="edit" />
                 <input type="hidden" name="id" value="${busType.busTypeId}" />
                 <input type="hidden" id="layoutDown" name="layoutDown" />
-                <input type="hidden" id="layoutUp" name="layoutUp" />
+                <input type="hidden" id="layoutUp"   name="layoutUp" />
 
                 <!-- Name & Description -->
                 <div>
@@ -30,8 +42,9 @@
                               class="w-full border border-gray-300 rounded-xl px-5 py-4 focus:outline-none focus:ring resize-none">${busType.busTypeDescription}</textarea>
                 </div>
 
-                <!-- Config inputs -->
+                <!-- Config for each floor -->
                 <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Downstairs -->
                     <div class="space-y-2">
                         <h2 class="font-medium">Downstairs Setup</h2>
                         <div class="flex gap-2 items-center">
@@ -44,12 +57,13 @@
                             <label>Prefix:</label>
                             <input id="prefixDown" name="prefixDown" type="text" value="${prefixDown}" maxlength="2" class="w-16 border rounded px-2 py-1" />
                         </div>
-                        <button type="button" onclick="regenTable('down')" class="px-4 py-2 bg-[#EF5222] text-white rounded hover:bg-opacity-90">
+                        <button type="button" id="applyDown" class="px-4 py-2 bg-[#EF5222] text-white rounded hover:bg-opacity-90">
                             Apply Downstairs
                         </button>
                     </div>
+                    <!-- Upstairs -->
                     <div class="space-y-2">
-                        <h2 class="font-medium">Up floor Setup</h2>
+                        <h2 class="font-medium">Up Floor Setup</h2>
                         <div class="flex gap-2 items-center">
                             <label>Rows×Cols:</label>
                             <input id="rowsUp" name="rowsUp" type="number" value="${rowsUp}" min="1" max="10" class="w-16 border rounded px-2 py-1" />
@@ -60,89 +74,32 @@
                             <label>Prefix:</label>
                             <input id="prefixUp" name="prefixUp" type="text" value="${prefixUp}" maxlength="2" class="w-16 border rounded px-2 py-1" />
                         </div>
-                        <button type="button" onclick="regenTable('up')" class="px-4 py-2 bg-[#EF5222] text-white rounded hover:bg-opacity-90">
-                            Apply Up floor
+                        <button type="button" id="applyUp" class="px-4 py-2 bg-[#EF5222] text-white rounded hover:bg-opacity-90">
+                            Apply Up Floor
                         </button>
                     </div>
                 </div>
 
-                <!-- Downstairs Layout -->
+                <!-- Dynamic Tables -->
                 <div class="mt-6">
                     <h2 class="font-semibold mb-2">Downstairs Layout</h2>
                     <div class="overflow-auto">
-                        <table class="table-auto border-collapse border border-gray-300 w-full text-center">
-                            <thead>
-                                <tr>
-                                    <th class="border p-2 bg-gray-100 font-medium"></th>
-                                        <c:forEach var="c" begin="1" end="${colsDown}">
-                                        <th class="border p-2 bg-gray-100 font-medium">${c}</th>
-                                        </c:forEach>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <c:forEach var="r" begin="1" end="${rowsDown}">
-                                    <tr>
-                                        <th class="border p-2 bg-gray-100 font-medium">${prefixDown}${r}</th>
-                                            <c:forEach var="c" begin="1" end="${colsDown}">
-                                                <c:set var="found" value="" />
-                                                <c:forEach var="seat" items="${seatsDown}">
-                                                    <c:if test="${seat.row == r && seat.col == c}">
-                                                        <c:set var="found" value="${seat.code}" />
-                                                    </c:if>
-                                                </c:forEach>
-                                            <td class="border p-2 ${found ne '' ? 'bg-[#EF5222] text-white' : ''}">
-                                                ${found}
-                                            </td>
-                                        </c:forEach>
-                                    </tr>
-                                </c:forEach>
-                            </tbody>
-                        </table>
+                        <table id="table-down" class="table-auto border-collapse border border-gray-300 w-full text-center"></table>
                     </div>
                 </div>
-
-                <!-- Up floor Layout -->
                 <div class="mt-4">
-                    <h2 class="font-semibold mb-2">Up floor Layout</h2>
+                    <h2 class="font-semibold mb-2">Up Floor Layout</h2>
                     <div class="overflow-auto">
-                        <table class="table-auto border-collapse border border-gray-300 w-full text-center">
-                            <thead>
-                                <tr>
-                                    <th class="border p-2 bg-gray-100 font-medium"></th>
-                                        <c:forEach var="c" begin="1" end="${colsUp}">
-                                        <th class="border p-2 bg-gray-100 font-medium">${c}</th>
-                                        </c:forEach>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <c:forEach var="r" begin="1" end="${rowsUp}">
-                                    <tr>
-                                        <th class="border p-2 bg-gray-100 font-medium">${prefixUp}${r}</th>
-                                            <c:forEach var="c" begin="1" end="${colsUp}">
-                                                <c:set var="found" value="" />
-                                                <c:forEach var="seat" items="${seatsUp}">
-                                                    <c:if test="${seat.row == r && seat.col == c}">
-                                                        <c:set var="found" value="${seat.code}" />
-                                                    </c:if>
-                                                </c:forEach>
-                                            <td class="border p-2 ${found ne '' ? 'bg-[#EF5222] text-white' : ''}">
-                                                ${found}
-                                            </td>
-                                        </c:forEach>
-                                    </tr>
-                                </c:forEach>
-                            </tbody>
-                        </table>
+                        <table id="table-up" class="table-auto border-collapse border border-gray-300 w-full text-center"></table>
                     </div>
                 </div>
-
 
                 <!-- Actions -->
                 <div class="flex justify-end gap-4 mt-8">
-                    <button type="button" onclick="history.back()" class="px-6 py-3 bg-gray-300 text-gray-800 rounded-xl hover:bg-gray-400 transition">
+                    <button type="button" onclick="history.back()" class="px-6 py-3 bg-gray-300 text-gray-800 rounded-xl hover:bg-gray-400">
                         Cancel
                     </button>
-                    <button type="submit" class="px-6 py-3 bg-[#EF5222] text-white rounded-xl hover:bg-opacity-90 transition">
+                    <button type="submit" class="px-6 py-3 bg-[#EF5222] text-white rounded-xl hover:bg-opacity-90">
                         Update
                     </button>
                 </div>
@@ -150,13 +107,21 @@
         </div>
     </div>
 
-    <%-- JSON data from server --%>
+    <!-- JSON and Script -->
     <script>
-        // JSON data from server, embed safely using JSTL
+        // Raw JSON from server
+        const rawDown = JSON.parse('<c:out value="${seatsDownJson}" escapeXml="false"/>');
+        const rawUp = JSON.parse('<c:out value="${seatsUpJson}"   escapeXml="false"/>');
+        // Normalize to r,c,code
         const layout = {
-            down: JSON.parse('<c:out value="${seatsDownJson}" escapeXml="false"/>'),
-            up: JSON.parse('<c:out value="${seatsUpJson}" escapeXml="false"/>')
+            down: rawDown.map(x => ({r: x.row, c: x.col, code: x.code})),
+            up: rawUp.map(x => ({r: x.row, c: x.col, code: x.code}))
         };
+        console.log('Layout data:', layout);
+
+        function capitalize(s) {
+            return s.charAt(0).toUpperCase() + s.slice(1);
+        }
 
         function regenTable(zone) {
             const rows = +document.getElementById('rows' + capitalize(zone)).value;
@@ -166,22 +131,30 @@
             const table = document.getElementById('table-' + zone);
             table.innerHTML = '';
 
-            // header
+            // Header
             const thead = document.createElement('thead');
-            const hr = document.createElement('tr');
-            hr.appendChild(createCell('th', '', true));
-            for (let c = 1; c <= cols; c++)
-                hr.appendChild(createCell('th', c, true));
-            thead.appendChild(hr);
+            const rowH = document.createElement('tr');
+            rowH.appendChild(document.createElement('th'));
+            for (let c = 1; c <= cols; c++) {
+                const th = document.createElement('th');
+                th.className = 'border p-2 bg-gray-100 font-medium';
+                th.innerText = c;
+                rowH.appendChild(th);
+            }
+            thead.appendChild(rowH);
             table.appendChild(thead);
 
-            // body
+            // Body
             const tbody = document.createElement('tbody');
             for (let r = 1; r <= rows; r++) {
                 const tr = document.createElement('tr');
-                tr.appendChild(createCell('th', prefix + r, true));
+                const th = document.createElement('th');
+                th.className = 'border p-2 bg-gray-100 font-medium';
+                th.innerText = prefix + r;
+                tr.appendChild(th);
                 for (let c = 1; c <= cols; c++) {
-                    const td = createCell('td', '', false);
+                    const td = document.createElement('td');
+                    td.className = 'border p-2 cursor-pointer hover:bg-gray-50';
                     td.dataset.r = r;
                     td.dataset.c = c;
                     td.onclick = () => toggleSeat(zone, td);
@@ -191,39 +164,31 @@
             }
             table.appendChild(tbody);
 
-            // populate existing codes
+            // Populate existing seats
             arr.forEach(s => {
-                const sel = `#table-${zone} td[data-r="${s.r}"][data-c="${s.c}"]`;
-                const td = document.querySelector(sel);
-                if (td) {
-                    td.innerText = s.code;
-                    td.classList.add('bg-[#EF5222]', 'text-white');
+                console.log('Populate cell for', zone, s);
+                const selector = '#table-' + zone + ' td[data-r="' + s.r + '"][data-c="' + s.c + '"]';
+                const cell = document.querySelector(selector);
+                console.log('Selector', selector, '=>', cell);
+                if (cell) {
+                    cell.innerText = s.code;
+                    cell.classList.add('bg-[#EF5222]', 'text-white');
                 }
             });
         }
 
-        function createCell(tag, text, isHdr) {
-            const el = document.createElement(tag);
-            if (isHdr) {
-                el.outerHTML = `<th class="border p-2 bg-gray-100 font-medium">${text}</th>`;
-            } else {
-                el.className = 'border p-2 cursor-pointer hover:bg-gray-50';
-                el.innerText = text;
-            }
-            return el;
-        }
-
         function toggleSeat(zone, td) {
-            const r = +td.dataset.r, c = +td.dataset.c;
+            const r = +td.dataset.r;
+            const c = +td.dataset.c;
             const arr = layout[zone];
-            const idx = arr.findIndex(s => s.r === r && s.c === c);
+            const idx = arr.findIndex(x => x.r === r && x.c === c);
             if (idx >= 0) {
                 arr.splice(idx, 1);
                 td.innerText = '';
                 td.classList.remove('bg-[#EF5222]', 'text-white');
             } else {
-                const prefix = document.getElementById('prefix' + capitalize(zone)).value || '';
-                const code = prompt(`Seat code (e.g. ${prefix}${r}):`);
+                const pref = document.getElementById('prefix' + capitalize(zone)).value || '';
+                const code = prompt('Seat code (e.g. ' + pref + r + '):');
                 if (!code)
                     return;
                 arr.push({r, c, code});
@@ -232,18 +197,15 @@
             }
         }
 
-        function capitalize(s) {
-            return s.charAt(0).toUpperCase() + s.slice(1);
-        }
-
-        // init
-        regenTable('down');
-        regenTable('up');
-
-        document.querySelector('form').onsubmit = () => {
-            document.getElementById('layoutDown').value = JSON.stringify(layout.down);
-            document.getElementById('layoutUp').value = JSON.stringify(layout.up);
-        };
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('applyDown').addEventListener('click', () => regenTable('down'));
+            document.getElementById('applyUp').addEventListener('click', () => regenTable('up'));
+            regenTable('down');
+            regenTable('up');
+            document.getElementById('busTypeForm').addEventListener('submit', () => {
+                document.getElementById('layoutDown').value = JSON.stringify(layout.down);
+                document.getElementById('layoutUp').value = JSON.stringify(layout.up);
+            });
+        });
     </script>
-
     <%@ include file="/WEB-INF/include/admin/admin-footer.jsp" %>

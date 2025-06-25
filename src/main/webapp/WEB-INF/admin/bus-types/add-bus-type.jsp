@@ -6,13 +6,25 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@include file="/WEB-INF/include/admin/admin-header.jsp" %>
-
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <body class="bg-gray-50 min-h-screen p-6">
     <div class="mt-10">
 
         <!-- Heading -->
         <h1 class="text-3xl font-bold text-[#EF5222] mb-6">Create Bus Type</h1>
+
+        <c:if test="${not empty success}">
+            <div class="mb-4 p-4 bg-green-100 border border-green-300 text-green-800 rounded-lg">
+                ${success}
+            </div>
+        </c:if>
+        <c:if test="${not empty error}">
+            <div class="mb-4 p-4 bg-red-100 border border-red-300 text-red-800 rounded-lg">
+                ${error}
+            </div>
+        </c:if>
+
 
         <div class="bg-white border border-[#EF5222] rounded-2xl shadow-lg p-8">
             <form action="${pageContext.request.contextPath}/admin/bus-types" method="post" class="space-y-6">
