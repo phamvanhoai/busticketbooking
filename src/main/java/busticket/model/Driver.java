@@ -12,10 +12,8 @@ public class Driver {
 
     private int driverId;
     private String driverName;
-<<<<<<< Updated upstream
     private String phone;
-=======
->>>>>>> Stashed changes
+
 
     public Driver() {
     }
@@ -23,7 +21,7 @@ public class Driver {
     public Driver(int driverId, String driverName) {
         this.driverId = driverId;
         this.driverName = driverName;
-<<<<<<< Updated upstream
+
     }
 
     public Driver(int driverId, String driverName, String phone) {
@@ -31,8 +29,7 @@ public class Driver {
         this.driverName = driverName;
         this.phone = phone;
     }
-    
-    
+ 
 
     public String getPhone() {
         return phone;
@@ -40,24 +37,6 @@ public class Driver {
 
     public void setPhone(String phone) {
         this.phone = phone;
-=======
-    }
-
-    public int getDriverId() {
-        return driverId;
-    }
-
-    public void setDriverId(int driverId) {
-        this.driverId = driverId;
-    }
-
-    public String getDriverName() {
-        return driverName;
-    }
-
-    public void setDriverName(String driverName) {
-        this.driverName = driverName;
->>>>>>> Stashed changes
     }
     
     
