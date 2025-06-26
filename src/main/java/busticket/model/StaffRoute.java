@@ -16,13 +16,6 @@ public class StaffRoute {
     public StaffRoute() {
     }
 
-    public StaffRoute(int routeId, String routeName) {
-        this.routeId = routeId;
-        this.routeName = routeName;
-    }
-    
-    
-
     public int getRouteId() {
         return routeId;
     }

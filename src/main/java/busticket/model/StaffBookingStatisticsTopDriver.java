@@ -4,6 +4,8 @@
  */
 package busticket.model;
 
+import java.math.BigDecimal;
+
 /**
  *
  * @author Nguyen Thanh Truong - CE180140
@@ -11,11 +13,18 @@ package busticket.model;
 public class StaffBookingStatisticsTopDriver {
 
     private String driverName;
-    private int ticketsSold;
+    private BigDecimal revenue;
+    private int tripCount;
+    private int ticketCount;
 
-    public StaffBookingStatisticsTopDriver(String driverName, int ticketsSold) {
+    public StaffBookingStatisticsTopDriver() {
+    }
+
+    public StaffBookingStatisticsTopDriver(String driverName, BigDecimal revenue, int tripCount, int ticketCount) {
         this.driverName = driverName;
-        this.ticketsSold = ticketsSold;
+        this.revenue = revenue;
+        this.tripCount = tripCount;
+        this.ticketCount = ticketCount;
     }
 
     public String getDriverName() {
@@ -26,11 +35,28 @@ public class StaffBookingStatisticsTopDriver {
         this.driverName = driverName;
     }
 
-    public int getTicketsSold() {
-        return ticketsSold;
+    public BigDecimal getRevenue() {
+        return revenue;
     }
 
-    public void setTicketsSold(int ticketsSold) {
-        this.ticketsSold = ticketsSold;
+    public void setRevenue(BigDecimal revenue) {
+        this.revenue = revenue;
     }
+
+    public int getTripCount() {
+        return tripCount;
+    }
+
+    public void setTripCount(int tripCount) {
+        this.tripCount = tripCount;
+    }
+
+    public int getTicketCount() {
+        return ticketCount;
+    }
+
+    public void setTicketCount(int ticketCount) {
+        this.ticketCount = ticketCount;
+    }
+
 }

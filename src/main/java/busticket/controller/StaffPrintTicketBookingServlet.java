@@ -22,7 +22,6 @@ import java.util.List;
  *
  * @author Nguyen Thanh Truong - CE180140
  */
-
 public class StaffPrintTicketBookingServlet extends HttpServlet {
 
     private final StaffBookingDAO bookingDAO = new StaffBookingDAO();

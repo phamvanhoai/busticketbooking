@@ -12,8 +12,6 @@ public class Driver {
 
     private int driverId;
     private String driverName;
-    private String phone;
-
 
     public Driver() {
     }
@@ -21,25 +19,7 @@ public class Driver {
     public Driver(int driverId, String driverName) {
         this.driverId = driverId;
         this.driverName = driverName;
-
     }
-
-    public Driver(int driverId, String driverName, String phone) {
-        this.driverId = driverId;
-        this.driverName = driverName;
-        this.phone = phone;
-    }
- 
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-    
-    
 
     public int getDriverId() {
         return driverId;

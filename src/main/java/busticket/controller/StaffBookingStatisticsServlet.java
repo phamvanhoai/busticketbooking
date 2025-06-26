@@ -4,9 +4,12 @@
  */
 package busticket.controller;
 
-import busticket.DAO.BookingStatisticsDAO;
-import busticket.DAO.RouteDAO;
-import busticket.model.BookingStatistics;
+import busticket.DAO.StaffBookingStatisticsDAO;
+import busticket.DAO.StaffRouteDAO;
+import busticket.model.StaffBookingStatistics;
+import busticket.model.StaffBookingStatisticsTopDriver;
+import busticket.model.StaffRoute;
+import busticket.model.StaffTopCustomer;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -14,12 +17,11 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.Map.Entry;
-import java.util.Comparator;
+import java.math.BigDecimal;
+import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
+import java.util.Map;
 
 /**
  *
@@ -27,11 +29,7 @@ import java.util.Comparator;
  */
 public class StaffBookingStatisticsServlet extends HttpServlet {
 
-    private static final long serialVersionUID = 1L;
-    private static final int ROWS_PER_PAGE = 4;
-
-    private final BookingStatisticsDAO statsDao = new BookingStatisticsDAO();
-    private final RouteDAO routeDao = new RouteDAO();
+    private final int PAGE_SIZE = 10;
 
     /**
      * Handles the HTTP <code>GET</code> method.
@@ -44,62 +42,156 @@ public class StaffBookingStatisticsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         try {
-            // Get filters
-            String selectedRoute = Optional.ofNullable(request.getParameter("route"))
-                    .filter(s -> !s.isEmpty()).orElse("All");
+            // Retrieve query parameters
+            String keyword = request.getParameter("q");
+            String paymentStatus = request.getParameter("status");
+            String departureDate = request.getParameter("date");
+            String routeIdParam = request.getParameter("routeId");
+            String pageParam = request.getParameter("page");
 
-            String dateStr = request.getParameter("date");
-            LocalDate dateFilter = (dateStr == null || dateStr.isEmpty())
-                    ? null : LocalDate.parse(dateStr);
+            if (keyword == null) {
+                keyword = "";
+            }
+            if (paymentStatus != null && paymentStatus.trim().isEmpty()) {
+                paymentStatus = null;
+            }
+            if (departureDate != null && departureDate.trim().isEmpty()) {
+                departureDate = null;
+            }
 
-            // Fetch stats from DB
-            List<BookingStatistics> allStats = statsDao.getStats(selectedRoute, dateFilter);
-
-            // Pagination
-            int page = 1;
+            int routeId = -1;
             try {
-                page = Integer.parseInt(request.getParameter("page"));
+                routeId = Integer.parseInt(routeIdParam);
             } catch (Exception ignored) {
             }
 
-            int totalPages = (int) Math.ceil(allStats.size() / (double) ROWS_PER_PAGE);
-            int fromIndex = (page - 1) * ROWS_PER_PAGE;
-            int toIndex = Math.min(fromIndex + ROWS_PER_PAGE, allStats.size());
-            List<BookingStatistics> pageStats = allStats.subList(fromIndex, toIndex);
+            int page = 1;
+            try {
+                page = Integer.parseInt(pageParam);
+            } catch (Exception ignored) {
+            }
 
-            //Compute top-3 drivers
-            Map<String, Long> driverCounts = allStats.stream()
-                    .collect(Collectors.groupingBy(
-                            BookingStatistics::getDriverName,
-                            Collectors.counting()
-                    ));
-            List<String> topDrivers = driverCounts.entrySet().stream()
-                    .sorted(Entry.<String, Long>comparingByValue(Comparator.reverseOrder()))
-                    .map(Map.Entry::getKey)
-                    .limit(3)
-                    .collect(Collectors.toList());
+            StaffBookingStatisticsDAO dao = new StaffBookingStatisticsDAO();
 
-            // Fetch route list from DB
-            List<String> allRoutes = new ArrayList<>();
-            allRoutes.add("All");
-            allRoutes.addAll(routeDao.getAllRouteNames());
+            // Statistics list
+            List<StaffBookingStatistics> stats = dao.getFilteredStatisticsByPage(
+                    keyword, null, routeId, departureDate, paymentStatus, page, PAGE_SIZE
+            );
 
-            // Set attributes
-            request.setAttribute("stats", pageStats);
-            request.setAttribute("allRoutes", allRoutes);
-            request.setAttribute("selectedRoute", selectedRoute);
-            request.setAttribute("selectedDate", dateStr);
-            request.setAttribute("totalPages", totalPages);
+            int totalRecords = dao.countFilteredStatistics(keyword, null, routeId, departureDate, paymentStatus);
+            int totalPages = (int) Math.ceil((double) totalRecords / PAGE_SIZE);
+
+            // Revenue calculation
+            BigDecimal totalAmount = dao.getTotalAmount(keyword, null, routeId, departureDate, paymentStatus);
+            BigDecimal paidAmount = dao.getTotalAmount(keyword, null, routeId, departureDate, "Paid");
+
+            double paidPercentage = 0;
+            if (totalAmount != null && totalAmount.compareTo(BigDecimal.ZERO) > 0) {
+                paidPercentage = paidAmount
+                        .divide(totalAmount, 2, BigDecimal.ROUND_HALF_UP)
+                        .multiply(new BigDecimal("100"))
+                        .doubleValue();
+            }
+
+            int paidCount = dao.countFilteredStatistics(keyword, null, routeId, departureDate, "Paid");
+            int unpaidCount = dao.countFilteredStatistics(keyword, null, routeId, departureDate, "Unpaid");
+
+            double paidRatio = 0, unpaidRatio = 0;
+            if (totalRecords > 0) {
+                paidRatio = ((double) paidCount * 100) / totalRecords;
+                unpaidRatio = ((double) unpaidCount * 100) / totalRecords;
+            }
+
+            List<StaffRoute> allRoutes = new StaffRouteDAO().getAllRoutes();
+            List<StaffBookingStatisticsTopDriver> topDrivers = dao.getTopDriversByRevenue(5);
+
+            int totalTrips = 0, totalTickets = 0;
+            BigDecimal totalRevenue = BigDecimal.ZERO;
+            for (StaffBookingStatisticsTopDriver d : topDrivers) {
+                totalTrips += d.getTripCount();
+                totalTickets += d.getTicketCount();
+                totalRevenue = totalRevenue.add(d.getRevenue());
+            }
+
+            BigDecimal avgRevenue = BigDecimal.ZERO;
+            if (totalRecords > 0) {
+                avgRevenue = totalAmount.divide(BigDecimal.valueOf(totalRecords), 2, BigDecimal.ROUND_HALF_UP);
+            }
+
+            BigDecimal avgTicketsPerTrip = BigDecimal.ZERO;
+            if (totalTrips > 0) {
+                avgTicketsPerTrip = BigDecimal.valueOf(totalTickets)
+                        .divide(BigDecimal.valueOf(totalTrips), 2, BigDecimal.ROUND_HALF_UP);
+            }
+
+            List<String> routeNames = dao.getAllRouteNames();
+            List<BigDecimal> routeRevenues = dao.getRevenuePerRoute();
+            List<StaffTopCustomer> topCustomers = dao.getTopCustomers(5);
+            Map<String, Integer> trendMap = dao.getBookingTrendLast7Days();
+            List<String> trendDates = new ArrayList<>(trendMap.keySet());
+            List<Integer> trendCounts = new ArrayList<>(trendMap.values());
+
+            ObjectMapper mapper = new ObjectMapper();
+            request.setAttribute("routeNamesJson", mapper.writeValueAsString(routeNames));
+            request.setAttribute("routeRevenueJson", mapper.writeValueAsString(routeRevenues));
+            request.setAttribute("trendDatesJson", mapper.writeValueAsString(trendDates));
+            request.setAttribute("trendCountsJson", mapper.writeValueAsString(trendCounts));
+
+            // Pagination attributes
             request.setAttribute("currentPage", page);
-            request.setAttribute("topDrivers", topDrivers);
+            request.setAttribute("numOfPages", totalPages);
 
-            // Forward to JSP
-            request.getRequestDispatcher("/WEB-INF/staff/booking-statistics.jsp")
+            // Build base URL with filter params
+            String baseUrl = request.getContextPath() + "/staff/booking-statistics";
+            StringBuilder query = new StringBuilder();
+            if (!keyword.isEmpty()) {
+                query.append("&q=").append(keyword);
+            }
+            if (paymentStatus != null) {
+                query.append("&status=").append(paymentStatus);
+            }
+            if (departureDate != null) {
+                query.append("&date=").append(departureDate);
+            }
+            if (routeId != -1) {
+                query.append("&routeId=").append(routeId);
+            }
+            String baseUrlWithSearch = baseUrl + "?" + query.toString().replaceFirst("&", "");
+
+            request.setAttribute("baseUrlWithSearch", baseUrlWithSearch);
+
+            // Data binding
+            request.setAttribute("stats", stats);
+            request.setAttribute("totalRecords", totalRecords);
+            request.setAttribute("distinctRoutes", allRoutes);
+            request.setAttribute("totalAmount", totalAmount);
+            request.setAttribute("paidPercentage", paidPercentage);
+            request.setAttribute("topDrivers", topDrivers);
+            request.setAttribute("totalTrips", totalTrips);
+            request.setAttribute("totalTickets", totalTickets);
+            request.setAttribute("totalRevenueTopDrivers", totalRevenue);
+            request.setAttribute("avgRevenue", avgRevenue);
+            request.setAttribute("avgTicketsPerTrip", avgTicketsPerTrip);
+            request.setAttribute("topCustomers", topCustomers);
+            request.setAttribute("paidCount", paidCount);
+            request.setAttribute("unpaidCount", unpaidCount);
+            request.setAttribute("paidRatio", paidRatio);
+            request.setAttribute("unpaidRatio", unpaidRatio);
+
+            // Keep filter values for reuse
+            request.setAttribute("q", keyword);
+            request.setAttribute("status", paymentStatus);
+            request.setAttribute("date", departureDate);
+            request.setAttribute("routeId", routeId);
+
+            request.getRequestDispatcher("/WEB-INF/staff/booking-statistics/booking-statistics.jsp")
                     .forward(request, response);
 
-        } catch (SQLException e) {
-            throw new ServletException("Database error while fetching booking statistics", e);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "System error occurred!");
         }
     }
 
@@ -114,14 +206,7 @@ public class StaffBookingStatisticsServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Redirect POST to GET
-        String route = Optional.ofNullable(request.getParameter("route")).orElse("");
-        String date = Optional.ofNullable(request.getParameter("date")).orElse("");
-
-        String redirect = request.getContextPath()
-                + "/staff/booking-statistics?route=" + route + "&date=" + date;
-
-        response.sendRedirect(redirect);
+        doGet(request, response);
     }
 
     /**
