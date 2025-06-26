@@ -30,7 +30,7 @@ public class AdminTripsDAO extends DBContext {
         StringBuilder sql = new StringBuilder(
                 "SELECT "
                 + " t.trip_id, "
-                + " CONCAT(ls.location_name, ' → ', le.location_name) AS route, "
+                + " CONCAT(ls.location_name, N' → ', le.location_name) AS route, "
                 + " CAST(t.departure_time AS date) AS trip_date, "
                 + " CONVERT(varchar(5), t.departure_time, 108) AS trip_time, "
                 + " bt.bus_type_name AS bus_type, "
@@ -161,7 +161,7 @@ public class AdminTripsDAO extends DBContext {
         String sql = "SELECT "
                 + "  t.trip_id, "
                 + "  t.route_id, "
-                + "  CONCAT(ls.location_name, ' → ', le.location_name) AS route, "
+                + "  CONCAT(ls.location_name, N' → ', le.location_name) AS route, "
                 + "  CAST(t.departure_time AS DATE) AS tripDate, "
                 + "  CONVERT(VARCHAR(5), t.departure_time, 108) AS tripTime, "
                 + "  t.bus_id, "
@@ -205,7 +205,7 @@ public class AdminTripsDAO extends DBContext {
     public AdminTrips getTripDetailById(int tripId) throws SQLException {
         String sql = "SELECT "
                 + "  t.trip_id, "
-                + "  CONCAT(ls.location_name, ' → ', le.location_name) AS route, "
+                + "  CONCAT(ls.location_name, N' → ', le.location_name) AS route, "
                 + "  ls.location_name AS startLocation, "
                 + "  le.location_name AS endLocation, "
                 + "  CAST(t.departure_time AS DATE) AS tripDate, "
