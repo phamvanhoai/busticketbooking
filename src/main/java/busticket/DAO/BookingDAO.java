@@ -5,7 +5,7 @@
 package busticket.DAO;
 
 import busticket.db.DBContext;
-import busticket.model.Tickets;
+import busticket.model.StaffTicket;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,8 +19,8 @@ import java.util.List;
  */
 public class BookingDAO extends DBContext {
 
-    public List<Tickets> getAllBookings() {
-        List<Tickets> list = new ArrayList<>();
+    public List<StaffTicket> getAllBookings() {
+        List<StaffTicket> list = new ArrayList<>();
         String sql
                 = "SELECT t.ticket_id, u.user_name, "
                 + "       CONCAT(r.start_location,' → ',r.end_location) AS route_name, "
@@ -44,7 +44,7 @@ public class BookingDAO extends DBContext {
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                Tickets bk = new Tickets();
+                StaffTicket bk = new StaffTicket();
                 bk.setTicketId(rs.getString("ticket_id"));
                 bk.setUserName(rs.getString("user_name"));
                 bk.setRouteName(rs.getString("route_name"));
