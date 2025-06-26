@@ -155,12 +155,14 @@
                 </table>
             </div>
             <!-- Pagination component using custom tag -->
+
             <div class="flex justify-center space-x-2 mt-6">
                 <fbus:adminpagination
+                    url="${baseUrlWithSearch}"
                     currentPage="${currentPage}"
-                    totalPages="${numOfPages}"
-                    url="${baseUrlWithSearch}" />
+                    totalPages="${totalPages}" />
             </div>
+
         </div>
 
         <script>

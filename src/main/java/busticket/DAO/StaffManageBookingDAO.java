@@ -139,18 +139,18 @@ public class StaffManageBookingDAO extends DBContext {
      */
     public int countFilteredTickets(String q, String routeId, String date, String status) throws SQLException {
         StringBuilder sql = new StringBuilder(
-                "SELECT COUNT(*) AS total FROM Invoices i "
-                + "JOIN Users u ON i.user_id = u.user_id "
-                + "JOIN Invoice_Items ii ON i.invoice_id = ii.invoice_id "
-                + "JOIN Tickets t ON ii.ticket_id = t.ticket_id "
-                + "JOIN Trips tr ON t.trip_id = tr.trip_id "
-                + "JOIN Routes r ON tr.route_id = r.route_id "
-                + "JOIN Locations ls ON r.start_location_id = ls.location_id "
-                + "JOIN Locations le ON r.end_location_id = le.location_id "
-                + "JOIN Trip_Driver td ON tr.trip_id = td.trip_id "
-                + "JOIN Drivers dr ON td.driver_id = dr.driver_id "
-                + "JOIN Users d ON dr.user_id = d.user_id "
-                + "WHERE 1=1 ");
+                "SELECT COUNT(DISTINCT i.invoice_id) AS total FROM Invoices i \n"
+                + "JOIN Users u ON i.user_id = u.user_id \n"
+                + "JOIN Invoice_Items ii ON i.invoice_id = ii.invoice_id \n"
+                + "JOIN Tickets t ON ii.ticket_id = t.ticket_id \n"
+                + "JOIN Trips tr ON t.trip_id = tr.trip_id \n"
+                + "JOIN Routes r ON tr.route_id = r.route_id \n"
+                + "JOIN Locations ls ON r.start_location_id = ls.location_id \n"
+                + "JOIN Locations le ON r.end_location_id = le.location_id \n"
+                + "JOIN Trip_Driver td ON tr.trip_id = td.trip_id \n"
+                + "JOIN Drivers dr ON td.driver_id = dr.driver_id \n"
+                + "JOIN Users d ON dr.user_id = d.user_id \n"
+                + "WHERE 1=1");
 
         List<Object> params = new ArrayList<>();
 
@@ -198,4 +198,5 @@ public class StaffManageBookingDAO extends DBContext {
 
         return 0;
     }
+
 }
