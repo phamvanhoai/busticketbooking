@@ -4,8 +4,18 @@
  */
 package busticket.model;
 
+<<<<<<< Updated upstream
+import java.sql.Timestamp;
+
+
+=======
+<<<<<<< Updated upstream
 import java.sql.Date;
 import java.time.LocalDate;
+=======
+import java.sql.Timestamp;
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 
 /**
  *
@@ -13,93 +23,51 @@ import java.time.LocalDate;
  */
 public class StaffBookingStatistics {
 
+<<<<<<< Updated upstream
+    private int invoiceId;
+    private String invoiceCode;
+=======
     private Date statDate;
     private String routeName;
     private int ticketsSold;
     private int occupancyPercent;
     private String driverName;
+<<<<<<< Updated upstream
+=======
+    private String paymentStatus;
+    private double invoiceAmount;
+    private String ticketId;
+    private String bookingId;
+>>>>>>> Stashed changes
 
     private int paidTickets;
     private int unpaidTickets;
 
     private String bookingId;
+>>>>>>> Stashed changes
     private String customerName;
+    private String routeName;
+    private Timestamp departureTime;
+    private String seatCode;
+    private String driverName;
+    private String paymentStatus;
+    private double invoiceAmount;
+    private String ticketId;
 
-    public StaffBookingStatistics(Date statDate, String routeName, int ticketsSold,
-            int occupancyPercent, String driverName,
-            int paidTickets, int unpaidTickets) {
-        this.statDate = statDate;
-        this.routeName = routeName;
-        this.ticketsSold = ticketsSold;
-        this.occupancyPercent = occupancyPercent;
-        this.driverName = driverName;
-        this.paidTickets = paidTickets;
-        this.unpaidTickets = unpaidTickets;
+    public int getInvoiceId() {
+        return invoiceId;
     }
 
-    // ✅ Getters & Setters
-    public Date getStatDate() {
-        return statDate;
+    public void setInvoiceId(int invoiceId) {
+        this.invoiceId = invoiceId;
     }
 
-    public void setStatDate(Date statDate) {
-        this.statDate = statDate;
+    public String getInvoiceCode() {
+        return invoiceCode;
     }
 
-    public String getRouteName() {
-        return routeName;
-    }
-
-    public void setRouteName(String routeName) {
-        this.routeName = routeName;
-    }
-
-    public int getTicketsSold() {
-        return ticketsSold;
-    }
-
-    public void setTicketsSold(int ticketsSold) {
-        this.ticketsSold = ticketsSold;
-    }
-
-    public int getOccupancyPercent() {
-        return occupancyPercent;
-    }
-
-    public void setOccupancyPercent(int occupancyPercent) {
-        this.occupancyPercent = occupancyPercent;
-    }
-
-    public String getDriverName() {
-        return driverName;
-    }
-
-    public void setDriverName(String driverName) {
-        this.driverName = driverName;
-    }
-
-    public int getPaidTickets() {
-        return paidTickets;
-    }
-
-    public void setPaidTickets(int paidTickets) {
-        this.paidTickets = paidTickets;
-    }
-
-    public int getUnpaidTickets() {
-        return unpaidTickets;
-    }
-
-    public void setUnpaidTickets(int unpaidTickets) {
-        this.unpaidTickets = unpaidTickets;
-    }
-
-    public String getBookingId() {
-        return bookingId;
-    }
-
-    public void setBookingId(String bookingId) {
-        this.bookingId = bookingId;
+    public void setInvoiceCode(String invoiceCode) {
+        this.invoiceCode = invoiceCode;
     }
 
     public String getCustomerName() {
@@ -110,16 +78,75 @@ public class StaffBookingStatistics {
         this.customerName = customerName;
     }
 
-    /**
-     * Returns formatted booking ID in format BKG 00001 or "N/A" if bookingId is
-     * null or not a number.
-     */
-    public String getFormattedBookingId() {
-        try {
-            int id = Integer.parseInt(bookingId);
-            return String.format("BKG %04d", id);
-        } catch (Exception e) {
-            return "N/A";
-        }
+    public String getRouteName() {
+        return routeName;
     }
+<<<<<<< Updated upstream
+
+    public void setRouteName(String routeName) {
+        this.routeName = routeName;
+    }
+
+    public Timestamp getDepartureTime() {
+        return departureTime;
+    }
+
+    public void setDepartureTime(Timestamp departureTime) {
+        this.departureTime = departureTime;
+    }
+
+    public String getSeatCode() {
+        return seatCode;
+    }
+
+    public void setSeatCode(String seatCode) {
+        this.seatCode = seatCode;
+    }
+
+    public String getDriverName() {
+        return driverName;
+    }
+
+    public void setDriverName(String driverName) {
+        this.driverName = driverName;
+    }
+
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public double getInvoiceAmount() {
+        return invoiceAmount;
+    }
+
+    public void setInvoiceAmount(double invoiceAmount) {
+        this.invoiceAmount = invoiceAmount;
+    }
+
+    public String getTicketId() {
+        return ticketId;
+    }
+
+    public void setTicketId(String ticketId) {
+        this.ticketId = ticketId;
+    }
+    
+=======
+<<<<<<< Updated upstream
+=======
+
+    public String getBookingId() {
+        return bookingId;
+    }
+
+    public void setBookingId(String bookingId) {
+        this.bookingId = bookingId;
+    }
+
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 }

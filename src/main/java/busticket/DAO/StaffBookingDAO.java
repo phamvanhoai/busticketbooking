@@ -45,8 +45,8 @@ public class StaffBookingDAO extends DBContext {
                     info.setCustomerName(rs.getString("customer_name"));
                     info.setPaymentStatus(rs.getString("invoice_status"));
                     info.setTotalAmount(rs.getDouble("invoice_total_amount"));
-                    info.setBookingDate(rs.getTimestamp("paid_at"));  // Dùng paid_at thay cho booking_date
-                    info.setPaymentMethod(rs.getString("payment_method"));  // <-- thêm dòng này
+                    info.setBookingDate(rs.getTimestamp("paid_at"));
+                    info.setPaymentMethod(rs.getString("payment_method")); 
                     return info;
                 }
             }
