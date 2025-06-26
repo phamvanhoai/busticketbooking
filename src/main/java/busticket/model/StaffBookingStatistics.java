@@ -4,9 +4,18 @@
  */
 package busticket.model;
 
+<<<<<<< Updated upstream
 import java.sql.Timestamp;
 
 
+=======
+<<<<<<< Updated upstream
+import java.sql.Date;
+import java.time.LocalDate;
+=======
+import java.sql.Timestamp;
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 
 /**
  *
@@ -14,8 +23,28 @@ import java.sql.Timestamp;
  */
 public class StaffBookingStatistics {
 
+<<<<<<< Updated upstream
     private int invoiceId;
     private String invoiceCode;
+=======
+    private Date statDate;
+    private String routeName;
+    private int ticketsSold;
+    private int occupancyPercent;
+    private String driverName;
+<<<<<<< Updated upstream
+=======
+    private String paymentStatus;
+    private double invoiceAmount;
+    private String ticketId;
+    private String bookingId;
+>>>>>>> Stashed changes
+
+    private int paidTickets;
+    private int unpaidTickets;
+
+    private String bookingId;
+>>>>>>> Stashed changes
     private String customerName;
     private String routeName;
     private Timestamp departureTime;
@@ -52,6 +81,7 @@ public class StaffBookingStatistics {
     public String getRouteName() {
         return routeName;
     }
+<<<<<<< Updated upstream
 
     public void setRouteName(String routeName) {
         this.routeName = routeName;
@@ -105,4 +135,18 @@ public class StaffBookingStatistics {
         this.ticketId = ticketId;
     }
     
+=======
+<<<<<<< Updated upstream
+=======
+
+    public String getBookingId() {
+        return bookingId;
+    }
+
+    public void setBookingId(String bookingId) {
+        this.bookingId = bookingId;
+    }
+
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 }

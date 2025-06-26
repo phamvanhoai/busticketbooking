@@ -337,6 +337,11 @@ public class StaffBookingStatisticsDAO extends DBContext {
         return topDrivers;
     }
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
     /**
      * Gets total revenue per route (route name as key, revenue as value).
      *
@@ -580,4 +585,67 @@ public class StaffBookingStatisticsDAO extends DBContext {
         return ordered;
     }
 
+<<<<<<< Updated upstream
+=======
+    /**
+     * Retrieves the complete list of booking statistics for export purposes.
+     *
+     * This method queries the database to gather all invoice-related data,
+     * including customer name, route information, departure time, driver, total
+     * invoice amount, and payment status. The data is joined from multiple
+     * tables including Invoices, Users, Routes, Trips, Tickets, and Drivers.
+     *
+     * @return a list of {@link StaffBookingStatistics} objects containing
+     * complete booking statistics, ordered by invoice ID ascending.
+     */
+
+    public List<StaffBookingStatistics> getAllStatsForExport() {
+        List<StaffBookingStatistics> list = new ArrayList<>();
+        DBContext db = new DBContext();
+
+        String sql = "SELECT\n"
+                + "    i.invoice_id AS invoice_id,\n"
+                + "    i.invoice_code AS invoice_code,\n"
+                + "    u.user_name AS customer_name,\n"
+                + "    l1.location_name + N' → ' + l2.location_name AS route_name,\n"
+                + "    tr.departure_time AS departure_time,\n"
+                + "    du.user_name AS driver_name,\n"
+                + "    i.invoice_total_amount AS invoice_amount,\n"
+                + "    i.payment_method AS payment_status\n"
+                + "FROM Invoices i\n"
+                + "JOIN Users u ON i.user_id = u.user_id\n"
+                + "JOIN Invoice_Items ii ON i.invoice_id = ii.invoice_id\n"
+                + "JOIN Tickets t ON ii.ticket_id = t.ticket_id\n"
+                + "JOIN Trips tr ON t.trip_id = tr.trip_id\n"
+                + "JOIN Routes r ON tr.route_id = r.route_id\n"
+                + "JOIN Locations l1 ON r.start_location_id = l1.location_id\n"
+                + "JOIN Locations l2 ON r.end_location_id = l2.location_id\n"
+                + "JOIN Trip_Driver td ON tr.trip_id = td.trip_id\n"
+                + "JOIN Drivers d ON td.driver_id = d.driver_id\n"
+                + "JOIN Users du ON d.user_id = du.user_id\n"
+                + "ORDER BY i.invoice_id ASC;";
+
+        try (
+                 Connection conn = db.getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                StaffBookingStatistics s = new StaffBookingStatistics();
+                s.setInvoiceId(rs.getInt("invoice_id"));
+                s.setInvoiceCode(rs.getString("invoice_code"));
+                s.setCustomerName(rs.getString("customer_name"));
+                s.setRouteName(rs.getString("route_name"));
+                s.setDepartureTime(rs.getTimestamp("departure_time"));
+                s.setDriverName(rs.getString("driver_name"));
+                s.setInvoiceAmount(rs.getDouble("invoice_amount"));
+                s.setPaymentStatus(rs.getString("payment_status"));
+                list.add(s);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 }

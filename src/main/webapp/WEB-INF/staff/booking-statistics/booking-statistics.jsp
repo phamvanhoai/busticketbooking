@@ -29,7 +29,16 @@
         </a>
     </div>
 
+<<<<<<< Updated upstream
     <!-- Dashboard Grid - G?n h?n -->
+=======
+<<<<<<< Updated upstream
+        <!-- Keyword search -->
+        <input type="text" name="q" value="${fn:escapeXml(q)}" placeholder="Search by Booking ID or Customer"
+               class="flex-grow min-w-[250px] border border-orange-400 rounded-lg px-4 py-2 focus:outline-orange-500" />
+=======
+    <!-- Dashboard Grid-->
+>>>>>>> Stashed changes
     <div class="grid grid-cols-12 gap-4 mb-8">
         <!-- Total Bookings -->
         <div class="col-span-3 bg-white rounded shadow px-4 py-3">
@@ -57,6 +66,10 @@
                 <fmt:formatNumber value="${paidPercentage}" type="number" maxFractionDigits="2" />%
             </p>
         </div>
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 
         <!-- Booking Status -->
         <div class="col-span-4 bg-white rounded shadow px-4 py-3">
@@ -288,6 +301,12 @@
 
 </div>
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+            <%@include file="/WEB-INF/include/staff/staff-footer.jsp" %>
+=======
+>>>>>>> Stashed changes
 <script>
     function showLoading() {
         document.getElementById("loading-spinner").classList.remove("hidden");
@@ -345,8 +364,11 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const fontFamily = 'ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"';
+<<<<<<< Updated upstream
 
         // ? ??nh d?ng s? ti?n (không dùng ký hi?u ?)
+=======
+>>>>>>> Stashed changes
         const formatter = new Intl.NumberFormat('vi-VN', {
             minimumFractionDigits: 0
         });
@@ -410,7 +432,11 @@
             },
             options: {
                 responsive: true,
+<<<<<<< Updated upstream
                 maintainAspectRatio: false, // QUAN TR?NG ?? tôn tr?ng height c?a div cha
+=======
+                maintainAspectRatio: false,
+>>>>>>> Stashed changes
                 plugins: {
                     legend: {display: false},
                     tooltip: {
@@ -474,7 +500,12 @@
         });
     });
 </script>
+<<<<<<< Updated upstream
 
 
 
 <%@include file="/WEB-INF/include/staff/staff-footer.jsp" %>
+=======
+<%@include file="/WEB-INF/include/staff/staff-footer.jsp" %>
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
