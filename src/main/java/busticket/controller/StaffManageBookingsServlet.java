@@ -41,33 +41,42 @@ public class StaffManageBookingsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Lấy filter params
-        String q = request.getParameter("q");
-        String routeId = request.getParameter("routeId");
-        String date = request.getParameter("date");
-        String status = request.getParameter("status");
+        // Retrieve filter parameters from the request
+        String q = request.getParameter("q");                 // Search keyword (invoice code or customer name)
+        String routeId = request.getParameter("routeId");     // Route filter
+        String date = request.getParameter("date");           // Departure date filter
+        String status = request.getParameter("status");       // Invoice payment status filter
         String pageParam = request.getParameter("page");
+
+        // Set default page number if not provided or invalid
         int page = 1;
         try {
             page = Integer.parseInt(pageParam);
         } catch (Exception e) {
             page = 1;
         }
-        int recordsPerPage = 10;
+
+        int recordsPerPage = 10; // Number of records per page
 
         try {
+            // Get filtered tickets with pagination
             List<StaffTicket> tickets = bookingDAO.getFilteredTicketsByPage(q, routeId, date, status, page, recordsPerPage);
+
+            // Count total records matching the filter to calculate total pages
             int totalRecords = bookingDAO.countFilteredTickets(q, routeId, date, status);
             int numOfPages = (int) Math.ceil(totalRecords * 1.0 / recordsPerPage);
 
+            // Get list of distinct routes for the route filter dropdown
             List<StaffRoute> distinctRoutes = routeDAO.getAllRoutes();
 
+            // Set attributes for JSP rendering
             request.setAttribute("tickets", tickets);
             request.setAttribute("numOfPages", numOfPages);
             request.setAttribute("currentPage", page);
+            request.setAttribute("totalPages", numOfPages);
             request.setAttribute("distinctRoutes", distinctRoutes);
 
-            // Đưa các tham số filter trở lại JSP
+            // Preserve filter parameters in the form
             request.setAttribute("q", q);
             request.setAttribute("routeId", routeId);
             request.setAttribute("date", date);
@@ -78,6 +87,7 @@ public class StaffManageBookingsServlet extends HttpServlet {
             request.setAttribute("error", "Error loading bookings: " + e.getMessage());
         }
 
+        // Forward to the booking management JSP page
         request.getRequestDispatcher("/WEB-INF/staff/manage-bookings/manage-bookings.jsp").forward(request, response);
     }
 
