@@ -16,12 +16,6 @@
     
     <dependencies>
         <dependency>
-            <groupId>com.itextpdf</groupId>
-            <artifactId>itextpdf</artifactId>
-            <version>5.5.13.3</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>
             <version>7.0</version>
@@ -103,13 +97,12 @@
             <artifactId>google-http-client-gson</artifactId>
             <version>1.39.2</version> <!-- Ensure you use the latest version -->
         </dependency>
-        
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.15.2</version>
-        </dependency>
 
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>itextpdf</artifactId>
+            <version>5.5.13.3</version>
+        </dependency>
         <!-- ZXing core (chứa logic tạo QR code) -->
         <dependency>
             <groupId>com.google.zxing</groupId>
@@ -123,13 +116,25 @@
             <artifactId>javase</artifactId>
             <version>3.3.3</version>
         </dependency>
+<<<<<<< Updated upstream
 
+=======
+        
+>>>>>>> Stashed changes
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.13.3</version>
         </dependency>
         
+<<<<<<< Updated upstream
+=======
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.3</version>
+        </dependency>
+>>>>>>> Stashed changes
     </dependencies>
 
     <build>

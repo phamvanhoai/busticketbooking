@@ -109,20 +109,16 @@
         <servlet-class>busticket.controller.HomeViewTripsServlet</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>DriverLicenseServlet</servlet-name>
-        <servlet-class>busticket.controller.DriverLicenseServlet</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>AdminLocationsServlet</servlet-name>
-        <servlet-class>busticket.controller.AdminLocationsServlet</servlet-class>
-    </servlet>
-    <servlet>
         <servlet-name>StaffPrintTicketBookingServlet</servlet-name>
         <servlet-class>busticket.controller.StaffPrintTicketBookingServlet</servlet-class>
     </servlet>
-        <servlet>
+    <servlet>
         <servlet-name>StaffBookingDetailServlet</servlet-name>
         <servlet-class>busticket.controller.StaffBookingDetailServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>StaffBookingStatisticsExportServlet</servlet-name>
+        <servlet-class>busticket.controller.StaffBookingStatisticsExportServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
@@ -183,7 +179,7 @@
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>TicketManagementServlet</servlet-name>
-        <url-pattern>/ticket-management</url-pattern>
+        <url-pattern>/ticket-management/*</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>ProfileManagementServlet</servlet-name>
@@ -234,20 +230,16 @@
         <url-pattern>/view-trips</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>DriverLicenseServlet</servlet-name>
-        <url-pattern>/driver/driver-license</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>AdminLocationsServlet</servlet-name>
-        <url-pattern>/admin/locations</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
         <servlet-name>StaffPrintTicketBookingServlet</servlet-name>
         <url-pattern>/staff/print-ticket</url-pattern>
     </servlet-mapping>
-        <servlet-mapping>
+    <servlet-mapping>
         <servlet-name>StaffBookingDetailServlet</servlet-name>
         <url-pattern>/staff/view-booking</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>StaffBookingStatisticsExportServlet</servlet-name>
+        <url-pattern>/staff/booking-statistics/export</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
