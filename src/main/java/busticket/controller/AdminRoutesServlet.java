@@ -96,7 +96,7 @@ public class AdminRoutesServlet extends HttpServlet {
                         .forward(request, response);
                 return;
             }
-            
+
             // --- Show detail form ---
             String detailId = request.getParameter("detail");
             if (detailId != null) {
@@ -128,7 +128,6 @@ public class AdminRoutesServlet extends HttpServlet {
             List<AdminRoutes> routes = adminRoutesDAO.getAllRoutes(offset, perPage);
             int total = adminRoutesDAO.countRoutes();
             int totalPages = (int) Math.ceil((double) total / perPage);
-            
 
             request.setAttribute("routes", routes);
             request.setAttribute("currentPage", page);
@@ -185,19 +184,23 @@ public class AdminRoutesServlet extends HttpServlet {
                     // --- 3) Stops: đọc mảng ---
                     String[] locs = request.getParameterValues("stopsLocationId[]");
                     String[] dwells = request.getParameterValues("stopsDwellMinutes[]");
-                    if (locs != null && dwells != null) {
+                    String[] travels = request.getParameterValues("stopsTravelMinutes[]");
+                    if (locs != null && dwells != null && travels != null) {
                         List<AdminRouteStop> stops = new ArrayList<>();
-                        int mStops = Math.min(locs.length, dwells.length);
+                        int mStops = Math.min(Math.min(locs.length, dwells.length), travels.length);
                         for (int i = 0; i < mStops; i++) {
                             String sl = locs[i].trim();
                             String dw = dwells[i].trim();
-                            if (!sl.isEmpty() && !dw.isEmpty()) {
-                                stops.add(new AdminRouteStop(
+                            String tr = travels[i].trim();
+                            if (!sl.isEmpty() && !dw.isEmpty() && !tr.isEmpty()) {
+                                AdminRouteStop stop = new AdminRouteStop(
                                         routeId,
                                         stops.size() + 1,
                                         Integer.parseInt(sl),
                                         Integer.parseInt(dw)
-                                ));
+                                );
+                                stop.setTravelMinutes(Integer.parseInt(tr));
+                                stops.add(stop);
                             }
                         }
                         if (!stops.isEmpty()) {
@@ -256,22 +259,31 @@ public class AdminRoutesServlet extends HttpServlet {
                     adminRoutesDAO.deleteRouteStops(routeId);
                     String[] locs = request.getParameterValues("stopsLocationId[]");
                     String[] dwells = request.getParameterValues("stopsDwellMinutes[]");
-                    if (locs != null && dwells != null) {
+                    String[] travels = request.getParameterValues("stopsTravelMinutes[]");
+                    if (locs != null && dwells != null && travels != null) {
                         List<AdminRouteStop> newStops = new ArrayList<>();
-                        int mStops = Math.min(locs.length, dwells.length);
+                        int mStops = Math.min(Math.min(locs.length, dwells.length), travels.length);
                         for (int i = 0; i < mStops; i++) {
                             String sl = locs[i].trim();
                             String dw = dwells[i].trim();
-                            if (!sl.isEmpty() && !dw.isEmpty()) {
-                                newStops.add(new AdminRouteStop(
+                            String tr = travels[i].trim();
+                            if (!sl.isEmpty() && !dw.isEmpty() && !tr.isEmpty()) {
+                                AdminRouteStop stop = new AdminRouteStop(
                                         routeId,
                                         newStops.size() + 1,
                                         Integer.parseInt(sl),
                                         Integer.parseInt(dw)
-                                ));
+                                );
+                                stop.setTravelMinutes(Integer.parseInt(tr));
+                                newStops.add(stop);
                             }
                         }
                         if (!newStops.isEmpty()) {
+                            System.out.println("newStops: ");
+                            for (AdminRouteStop stop : newStops) {
+                                System.out.println(stop.getStopNumber() + " | " + stop.getLocationId() + " | " + stop.getTravelMinutes() + " | " + stop.getDwellMinutes());
+                            }
+
                             adminRoutesDAO.addRouteStops(routeId, newStops);
                         }
                     }

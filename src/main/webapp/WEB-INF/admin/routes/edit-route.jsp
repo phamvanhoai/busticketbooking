@@ -81,44 +81,56 @@
                 <table id="stops-table" class="table-fixed w-full border-collapse mb-4">
                     <thead class="bg-gray-100">
                         <tr>
-                            <th class="px-4 py-2">#</th>
-                            <th class="px-4 py-2">Location</th>
-                            <th class="px-4 py-2">Dwell (min)</th>
-                            <th class="px-4 py-2">Actions</th>
+                            <th class="px-4 py-2 text-center">#</th>
+                            <th class="px-4 py-2 text-center">Location</th>
+                            <th class="px-4 py-2 text-center">Travel<br/>(h:m)</th>
+                            <th class="px-4 py-2 text-center">Dwell<br/>(min)</th>
+                            <th class="px-4 py-2 text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <!-- 1) Template-row ẨN -->
                         <tr class="stop-row template-row" style="display:none">
-                            <td class="px-4 py-2 stop-index">#</td>
-                            <td class="px-4 py-2">
-                                <select class="w-full border rounded px-2 py-1">
+                            <td class="px-4 py-2 stop-index text-center">#</td>
+                            <td class="px-4 py-2 text-center">
+                                <select class="w-full border rounded px-2 py-1 text-center">
                                     <option value="" disabled selected>Select</option>
                                     <c:forEach var="loc" items="${locations}">
                                         <option value="${loc.locationId}">${loc.locationName}</option>
                                     </c:forEach>
                                 </select>
                             </td>
-                            <td class="px-4 py-2">
-                                <input type="number" min="0" placeholder="e.g. 5"
-                                       class="w-full border rounded px-2 py-1"/>
+                            <td class="px-4 py-2 text-center">
+                                <div class="flex justify-center items-center gap-1">
+                                    <input type="number" min="0" placeholder="h"
+                                           class="travel-hour border rounded px-1 py-1 text-center"
+                                           style="width:56px"/>
+                                    <span>:</span>
+                                    <input type="number" min="0" max="59" placeholder="m"
+                                           class="travel-min border rounded px-1 py-1 text-center"
+                                           style="width:56px"/>
+                                </div>
                             </td>
-                            <td class="px-4 py-2 text-right space-x-2">
+                            <td class="px-4 py-2 text-center">
+                                <input type="number" min="0" placeholder="e.g. 5"
+                                       class="dwell-min border rounded px-2 py-1 text-center"
+                                       style="width:72px"/>
+                            </td>
+                            <td class="px-4 py-2 text-center space-x-2">
                                 <button type="button" class="move-up">↑</button>
                                 <button type="button" class="move-down">↓</button>
                                 <button type="button" class="remove-stop text-red-600">✕</button>
                             </td>
                         </tr>
-
-                        <!-- 2) Hàng dữ liệu cũ do server render -->
+                        <!-- 2) Render các row dữ liệu cũ -->
                         <c:choose>
                             <c:when test="${not empty stops}">
                                 <c:forEach var="sp" items="${stops}" varStatus="ss">
                                     <tr class="stop-row">
-                                        <td class="px-4 py-2 stop-index">${ss.index + 1}</td>
-                                        <td class="px-4 py-2">
+                                        <td class="px-4 py-2 stop-index text-center">${ss.index + 1}</td>
+                                        <td class="px-4 py-2 text-center">
                                             <select name="stops[${ss.index}].locationId"
-                                                    class="w-full border rounded px-2 py-1" required>
+                                                    class="w-full border rounded px-2 py-1 text-center" required>
                                                 <option value="" disabled>Select</option>
                                                 <c:forEach var="loc" items="${locations}">
                                                     <option value="${loc.locationId}"
@@ -128,12 +140,26 @@
                                                 </c:forEach>
                                             </select>
                                         </td>
-                                        <td class="px-4 py-2">
-                                            <input type="number" name="stops[${ss.index}].dwellMinutes"
-                                                   min="0" class="w-full border rounded px-2 py-1" required
-                                                   value="${sp.dwellMinutes}"/>
+                                        <td class="px-4 py-2 text-center">
+                                            <div class="flex justify-center items-center gap-1">
+                                                <input type="number" min="0" placeholder="h"
+                                                       class="travel-hour border rounded px-1 py-1 text-center"
+                                                       name="stops[${ss.index}].travelHour"
+                                                       value="${sp.travelMinutes / 60}" style="width:56px"/>
+                                                <span>:</span>
+                                                <input type="number" min="0" max="59" placeholder="m"
+                                                       class="travel-min border rounded px-1 py-1 text-center"
+                                                       name="stops[${ss.index}].travelMin"
+                                                       value="${sp.travelMinutes % 60}" style="width:56px"/>
+                                            </div>
                                         </td>
-                                        <td class="px-4 py-2 text-right space-x-2">
+
+                                        <td class="px-4 py-2 text-center">
+                                            <input type="number" name="stops[${ss.index}].dwellMinutes"
+                                                   min="0" class="dwell-min border rounded px-2 py-1 text-center" required
+                                                   value="${sp.dwellMinutes}" style="width:72px"/>
+                                        </td>
+                                        <td class="px-4 py-2 text-center space-x-2">
                                             <button type="button" class="move-up">↑</button>
                                             <button type="button" class="move-down">↓</button>
                                             <button type="button" class="remove-stop text-red-600">✕</button>
@@ -143,22 +169,32 @@
                             </c:when>
                             <c:otherwise>
                                 <tr class="stop-row">
-                                    <td class="px-4 py-2 stop-index">1</td>
-                                    <td class="px-4 py-2">
+                                    <td class="px-4 py-2 stop-index text-center">1</td>
+                                    <td class="px-4 py-2 text-center">
                                         <select name="stops[0].locationId"
-                                                class="w-full border rounded px-2 py-1" required>
+                                                class="w-full border rounded px-2 py-1 text-center" required>
                                             <option value="" selected>Select</option>
                                             <c:forEach var="loc" items="${locations}">
                                                 <option value="${loc.locationId}">${loc.locationName}</option>
                                             </c:forEach>
                                         </select>
                                     </td>
-                                    <td class="px-4 py-2">
-                                        <input type="number" name="stops[0].dwellMinutes"
-                                               min="0" class="w-full border rounded px-2 py-1"
-                                               placeholder="0" required/>
+                                    <td class="px-4 py-2 text-center">
+                                        <div class="flex justify-center items-center gap-1">
+                                            <input type="number" min="0" placeholder="h"
+                                                   class="travel-hour border rounded px-1 py-1 text-center"
+                                                   style="width:56px"/>
+                                            <span>:</span>
+                                            <input type="number" min="0" max="59" placeholder="m"
+                                                   class="travel-min border rounded px-1 py-1 text-center"
+                                                   style="width:56px"/>
+                                        </div>
                                     </td>
-                                    <td class="px-4 py-2 text-right">
+                                    <td class="px-4 py-2 text-center">
+                                        <input type="number" min="0" class="dwell-min border rounded px-2 py-1 text-center"
+                                               placeholder="0" required style="width:72px"/>
+                                    </td>
+                                    <td class="px-4 py-2 text-center">
                                         <button type="button" class="remove-stop text-red-600">✕</button>
                                     </td>
                                 </tr>
@@ -179,29 +215,30 @@
                 <table id="prices-table" class="table-fixed w-full border-collapse mb-4">
                     <thead class="bg-gray-100">
                         <tr>
-                            <th class="px-4 py-2">#</th>
-                            <th class="px-4 py-2">Vehicle Class</th>
-                            <th class="px-4 py-2">Price (₫)</th>
-                            <th class="px-4 py-2">Actions</th>
+                            <th class="px-4 py-2 text-center">#</th>
+                            <th class="px-4 py-2 text-center">Vehicle Class</th>
+                            <th class="px-4 py-2 text-center">Price (₫)</th>
+                            <th class="px-4 py-2 text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <!-- 1) Template-row ẨN -->
                         <tr class="price-row template-row" style="display:none">
-                            <td class="px-4 py-2 price-index">#</td>
-                            <td class="px-4 py-2">
-                                <select class="w-full border rounded px-2 py-1">
+                            <td class="px-4 py-2 price-index text-center">#</td>
+                            <td class="px-4 py-2 text-center">
+                                <select class="w-full border rounded px-2 py-1 text-center">
                                     <option value="" disabled selected>Select</option>
                                     <c:forEach var="bt" items="${busTypes}">
                                         <option value="${bt.busTypeId}">${bt.busTypeName}</option>
                                     </c:forEach>
                                 </select>
                             </td>
-                            <td class="px-4 py-2">
+                            <td class="px-4 py-2 text-center">
                                 <input type="number" min="0" step="1"
-                                       class="w-full border rounded px-2 py-1" placeholder="e.g. 500000"/>
+                                       class="w-full border rounded px-2 py-1 text-center"
+                                       placeholder="e.g. 500000"/>
                             </td>
-                            <td class="px-4 py-2 text-right">
+                            <td class="px-4 py-2 text-center">
                                 <button type="button" class="remove-price text-red-600">✕</button>
                             </td>
                         </tr>
@@ -211,10 +248,10 @@
                             <c:when test="${not empty prices}">
                                 <c:forEach var="pr" items="${prices}" varStatus="ps">
                                     <tr class="price-row">
-                                        <td class="px-4 py-2 price-index">${ps.index + 1}</td>
-                                        <td class="px-4 py-2">
+                                        <td class="px-4 py-2 price-index text-center">${ps.index + 1}</td>
+                                        <td class="px-4 py-2 text-center">
                                             <select name="prices[${ps.index}].busTypeId"
-                                                    class="w-full border rounded px-2 py-1" required>
+                                                    class="w-full border rounded px-2 py-1 text-center" required>
                                                 <option value="" disabled>Select</option>
                                                 <c:forEach var="bt" items="${busTypes}">
                                                     <option value="${bt.busTypeId}"
@@ -224,13 +261,13 @@
                                                 </c:forEach>
                                             </select>
                                         </td>
-                                        <td class="px-4 py-2">
+                                        <td class="px-4 py-2 text-center">
                                             <input type="number" name="prices[${ps.index}].price"
                                                    min="0" step="1"
-                                                   class="w-full border rounded px-2 py-1" required
+                                                   class="w-full border rounded px-2 py-1 text-center" required
                                                    value="${fn:substringBefore(pr.price,'.')}"/>
                                         </td>
-                                        <td class="px-4 py-2 text-right">
+                                        <td class="px-4 py-2 text-center">
                                             <button type="button" class="remove-price text-red-600">✕</button>
                                         </td>
                                     </tr>
@@ -238,23 +275,23 @@
                             </c:when>
                             <c:otherwise>
                                 <tr class="price-row">
-                                    <td class="px-4 py-2 price-index">1</td>
-                                    <td class="px-4 py-2">
+                                    <td class="px-4 py-2 price-index text-center">1</td>
+                                    <td class="px-4 py-2 text-center">
                                         <select name="prices[0].busTypeId"
-                                                class="w-full border rounded px-2 py-1" required>
+                                                class="w-full border rounded px-2 py-1 text-center" required>
                                             <option value="" selected>Select</option>
                                             <c:forEach var="bt" items="${busTypes}">
                                                 <option value="${bt.busTypeId}">${bt.busTypeName}</option>
                                             </c:forEach>
                                         </select>
                                     </td>
-                                    <td class="px-4 py-2">
+                                    <td class="px-4 py-2 text-center">
                                         <input type="number" name="prices[0].price"
                                                min="0" step="1"
-                                               class="w-full border rounded px-2 py-1" required
+                                               class="w-full border rounded px-2 py-1 text-center" required
                                                placeholder="e.g. 500000"/>
                                     </td>
-                                    <td class="px-4 py-2 text-right">
+                                    <td class="px-4 py-2 text-center">
                                         <button type="button" class="remove-price text-red-600">✕</button>
                                     </td>
                                 </tr>
@@ -267,6 +304,7 @@
                     + Add Price
                 </button>
             </div>
+
 
 
             <!-- Actions -->
@@ -306,11 +344,30 @@
             function updateStopIndices() {
                 stopBody.querySelectorAll('tr.stop-row:not(.template-row)').forEach((row, i) => {
                     row.querySelector('.stop-index').textContent = i + 1;
+                    // Gán lại name cho các field nếu có name (giúp load lại đúng index khi render doGet)
+                    let locSel = row.querySelector('select[name^="stops["]');
+                    let trHour = row.querySelector('input.travel-hour[name^="stops["]');
+                    let trMin = row.querySelector('input.travel-min[name^="stops["]');
+                    let dwellInp = row.querySelector('input.dwell-min[name^="stops["]');
+                    if (locSel)
+                        locSel.name = `stops[${i}].locationId`;
+                    if (trHour)
+                        trHour.name = `stops[${i}].travelHour`;
+                    if (trMin)
+                        trMin.name = `stops[${i}].travelMin`;
+                    if (dwellInp)
+                        dwellInp.name = `stops[${i}].dwellMinutes`;
                 });
             }
             function updatePriceIndices() {
                 priceBody.querySelectorAll('tr.price-row:not(.template-row)').forEach((row, i) => {
                     row.querySelector('.price-index').textContent = i + 1;
+                    let busSel = row.querySelector('select[name^="prices["]');
+                    let priceInp = row.querySelector('input[name^="prices["]');
+                    if (busSel)
+                        busSel.name = `prices[${i}].busTypeId`;
+                    if (priceInp)
+                        priceInp.name = `prices[${i}].price`;
                 });
             }
 
@@ -319,6 +376,22 @@
                 const clone = stopTpl.cloneNode(true);
                 clone.classList.remove('template-row');
                 clone.style.display = '';
+                // Đặt name cho các input
+                let idx = stopBody.querySelectorAll('tr.stop-row:not(.template-row)').length;
+                let sel = clone.querySelector('select');
+                let trHour = clone.querySelector('input.travel-hour');
+                let trMin = clone.querySelector('input.travel-min');
+                let dwell = clone.querySelector('input.dwell-min');
+                sel.name = `stops[${idx}].locationId`;
+                trHour.name = `stops[${idx}].travelHour`;
+                trMin.name = `stops[${idx}].travelMin`;
+                dwell.name = `stops[${idx}].dwellMinutes`;
+                // reset value
+                trHour.value = "";
+                trMin.value = "";
+                dwell.value = "";
+                // Áp dụng chặn ký tự không phải số cho input mới
+                [trHour, trMin, dwell].forEach(preventNonIntegerInput);
                 stopBody.appendChild(clone);
                 updateStopIndices();
             });
@@ -328,6 +401,12 @@
                 const clone = priceTpl.cloneNode(true);
                 clone.classList.remove('template-row');
                 clone.style.display = '';
+                let idx = priceBody.querySelectorAll('tr.price-row:not(.template-row)').length;
+                let sel = clone.querySelector('select');
+                let inp = clone.querySelector('input');
+                sel.name = `prices[${idx}].busTypeId`;
+                inp.name = `prices[${idx}].price`;
+                inp.value = "";
                 priceBody.appendChild(clone);
                 updatePriceIndices();
             });
@@ -366,31 +445,57 @@
                 }
             });
 
-            // Khởi tạo chỉ số lần đầu
+            // Khởi tạo chỉ số lần đầu (và cập nhật lại name)
             updateStopIndices();
             updatePriceIndices();
+
+            // ===== BỔ SUNG: KHÔNG CHO NHẬP DẤU "," HOẶC "." HOẶC KÝ TỰ KHÁC SỐ =====
+            function preventNonIntegerInput(input) {
+                input.addEventListener('input', function () {
+                    this.value = this.value.replace(/\D/g, '');
+                });
+            }
+            document.querySelectorAll('.travel-hour, .travel-min, .dwell-min').forEach(preventNonIntegerInput);
 
             // Trước khi submit: tạo hidden inputs và disable originals
             form.addEventListener('submit', () => {
                 // Stops
-                stopBody.querySelectorAll('tr.stop-row:not(.template-row)').forEach(row => {
+                stopBody.querySelectorAll('tr.stop-row:not(.template-row)').forEach((row, idx) => {
                     const sel = row.querySelector('select');
-                    const inp = row.querySelector('input');
-                    if (sel.value && inp.value) {
+                    const travelHour = row.querySelector('.travel-hour');
+                    const travelMin = row.querySelector('.travel-min');
+                    const dwellInp = row.querySelector('.dwell-min');
+                    // Lấy value, mặc định 0 nếu bỏ trống
+                    const h = parseInt(travelHour.value) || 0;
+                    const m = parseInt(travelMin.value) || 0;
+                    const dwell = dwellInp.value;
+                    // locationId
+                    if (sel.value) {
                         const hLoc = document.createElement('input');
                         hLoc.type = 'hidden';
                         hLoc.name = 'stopsLocationId[]';
                         hLoc.value = sel.value;
                         form.appendChild(hLoc);
-
+                    }
+                    // travelMinutes = h*60 + m
+                    const hT = document.createElement('input');
+                    hT.type = 'hidden';
+                    hT.name = 'stopsTravelMinutes[]';
+                    hT.value = (h * 60 + m);
+                    form.appendChild(hT);
+                    // dwellMinutes
+                    if (dwell) {
                         const hD = document.createElement('input');
                         hD.type = 'hidden';
                         hD.name = 'stopsDwellMinutes[]';
-                        hD.value = inp.value;
+                        hD.value = dwell;
                         form.appendChild(hD);
                     }
+                    // Disable originals
                     sel.disabled = true;
-                    inp.disabled = true;
+                    travelHour.disabled = true;
+                    travelMin.disabled = true;
+                    dwellInp.disabled = true;
                 });
 
                 // Prices

@@ -15,6 +15,7 @@ public class AdminRouteStop {
     private int stopNumber;
     private int locationId;
     private int dwellMinutes;
+    private int travelMinutes;
 
     public AdminRouteStop() {
     }
@@ -26,7 +27,13 @@ public class AdminRouteStop {
         this.dwellMinutes = dwellMinutes;
     }
 
-    
+    public int getTravelMinutes() {
+        return travelMinutes;
+    }
+
+    public void setTravelMinutes(int travelMinutes) {
+        this.travelMinutes = travelMinutes;
+    }
     
     public int getRouteId() {
         return routeId;

@@ -190,7 +190,7 @@ public class AdminRoutesDAO extends DBContext {
                     route.setEndLocation(rs.getString("end_location"));
                     route.setDistanceKm(rs.getDouble("distance_km"));
                     route.setEstimatedTime(rs.getInt("estimated_time"));
-                    route.setRouteStatus(rs.getString("route_status"));  
+                    route.setRouteStatus(rs.getString("route_status"));
                 }
             }
         } catch (SQLException e) {
@@ -281,14 +281,15 @@ public class AdminRoutesDAO extends DBContext {
 
     // Add list of route stops
     public void addRouteStops(int routeId, List<AdminRouteStop> stops) throws SQLException {
-        String sql = "INSERT INTO Route_Stops(route_id, route_stop_number, location_id, route_stop_dwell_minutes) "
-                + "VALUES(?, ?, ?, ?)";
+        String sql = "INSERT INTO Route_Stops(route_id, route_stop_number, location_id, route_stop_dwell_minutes, travel_minutes) "
+                + "VALUES(?, ?, ?, ?, ?)";
         try ( PreparedStatement ps = getConnection().prepareStatement(sql)) {
             for (AdminRouteStop stop : stops) {
                 ps.setInt(1, routeId);
                 ps.setInt(2, stop.getStopNumber());
                 ps.setInt(3, stop.getLocationId());
                 ps.setInt(4, stop.getDwellMinutes());
+                ps.setInt(5, stop.getTravelMinutes()); // NEW
                 ps.addBatch();
             }
             ps.executeBatch();
@@ -334,7 +335,7 @@ public class AdminRoutesDAO extends DBContext {
      */
     public List<AdminRouteStop> getRouteStops(int routeId) throws SQLException {
         List<AdminRouteStop> list = new ArrayList<>();
-        String sql = "SELECT route_stop_number, location_id, route_stop_dwell_minutes"
+        String sql = "SELECT route_stop_number, location_id, route_stop_dwell_minutes, travel_minutes"
                 + " FROM Route_Stops"
                 + " WHERE route_id = ?"
                 + " ORDER BY route_stop_number";
@@ -347,6 +348,7 @@ public class AdminRoutesDAO extends DBContext {
                     stop.setStopNumber(rs.getInt("route_stop_number"));
                     stop.setLocationId(rs.getInt("location_id"));
                     stop.setDwellMinutes(rs.getInt("route_stop_dwell_minutes"));
+                    stop.setTravelMinutes(rs.getInt("travel_minutes")); // NEW
                     list.add(stop);
                 }
             }

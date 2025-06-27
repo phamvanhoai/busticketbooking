@@ -120,6 +120,10 @@
         <servlet-name>StaffBookingStatisticsExportServlet</servlet-name>
         <servlet-class>busticket.controller.StaffBookingStatisticsExportServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>AdminLocationsServlet</servlet-name>
+        <servlet-class>busticket.controller.AdminLocationsServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
         <url-pattern>/admin/dashboard</url-pattern>
@@ -240,6 +244,10 @@
     <servlet-mapping>
         <servlet-name>StaffBookingStatisticsExportServlet</servlet-name>
         <url-pattern>/staff/booking-statistics/export</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AdminLocationsServlet</servlet-name>
+        <url-pattern>/admin/locations</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
