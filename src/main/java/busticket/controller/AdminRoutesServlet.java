@@ -279,11 +279,6 @@ public class AdminRoutesServlet extends HttpServlet {
                             }
                         }
                         if (!newStops.isEmpty()) {
-                            System.out.println("newStops: ");
-                            for (AdminRouteStop stop : newStops) {
-                                System.out.println(stop.getStopNumber() + " | " + stop.getLocationId() + " | " + stop.getTravelMinutes() + " | " + stop.getDwellMinutes());
-                            }
-
                             adminRoutesDAO.addRouteStops(routeId, newStops);
                         }
                     }

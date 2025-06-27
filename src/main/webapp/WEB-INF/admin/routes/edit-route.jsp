@@ -142,15 +142,19 @@
                                         </td>
                                         <td class="px-4 py-2 text-center">
                                             <div class="flex justify-center items-center gap-1">
+                                                <c:set var="travelHourRaw" value="${sp.travelMinutes / 60}" />
+                                                <c:set var="travelHour" value="${fn:substringBefore(travelHourRaw, '.')}" />
+                                                <c:set var="travelMin" value="${sp.travelMinutes % 60}" />
+
                                                 <input type="number" min="0" placeholder="h"
                                                        class="travel-hour border rounded px-1 py-1 text-center"
                                                        name="stops[${ss.index}].travelHour"
-                                                       value="${sp.travelMinutes / 60}" style="width:56px"/>
+                                                       value="${travelHour}" style="width:56px"/>
                                                 <span>:</span>
                                                 <input type="number" min="0" max="59" placeholder="m"
                                                        class="travel-min border rounded px-1 py-1 text-center"
                                                        name="stops[${ss.index}].travelMin"
-                                                       value="${sp.travelMinutes % 60}" style="width:56px"/>
+                                                       value="${travelMin}" style="width:56px"/>
                                             </div>
                                         </td>
 
