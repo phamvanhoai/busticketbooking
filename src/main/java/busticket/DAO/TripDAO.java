@@ -19,32 +19,5 @@ import java.util.List;
  */
 public class TripDAO extends DBContext {
 
-    /**
-     * Get all trips that have not been assigned any driver yet.
-     */
-    public List<Trip> getAllAvailableTrips() {
-        List<Trip> trips = new ArrayList<>();
-        String sql
-                = "SELECT trip_id, route_id, departure_time "
-                + "FROM Trips "
-                + "WHERE trip_id NOT IN ( "
-                + "    SELECT trip_id FROM Trip_Driver "
-                + ")";
-
-        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                Trip t = new Trip();
-                t.setTripId(rs.getString("trip_id"));
-                t.setRouteId(rs.getString("route_id"));
-                t.setDepartureTime(rs.getTimestamp("departure_time"));
-                trips.add(t);
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return trips;
-    }
+    
 }

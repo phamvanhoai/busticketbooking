@@ -103,6 +103,9 @@
                                 </c:choose>
                             </td>
                             <td class="px-4 py-3">
+                                <a href="${pageContext.servletContext.contextPath}/ticket-management?review=${invoice.invoiceId}"><button class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm px-3 py-1 rounded-full">
+                                    Review
+                                    </button></a>
                                 <a href="${pageContext.servletContext.contextPath}/ticket-management?cancel=${invoice.invoiceId}"><button class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm px-3 py-1 rounded-full">
                                     Cancel
                                     </button></a>
