@@ -81,6 +81,14 @@ public class TicketManagementServlet extends HttpServlet {
         if (detail != null) {
             // Handle view details logic if needed
         }
+        
+        // View details (optional, logic for viewing details could go here)
+        String review = request.getParameter("review");
+        if (review != null) {
+                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/review-booking.jsp")
+                        .forward(request, response);
+                return;
+        }
 
         // Get the user ID and perform search and pagination
         int userId = users.getUser_id();
