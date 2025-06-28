@@ -71,7 +71,6 @@ public class AdminUsers {
         this.address = address;
     }
 
-    //add user for admin
     public AdminUsers(int user_id, String name, String email, String phone, String role, String status, Timestamp created_at) {
         this.user_id = user_id;
         this.name = name;

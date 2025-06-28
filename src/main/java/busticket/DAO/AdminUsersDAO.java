@@ -176,6 +176,18 @@ public class AdminUsersDAO extends DBContext {
         return false;
     }
 
+    public boolean isLicenseNumberExists(String licenseNumber) {
+        String query = "SELECT COUNT(*) FROM Drivers WHERE license_number = ?";
+        try ( PreparedStatement ps = getConnection().prepareStatement(query)) {
+            ps.setString(1, licenseNumber);
+            ResultSet rs = ps.executeQuery();
+            return rs.next() && rs.getInt(1) > 0;
+        } catch (SQLException ex) {
+            Logger.getLogger(AdminUsersDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }
+
     /**
      * Retrieves user details by ID.
      *
@@ -356,6 +368,5 @@ public class AdminUsersDAO extends DBContext {
         }
         return 0;
     }
-    
 
 }
