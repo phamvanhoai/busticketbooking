@@ -13,9 +13,11 @@ import java.util.Objects;
 public class AdminRouteStop {
     private int routeId;
     private int stopNumber;
+    private String locationName;
     private int locationId;
     private int dwellMinutes;
     private int travelMinutes;
+    private String address;
 
     public AdminRouteStop() {
     }
@@ -26,6 +28,34 @@ public class AdminRouteStop {
         this.locationId = locationId;
         this.dwellMinutes = dwellMinutes;
     }
+
+    public AdminRouteStop(int stopNumber, int locationId, String locationName, int dwellMinutes, int travelMinutes) {
+        this.stopNumber = stopNumber;
+        this.locationId = locationId;
+        this.locationName = locationName;
+        this.dwellMinutes = dwellMinutes;
+        this.travelMinutes = travelMinutes;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+    
+    
+
+    public String getLocationName() {
+        return locationName;
+    }
+
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
+    }
+    
+    
 
     public int getTravelMinutes() {
         return travelMinutes;

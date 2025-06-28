@@ -6,6 +6,7 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ include file="/WEB-INF/include/admin/admin-header.jsp" %>
 
 <body class="bg-gray-100 min-h-screen">
@@ -62,33 +63,46 @@
             </div>
         </section>
 
-        <!-- Route Stops: only Start and End -->
+        <!-- Route Stops: Full List -->
         <section class="bg-white p-6 rounded-xl shadow">
             <h2 class="text-lg font-semibold text-gray-800 mb-4">Route Stops</h2>
             <div class="space-y-6">
-                <!-- Start Stop -->
-                <div class="flex items-start">
-                    <div class="flex flex-col items-center">
-                        <div class="w-3 h-3 bg-orange-500 rounded-full mt-1"></div>
-                        <div class="flex-1 border-l-2 border-gray-200"></div>
+                <c:if test="${empty stops}">
+                    <div class="p-4 bg-red-100 text-red-700 rounded mb-4">
+                        Không có dữ liệu Route Stops (stops rỗng/null)!<br>
+                        Hãy kiểm tra lại Controller truyền stops xuống.
                     </div>
-                    <div class="ml-4">
-                        <p class="font-medium text-gray-800">${trip.tripTime} – ${trip.startLocation}</p>
-                        <p class="text-sm text-gray-500">Departure Point</p>
+                </c:if>
+                <c:forEach var="stop" items="${stops}" varStatus="status">
+                    <div class="flex items-start">
+                        <div class="flex flex-col items-center">
+                            <div class="w-3 h-3
+                                 <c:choose>
+                                     <c:when test="${status.first}">bg-orange-500</c:when>
+                                     <c:when test="${status.last}">bg-gray-400</c:when>
+                                     <c:otherwise>bg-green-400</c:otherwise>
+                                 </c:choose>
+                                 rounded-full mt-1"></div>
+                            <c:if test="${!status.last}">
+                                <div class="flex-1 border-l-2 border-gray-200"></div>
+                            </c:if>
+                        </div>
+                        <div class="ml-4">
+                            <p class="font-medium text-gray-800">
+                                ${stopTimes[status.index]} – ${stop.locationName}
+                            </p>
+                            <p class="text-sm text-gray-500">
+                                ${stop.address}
+                            </p>
+                        </div>
                     </div>
-                </div>
-                <!-- End Stop -->
-                <div class="flex items-start">
-                    <div class="flex flex-col items-center">
-                        <div class="w-3 h-3 bg-gray-400 rounded-full mt-1"></div>
-                    </div>
-                    <div class="ml-4">
-                        <p class="font-medium text-gray-800">${trip.arrivalTime} – ${trip.endLocation}</p>
-                        <p class="text-sm text-gray-500">Destination Point</p>
-                    </div>
-                </div>
+                </c:forEach>
             </div>
         </section>
+
+
+
+
 
         <!-- Passenger List -->
         <section class="bg-white p-6 rounded-xl shadow">

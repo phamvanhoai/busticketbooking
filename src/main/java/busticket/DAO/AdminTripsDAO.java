@@ -7,6 +7,7 @@ package busticket.DAO;
 import busticket.db.DBContext;
 import busticket.model.AdminBuses;
 import busticket.model.AdminDrivers;
+import busticket.model.AdminRouteStop;
 import busticket.model.AdminRoutes;
 import busticket.model.AdminTrips;
 import busticket.model.AdminUsers;
@@ -201,10 +202,10 @@ public class AdminTripsDAO extends DBContext {
         return null;
     }
 
-// 3) Lấy chi tiết đầy đủ để hiện trang detail
     public AdminTrips getTripDetailById(int tripId) throws SQLException {
         String sql = "SELECT "
                 + "  t.trip_id, "
+                + "  t.route_id, " // << THÊM DÒNG NÀY
                 + "  CONCAT(ls.location_name, N' → ', le.location_name) AS route, "
                 + "  ls.location_name AS startLocation, "
                 + "  le.location_name AS endLocation, "
@@ -234,6 +235,7 @@ public class AdminTripsDAO extends DBContext {
                 if (rs.next()) {
                     AdminTrips detail = new AdminTrips();
                     detail.setTripId(rs.getInt("trip_id"));
+                    detail.setRouteId(rs.getInt("route_id")); // << THÊM DÒNG NÀY
                     detail.setRoute(rs.getString("route"));
                     detail.setStartLocation(rs.getString("startLocation"));
                     detail.setEndLocation(rs.getString("endLocation"));
@@ -397,6 +399,35 @@ public class AdminTripsDAO extends DBContext {
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<AdminRouteStop> getRouteStops(int routeId) {
+        List<AdminRouteStop> list = new ArrayList<>();
+        String sql = "SELECT rs.route_id, rs.route_stop_number, rs.location_id, rs.route_stop_dwell_minutes, rs.travel_minutes, "
+                + "l.location_name, l.address "
+                + "FROM Route_Stops rs "
+                + "JOIN Locations l ON rs.location_id = l.location_id "
+                + "WHERE rs.route_id = ? "
+                + "ORDER BY rs.route_stop_number ASC";
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql)) {
+            ps.setInt(1, routeId);
+            try ( ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    AdminRouteStop stop = new AdminRouteStop();
+                    stop.setRouteId(rs.getInt("route_id"));
+                    stop.setStopNumber(rs.getInt("route_stop_number"));
+                    stop.setLocationId(rs.getInt("location_id"));
+                    stop.setDwellMinutes(rs.getInt("route_stop_dwell_minutes"));
+                    stop.setTravelMinutes(rs.getInt("travel_minutes"));
+                    stop.setLocationName(rs.getString("location_name")); // thêm thuộc tính này vào model nếu chưa có
+                    stop.setAddress(rs.getString("address"));           // thêm thuộc tính này vào model nếu chưa có
+                    list.add(stop);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return list;
     }

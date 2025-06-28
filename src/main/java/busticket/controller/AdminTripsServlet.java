@@ -4,9 +4,11 @@
  */
 package busticket.controller;
 
+import busticket.DAO.AdminRoutesDAO;
 import busticket.DAO.AdminTripsDAO;
 import busticket.model.AdminBuses;
 import busticket.model.AdminDrivers;
+import busticket.model.AdminRouteStop;
 import busticket.model.AdminRoutes;
 import busticket.model.AdminTrips;
 import busticket.model.AdminUsers;
@@ -20,6 +22,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,12 +68,46 @@ public class AdminTripsServlet extends HttpServlet {
                 int tripId = Integer.parseInt(detail);
                 AdminTrips trip = adminTripsDAO.getTripDetailById(tripId);
 
-                // ** mới **: load danh sách hành khách
+                // Mới: Lấy danh sách điểm dừng của route
+                int routeId = trip.getRouteId();
+                List<AdminRouteStop> stops = adminTripsDAO.getRouteStops(routeId);
+
+                // Tính giờ đến từng stop (giờ xuất phát + travelMinutes cộng dồn)
+                List<String> stopTimes = new ArrayList<>();
+                LocalTime curTime = LocalTime.parse(trip.getTripTime()); // tripTime kiểu HH:mm
+
+                for (int i = 0; i < stops.size(); i++) {
+                    AdminRouteStop stop = stops.get(i);
+                    // Stop đầu lấy giờ xuất phát
+                    if (i > 0) {
+                        // Cộng travelMinutes, dwell chỉ cộng nếu muốn tính giờ rời
+                        curTime = curTime.plusMinutes(stop.getTravelMinutes());
+                    }
+                    stopTimes.add(curTime.toString());
+
+                    // In log kiểm tra (optional)
+                    System.out.println("Stop " + stop.getStopNumber() + " (" + stop.getLocationId() + ")"
+                            + " | Đến lúc: " + curTime
+                            + " | travel: " + stop.getTravelMinutes()
+                            + " | dwell: " + stop.getDwellMinutes());
+                }
+
+                // Load danh sách hành khách
                 List<AdminUsers> passengers = adminTripsDAO.getPassengersByTripId(tripId);
 
-                // đẩy vào request
+                // Đẩy vào request
                 request.setAttribute("trip", trip);
                 request.setAttribute("passengers", passengers);
+
+                // Đẩy thêm
+                request.setAttribute("stops", stops);
+                request.setAttribute("stopTimes", stopTimes);
+
+                System.out.println("routeId: " + routeId);
+                System.out.println("Stops size: " + stops.size());
+                for (AdminRouteStop s : stops) {
+                    System.out.println(s.toString());
+                }
 
                 request.getRequestDispatcher("/WEB-INF/admin/trips/view-trip-details.jsp")
                         .forward(request, response);
