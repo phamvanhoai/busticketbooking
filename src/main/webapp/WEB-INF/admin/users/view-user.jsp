@@ -10,6 +10,7 @@
 <%@ include file="/WEB-INF/include/admin/admin-header.jsp" %>
 
 <div class="w-full px-12">
+    <h2 class="text-3xl font-bold text-[#EF5222] mb-6">User Details</h2>
     <!-- Main card container -->
     <div class="bg-white shadow-xl rounded-xl p-8">
 
@@ -179,7 +180,7 @@
             <div class="flex-1">
                 <!-- Title + Status badge -->
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold text-gray-800">User Details</h2>
+
                     <span class="px-3 py-1 rounded-full text-sm font-medium
                           ${user.status == 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'}">
                         ${user.status}
@@ -221,6 +222,57 @@
                 </div>
             </div>
         </div>
+
+        <c:if test="${user.role == 'Driver'}">
+            <div class="mt-8">
+                <h3 class="text-xl font-bold text-orange-600 mb-4">License Upgrade History</h3>
+                <div class="overflow-x-auto shadow-sm border rounded-lg">
+                    <table class="min-w-full text-sm text-left text-gray-700">
+                        <thead class="bg-orange-100 font-semibold text-gray-800">
+                            <tr>
+                                <th class="px-4 py-2">Old Class</th>
+                                <th class="px-4 py-2">New Class</th>
+                                <th class="px-4 py-2">Upgraded By</th>
+                                <th class="px-4 py-2">Reason</th>
+                                <th class="px-4 py-2">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach var="log" items="${licenseHistory}" varStatus="loop">
+                                <tr class="border-b hover:bg-orange-50 transition">
+                                    <td class="px-4 py-2 text-gray-800">${log.oldLicenseClass}</td>
+                                    <td class="px-4 py-2 text-green-600 font-bold">${log.newLicenseClass}</td>
+                                    <td class="px-4 py-2 text-gray-800">${log.adminName}</td>
+                                    <td class="px-4 py-2 text-gray-800">${log.reason}</td>
+                                    <td class="px-4 py-2 text-gray-600">
+                                        <fmt:formatDate value="${log.createdAt}" pattern="dd/MM/yyyy HH:mm:ss" />
+                                    </td>
+                                </tr>
+                            </c:forEach>
+
+                            <c:if test="${empty licenseHistory}">
+                                <tr>
+                                    <td colspan="6" class="py-6 px-4 text-center text-gray-500">
+                                        <div class="flex flex-col items-center justify-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                 class="h-12 w-12 text-gray-400" fill="none"
+                                                 viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M9.75 9.75h.008v.008H9.75V9.75zm4.5 0h.008v.008h-.008V9.75zM9 13.5c.75 1 2.25 1 3 0m9 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            <span class="text-sm text-gray-500 font-medium">
+                                                No license upgrade history found.
+                                            </span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </c:if>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </c:if>
+
 
         <!-- Action Buttons: Back + Edit -->
         <div class="mt-8 flex justify-center gap-4">

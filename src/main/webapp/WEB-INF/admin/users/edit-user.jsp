@@ -41,27 +41,27 @@
                 </button>
             </div>
         </c:if>
-  <c:if test="${not empty errors}">
-    <div class="flex items-start gap-3 bg-red-100 border border-red-300 text-red-800 text-sm px-5 py-4 rounded-lg shadow mb-6">
-        <!-- Icon -->
-        <div class="pt-1">
-            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" stroke-width="2"
-                 viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-        </div>
+        <c:if test="${not empty errors}">
+            <div class="flex items-start gap-3 bg-red-100 border border-red-300 text-red-800 text-sm px-5 py-4 rounded-lg shadow mb-6">
+                <!-- Icon -->
+                <div class="pt-1">
+                    <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" stroke-width="2"
+                         viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </div>
 
-        <!-- Content -->
-        <div class="flex-1">
-            <p class="font-semibold mb-1">Please correct the following issues:</p>
-            <ul class="list-disc list-inside space-y-0.5">
-                <c:forEach var="err" items="${errors}">
-                    <li>${err}</li>
-                </c:forEach>
-            </ul>
-        </div>
-    </div>
-</c:if>
+                <!-- Content -->
+                <div class="flex-1">
+                    <p class="font-semibold mb-1">Please correct the following issues:</p>
+                    <ul class="list-disc list-inside space-y-0.5">
+                        <c:forEach var="err" items="${errors}">
+                            <li>${err}</li>
+                            </c:forEach>
+                    </ul>
+                </div>
+            </div>
+        </c:if>
 
 
         <!-- Edit user form -->
@@ -103,37 +103,37 @@
                 placeholder="Enter phone number"
                 />
 
-          <!-- Role and Status selection -->
-<div class="grid sm:grid-cols-2 gap-6 mb-12">
-    <!-- Role -->
-    <div>
-        <label class="block text-lg font-medium mb-2" for="role">Role</label>
-        <select
-            id="role"
-            name="role"
-            class="w-full border rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-orange-400"
-            required>
-            <option value="">Select role</option>
-            <option value="Admin" ${user.role == 'Admin' ? 'selected' : ''}>Admin</option>
-            <option value="Staff" ${user.role == 'Staff' ? 'selected' : ''}>Staff</option>
-            <option value="Driver" ${user.role == 'Driver' ? 'selected' : ''}>Driver</option>
-            <option value="Customer" ${user.role == 'Customer' ? 'selected' : ''}>Customer</option>
-        </select>
-    </div>
+            <!-- Role and Status selection -->
+            <div class="grid sm:grid-cols-2 gap-6 mb-12">
+                <!-- Role -->
+                <div>
+                    <label class="block text-lg font-medium mb-2" for="role">Role</label>
+                    <select
+                        id="role"
+                        name="role"
+                        class="w-full border rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                        required>
+                        <option value="">Select role</option>
+                        <option value="Admin" ${user.role == 'Admin' ? 'selected' : ''}>Admin</option>
+                        <option value="Staff" ${user.role == 'Staff' ? 'selected' : ''}>Staff</option>
+                        <option value="Driver" ${user.role == 'Driver' ? 'selected' : ''}>Driver</option>
+                        <option value="Customer" ${user.role == 'Customer' ? 'selected' : ''}>Customer</option>
+                    </select>
+                </div>
 
-    <!-- Status -->
-    <div>
-        <label class="block text-lg font-medium mb-2" for="status">Status</label>
-        <select
-            id="status"
-            name="status"
-            class="w-full border rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-orange-400"
-            required>
-            <option value="Active" ${user.status == 'Active' ? 'selected' : ''}>Active</option>
-            <option value="Inactive" ${user.status == 'Inactive' ? 'selected' : ''}>Inactive</option>
-        </select>
-    </div>
-</div>
+                <!-- Status -->
+                <div>
+                    <label class="block text-lg font-medium mb-2" for="status">Status</label>
+                    <select
+                        id="status"
+                        name="status"
+                        class="w-full border rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                        required>
+                        <option value="Active" ${user.status == 'Active' ? 'selected' : ''}>Active</option>
+                        <option value="Inactive" ${user.status == 'Inactive' ? 'selected' : ''}>Inactive</option>
+                    </select>
+                </div>
+            </div>
 
 
             <!-- Gender selection -->
@@ -147,23 +147,23 @@
                 <option value="Other" ${user.gender == 'Other' ? 'selected' : ''}>Other</option>
             </select>
 
-            
-            
+
+            <!-- Birthdate -->
             <label class="block text-lg font-medium mb-2" for="birthdate">Birthdate</label>
-<div class="relative mb-8">
-    <input
-        type="text"
-        id="birthdate"
-        name="birthdate"
-        value="${user.birthdate != null ? fn:substring(user.birthdate.toString(),0,10) : ''}"
-        placeholder="Select birthdate"
-        class="flatpickr w-full border rounded-md px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-orange-400"
-    />
-    <button type="button" id="birthdate-icon"
-        class="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-orange-500">
-        <i class="fas fa-calendar-alt"></i>
-    </button>
-</div>
+            <div class="relative mb-8">
+                <input
+                    type="text"
+                    id="birthdate"
+                    name="birthdate"
+                    value="${user.birthdate != null ? fn:substring(user.birthdate.toString(),0,10) : ''}"
+                    placeholder="Select birthdate"
+                    class="flatpickr w-full border rounded-md px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    />
+                <button type="button" id="birthdate-icon"
+                        class="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-orange-500">
+                    <i class="fas fa-calendar-alt"></i>
+                </button>
+            </div>
 
 
             <!-- Address textarea -->
@@ -190,32 +190,33 @@
 
                     <div>
                         <label class="block text-lg font-medium mb-2" for="licenseClass">License Class</label>
-                        <select
-                            id="licenseClass"
-                            name="licenseClass"
-                            class="w-full border rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-orange-400">
-                            <option value="D" ${driverInfo != null && driverInfo.licenseClass == 'D' ? 'selected' : ''}>D</option>
-                            <option value="D2" ${driverInfo != null && driverInfo.licenseClass == 'D2' ? 'selected' : ''}>D2</option>            
-                        </select>
+                        <p class="w-full border rounded-md p-3 bg-white">
+                            ${driverInfo != null ? driverInfo.licenseClass : 'D'}
+                        </p>
+                        <input 
+                            type="hidden" 
+                            id="licenseClass" 
+                            name="licenseClass" 
+                            value="${driverInfo != null ? driverInfo.licenseClass : 'D'}"
+                            />
                     </div>
-<div>
-    <label class="block text-lg font-medium mb-2" for="hireDate">Hire Date</label>
-    <div class="relative">
-        <input
-            id="hireDate"
-            name="hireDate"
-            type="text"
-            value="${driverInfo != null && driverInfo.hireDate != null ? fn:substring(driverInfo.hireDate.toString(),0,10) : ''}"
-            placeholder="Select hire date"
-            class="flatpickr w-full border rounded-md px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-orange-400"
-        />
-        <button type="button" id="hireDate-icon"
-            class="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-orange-500">
-            <i class="fas fa-calendar-alt"></i>
-        </button>
-    </div>
-</div>
-
+                    <div>
+                        <label class="block text-lg font-medium mb-2" for="hireDate">Hire Date</label>
+                        <div class="relative">
+                            <input
+                                id="hireDate"
+                                name="hireDate"
+                                type="text"
+                                value="${driverInfo != null && driverInfo.hireDate != null ? fn:substring(driverInfo.hireDate.toString(),0,10) : ''}"
+                                placeholder="Select hire date"
+                                class="flatpickr w-full border rounded-md px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                />
+                            <button type="button" id="hireDate-icon"
+                                    class="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-orange-500">
+                                <i class="fas fa-calendar-alt"></i>
+                            </button>
+                        </div>
+                    </div>
 
                     <div>
                         <label class="block text-lg font-medium mb-2" for="driverStatus">Driver Status</label>
@@ -228,7 +229,30 @@
                         </select>
                     </div>
                 </div>
+
+                <div class="mt-8 border-t border-orange-300 pt-6">
+                    <h3 class="text-xl font-semibold mb-4 text-orange-600">Upgrade Driver License</h3>
+
+                    <input type="hidden" name="oldLicenseClass" value="${driverInfo != null ? driverInfo.licenseClass : ''}" />
+
+                    <label class="block text-lg font-medium mb-2" for="newLicenseClass">New License Class</label>
+                    <select
+                        id="newLicenseClass"
+                        name="newLicenseClass"
+                        class="w-full border rounded-md p-3 mb-6 focus:outline-none focus:ring-2 focus:ring-orange-400">
+                        <option value="">Select new license class</option>
+                        <option value="D2">D2</option>
+                    </select>
+
+                    <label class="block text-lg font-medium mb-2" for="reason">Reason (optional)</label>
+                    <textarea
+                        id="reason"
+                        name="reason"
+                        class="w-full border rounded-md p-3 mb-6 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                        placeholder="E.g., Promoted after exam..."></textarea>
+                </div>
             </div>
+
 
             <!-- Action buttons -->
             <div class="flex justify-end gap-4 pt-4">
@@ -262,35 +286,34 @@
             }
         }
 
-        // Call on page load and when role is changed
         window.addEventListener('DOMContentLoaded', () => {
             toggleDriverFields();
             document.getElementById('role').addEventListener('change', toggleDriverFields);
         });
     </script>
-<script>
-    const birthInput = document.getElementById('birthdate');
-    const hireInput = document.getElementById('hireDate');
+    <script>
+        const birthInput = document.getElementById('birthdate');
+        const hireInput = document.getElementById('hireDate');
 
-    const birthInstance = flatpickr(birthInput, {
-        dateFormat: "Y-m-d",       // format submit lên server
-        altInput: true,            // bật hiển thị định dạng đẹp
-        altFormat: "d/m/Y",        // hiển thị cho người dùng
-        allowInput: true
-    });
+        const birthInstance = flatpickr(birthInput, {
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "d/m/Y",
+            allowInput: true
+        });
 
-    const hireInstance = flatpickr(hireInput, {
-        dateFormat: "Y-m-d",
-        altInput: true,
-        altFormat: "d/m/Y",
-        allowInput: true
-    });
+        const hireInstance = flatpickr(hireInput, {
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "d/m/Y",
+            allowInput: true
+        });
 
-    document.getElementById('birthdate-icon').addEventListener('click', function () {
-        birthInstance.open();
-    });
+        document.getElementById('birthdate-icon').addEventListener('click', function () {
+            birthInstance.open();
+        });
 
-    document.getElementById('hireDate-icon').addEventListener('click', function () {
-        hireInstance.open();
-    });
-</script>
+        document.getElementById('hireDate-icon').addEventListener('click', function () {
+            hireInstance.open();
+        });
+    </script>
