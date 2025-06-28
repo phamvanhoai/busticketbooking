@@ -86,19 +86,6 @@
                     />
             </div>
 
-            <!-- Estimated Time -->
-            <div class="flex space-x-4">
-                <div class="flex-1">
-                    <label for="hours" class="block mb-1 font-medium">Hours</label>
-                    <input id="hours" name="hours" type="number" min="0" value="0" required
-                           class="w-full border rounded-lg px-4 py-2 focus:outline-[#EF5222]"/>
-                </div>
-                <div class="flex-1">
-                    <label for="minutes" class="block mb-1 font-medium">Minutes</label>
-                    <input id="minutes" name="minutes" type="number" min="0" max="59" value="0" required
-                           class="w-full border rounded-lg px-4 py-2 focus:outline-[#EF5222]"/>
-                </div>
-            </div>
 
             <!-- Status -->
             <div>

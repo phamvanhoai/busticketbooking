@@ -30,14 +30,13 @@
                 <input type="hidden" name="busId" value="${bus.busId}"/>
                 <!-- Bus Code (read-only) -->
                 <div>
-                    <label for="bus-id" class="block text-gray-800 font-medium mb-2">Bus Code</label>
+                    <label for="bus-code" class="block text-gray-800 font-medium mb-2">Bus Code</label>
                     <input
-                        id="bus-id"
+                        id="bus-code"
                         type="text"
-                        name="id"
+                        name="busCode"
                         value="${bus.busCode}"
-                        disabled
-                        class="w-full bg-gray-100 border border-gray-300 rounded-xl px-5 py-4 text-gray-700 cursor-not-allowed"
+                        class="w-full border border-gray-300 rounded-xl px-5 py-4 focus:outline-none focus:ring"
                         />
                 </div>
 

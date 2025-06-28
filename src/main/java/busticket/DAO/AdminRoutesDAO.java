@@ -20,7 +20,7 @@ public class AdminRoutesDAO extends DBContext {
      * Lấy tất cả các tuyến đường với phân trang, join bảng Locations để lấy tên
      * và cả trạng thái
      */
-    public List<AdminRoutes> getAllRoutes(int offset, int limit) {
+    public List<AdminRoutes> getAllRoutes(int offset, int limit) throws SQLException {
         List<AdminRoutes> list = new ArrayList<>();
         String sql = "SELECT r.route_id, "
                 + "       ls.location_id        AS start_location_id, "
@@ -28,7 +28,6 @@ public class AdminRoutesDAO extends DBContext {
                 + "       le.location_id        AS end_location_id, "
                 + "       le.location_name      AS end_location, "
                 + "       r.distance_km, "
-                + "       r.estimated_time, "
                 + "       r.route_status        AS route_status "
                 + "FROM Routes r "
                 + "  JOIN Locations ls ON r.start_location_id = ls.location_id "
@@ -50,8 +49,8 @@ public class AdminRoutesDAO extends DBContext {
                     route.setEndLocationId(rs.getInt("end_location_id"));
                     route.setEndLocation(rs.getString("end_location"));
                     route.setDistanceKm(rs.getDouble("distance_km"));
-                    route.setEstimatedTime(rs.getInt("estimated_time"));
-                    route.setRouteStatus(rs.getString("route_status"));  // set status
+                    route.setRouteStatus(rs.getString("route_status"));
+                    // Nếu muốn lấy thời gian dự kiến, có thể gọi thêm hàm getEstimatedTimeByRouteId tại đây
                     list.add(route);
                 }
             }
@@ -59,7 +58,11 @@ public class AdminRoutesDAO extends DBContext {
             e.printStackTrace();
             throw new RuntimeException("Error loading routes", e);
         }
-
+// Sau khi lấy xong từng route, tính estimatedTime
+        for (AdminRoutes route : list) {
+            int totalMinutes = getEstimatedTimeByRouteId(route.getRouteId());
+            route.setEstimatedTime(totalMinutes);
+        }
         return list;
     }
 
@@ -84,15 +87,13 @@ public class AdminRoutesDAO extends DBContext {
      */
     public int createRoute(AdminRoutes route) throws SQLException {
         String sql = "INSERT INTO Routes "
-                + "(start_location_id, end_location_id, distance_km, estimated_time, route_status) "
-                + "VALUES(?,?,?,?,?)";
-        try ( PreparedStatement ps = getConnection()
-                .prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                + "(start_location_id, end_location_id, distance_km, route_status) "
+                + "VALUES(?,?,?,?)";
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, route.getStartLocationId());
             ps.setInt(2, route.getEndLocationId());
             ps.setDouble(3, route.getDistanceKm());
-            ps.setInt(4, route.getEstimatedTime());
-            ps.setString(5, route.getRouteStatus());
+            ps.setString(4, route.getRouteStatus());
             ps.executeUpdate();
             try ( ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
@@ -111,18 +112,14 @@ public class AdminRoutesDAO extends DBContext {
                 + "    start_location_id = ?, "
                 + "    end_location_id   = ?, "
                 + "    distance_km       = ?, "
-                + "    estimated_time    = ?, "
                 + "    route_status      = ? "
                 + "WHERE route_id = ?";
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
-
             ps.setInt(1, route.getStartLocationId());
             ps.setInt(2, route.getEndLocationId());
             ps.setDouble(3, route.getDistanceKm());
-            ps.setInt(4, route.getEstimatedTime());
-            ps.setString(5, route.getRouteStatus());  // thêm status
-            ps.setInt(6, route.getRouteId());
-
+            ps.setString(4, route.getRouteStatus());
+            ps.setInt(5, route.getRouteId());
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -169,7 +166,6 @@ public class AdminRoutesDAO extends DBContext {
                 + "    le.location_id AS end_location_id, "
                 + "    le.location_name AS end_location, "
                 + "    r.distance_km, "
-                + "    r.estimated_time, "
                 + "    r.route_status "
                 + "FROM Routes r "
                 + "JOIN Locations ls ON r.start_location_id = ls.location_id "
@@ -177,9 +173,7 @@ public class AdminRoutesDAO extends DBContext {
                 + "WHERE r.route_id = ?";
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
-
             ps.setInt(1, routeId);
-
             try ( ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     route = new AdminRoutes();
@@ -189,7 +183,6 @@ public class AdminRoutesDAO extends DBContext {
                     route.setEndLocationId(rs.getInt("end_location_id"));
                     route.setEndLocation(rs.getString("end_location"));
                     route.setDistanceKm(rs.getDouble("distance_km"));
-                    route.setEstimatedTime(rs.getInt("estimated_time"));
                     route.setRouteStatus(rs.getString("route_status"));
                 }
             }
@@ -216,9 +209,7 @@ public class AdminRoutesDAO extends DBContext {
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
-            // bạn có thể log hoặc rethrow exception tuỳ nhu cầu
         }
-
         return locations;
     }
 
@@ -289,7 +280,7 @@ public class AdminRoutesDAO extends DBContext {
                 ps.setInt(2, stop.getStopNumber());
                 ps.setInt(3, stop.getLocationId());
                 ps.setInt(4, stop.getDwellMinutes());
-                ps.setInt(5, stop.getTravelMinutes()); // NEW
+                ps.setInt(5, stop.getTravelMinutes());
                 ps.addBatch();
             }
             ps.executeBatch();
@@ -348,7 +339,7 @@ public class AdminRoutesDAO extends DBContext {
                     stop.setStopNumber(rs.getInt("route_stop_number"));
                     stop.setLocationId(rs.getInt("location_id"));
                     stop.setDwellMinutes(rs.getInt("route_stop_dwell_minutes"));
-                    stop.setTravelMinutes(rs.getInt("travel_minutes")); // NEW
+                    stop.setTravelMinutes(rs.getInt("travel_minutes"));
                     list.add(stop);
                 }
             }
@@ -356,4 +347,21 @@ public class AdminRoutesDAO extends DBContext {
         return list;
     }
 
+    /**
+     * Tính tổng thời gian dự kiến của route dựa vào route_stops (phút)
+     */
+    public int getEstimatedTimeByRouteId(int routeId) throws SQLException {
+        String sql = "SELECT SUM(CASE WHEN route_stop_number > 1 THEN travel_minutes ELSE 0 END) + "
+                + "SUM(route_stop_dwell_minutes) AS total_minutes "
+                + "FROM Route_Stops WHERE route_id = ?";
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql)) {
+            ps.setInt(1, routeId);
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("total_minutes");
+                }
+            }
+        }
+        return 0;
+    }
 }

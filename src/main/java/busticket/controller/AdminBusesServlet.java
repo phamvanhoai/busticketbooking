@@ -61,6 +61,7 @@ public class AdminBusesServlet extends HttpServlet {
 
                         // Chuyển tiếp yêu cầu tới trang delete-bus.jsp để người dùng xác nhận xóa
                         request.getRequestDispatcher("/WEB-INF/admin/buses/delete-bus.jsp").forward(request, response);
+                        return;
                     } else {
                         // Nếu không tìm thấy xe buýt, chuyển hướng về trang danh sách xe buýt
                         response.sendRedirect(request.getContextPath() + "/admin/buses");
@@ -97,6 +98,7 @@ public class AdminBusesServlet extends HttpServlet {
 
                         // Chuyển tiếp tới trang chỉnh sửa xe buýt
                         request.getRequestDispatcher("/WEB-INF/admin/buses/edit-bus.jsp").forward(request, response);
+                        return;
                     } else {
                         // Nếu không tìm thấy xe buýt, chuyển hướng về trang danh sách xe buýt
                         response.sendRedirect(request.getContextPath() + "/admin/buses");
@@ -201,6 +203,8 @@ public class AdminBusesServlet extends HttpServlet {
                         throw new NumberFormatException("Bus ID is invalid.");
                     }
 
+                    String busCode = request.getParameter("busCode");
+
                     String plateNumber = request.getParameter("plate"); // Plate Number
                     int busTypeId = 0;
                     String busTypeIdStr = request.getParameter("type");
@@ -223,6 +227,7 @@ public class AdminBusesServlet extends HttpServlet {
                     // Tạo đối tượng AdminBuses để lưu trữ thông tin cần chỉnh sửa
                     AdminBuses bus = new AdminBuses();
                     bus.setBusId(busId);
+                    bus.setBusCode(busCode);
                     bus.setPlateNumber(plateNumber);
                     bus.setBusTypeId(busTypeId);
                     bus.setCapacity(capacity);

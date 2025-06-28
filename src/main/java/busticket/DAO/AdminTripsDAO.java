@@ -205,14 +205,14 @@ public class AdminTripsDAO extends DBContext {
     public AdminTrips getTripDetailById(int tripId) throws SQLException {
         String sql = "SELECT "
                 + "  t.trip_id, "
-                + "  t.route_id, " // << THÊM DÒNG NÀY
+                + "  t.route_id, "
                 + "  CONCAT(ls.location_name, N' → ', le.location_name) AS route, "
                 + "  ls.location_name AS startLocation, "
                 + "  le.location_name AS endLocation, "
                 + "  CAST(t.departure_time AS DATE) AS tripDate, "
                 + "  CONVERT(VARCHAR(5), t.departure_time, 108) AS tripTime, "
-                + "  r.estimated_time AS durationMinutes, "
-                + "  CONVERT(VARCHAR(5), DATEADD(MINUTE, r.estimated_time, t.departure_time), 108) AS arrivalTime, "
+                // BỎ: + "  r.estimated_time AS durationMinutes, "
+                // BỎ: + "  CONVERT(VARCHAR(5), DATEADD(MINUTE, r.estimated_time, t.departure_time), 108) AS arrivalTime, "
                 + "  bt.bus_type_name AS busType, "
                 + "  b.plate_number AS plateNumber, "
                 + "  b.capacity AS capacity, "
@@ -235,20 +235,31 @@ public class AdminTripsDAO extends DBContext {
                 if (rs.next()) {
                     AdminTrips detail = new AdminTrips();
                     detail.setTripId(rs.getInt("trip_id"));
-                    detail.setRouteId(rs.getInt("route_id")); // << THÊM DÒNG NÀY
+                    detail.setRouteId(rs.getInt("route_id"));
                     detail.setRoute(rs.getString("route"));
                     detail.setStartLocation(rs.getString("startLocation"));
                     detail.setEndLocation(rs.getString("endLocation"));
                     detail.setTripDate(rs.getDate("tripDate"));
                     detail.setTripTime(rs.getString("tripTime"));
-                    detail.setDuration(rs.getInt("durationMinutes"));
-                    detail.setArrivalTime(rs.getString("arrivalTime"));
+                    // Các trường còn lại
                     detail.setBusType(rs.getString("busType"));
                     detail.setPlateNumber(rs.getString("plateNumber"));
                     detail.setCapacity(rs.getInt("capacity"));
                     detail.setBookedSeats(rs.getInt("bookedSeats"));
                     detail.setDriver(rs.getString("driver"));
                     detail.setStatus(rs.getString("status"));
+
+                    // === TÍNH estimatedTime và arrivalTime DỰA VÀO ROUTE_STOPS ===
+                    AdminRoutesDAO routesDAO = new AdminRoutesDAO();
+                    int duration = routesDAO.getEstimatedTimeByRouteId(detail.getRouteId());
+                    detail.setDuration(duration); // phút
+
+                    // Tính arrivalTime
+                    String tripTime = detail.getTripTime(); // dạng "HH:mm"
+                    java.time.LocalTime time = java.time.LocalTime.parse(tripTime);
+                    java.time.LocalTime arrival = time.plusMinutes(duration);
+                    detail.setArrivalTime(arrival.toString().substring(0, 5)); // dạng "HH:mm"
+
                     return detail;
                 }
             }
@@ -431,5 +442,6 @@ public class AdminTripsDAO extends DBContext {
         }
         return list;
     }
+
 
 }

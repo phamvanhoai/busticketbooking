@@ -43,8 +43,24 @@
             </div>
             <div class="bg-white p-4 rounded-xl shadow">
                 <p class="text-xs text-gray-500">Duration</p>
-                <p class="font-semibold text-gray-800">${trip.duration}</p>
+                <p class="font-semibold text-gray-800">
+                    <c:set var="et" value="${trip.duration}" />
+                    <c:set var="h" value="${fn:substringBefore(et / 60, '.')}" />
+                    <c:set var="m" value="${et % 60}" />
+                    <c:choose>
+                        <c:when test="${h > 0 && m > 0}">
+                            ${h}h${m}m
+                        </c:when>
+                        <c:when test="${h > 0}">
+                            ${h}h
+                        </c:when>
+                        <c:otherwise>
+                            ${m}m
+                        </c:otherwise>
+                    </c:choose>
+                </p>
             </div>
+
             <div class="bg-white p-4 rounded-xl shadow">
                 <p class="text-xs text-gray-500">Driver</p>
                 <p class="font-semibold text-gray-800">${trip.driver}</p>
@@ -111,7 +127,7 @@
                 <c:forEach var="p" items="${passengers}">
                     <li class="py-3 flex justify-between items-center">
                         <span class="text-gray-700">${p.name}</span>
-                        <a href="${pageContext.request.contextPath}/admin/users?viewId=${p.user_id}"
+                        <a href="${pageContext.request.contextPath}/admin/users/view?id=${p.user_id}"
                            class="text-blue-600 text-sm hover:underline">View Profile</a>
                     </li>
                 </c:forEach>

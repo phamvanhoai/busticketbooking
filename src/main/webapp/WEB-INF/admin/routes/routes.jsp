@@ -59,6 +59,7 @@
                                     </c:otherwise>
                                 </c:choose>
                             </td>
+
                             <td class="py-2 px-4">${route.distanceKm} km</td>
                             <td class="px-4 py-3">
                                 <c:choose>

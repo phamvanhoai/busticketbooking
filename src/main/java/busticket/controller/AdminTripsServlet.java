@@ -84,12 +84,6 @@ public class AdminTripsServlet extends HttpServlet {
                         curTime = curTime.plusMinutes(stop.getTravelMinutes());
                     }
                     stopTimes.add(curTime.toString());
-
-                    // In log kiểm tra (optional)
-                    System.out.println("Stop " + stop.getStopNumber() + " (" + stop.getLocationId() + ")"
-                            + " | Đến lúc: " + curTime
-                            + " | travel: " + stop.getTravelMinutes()
-                            + " | dwell: " + stop.getDwellMinutes());
                 }
 
                 // Load danh sách hành khách
@@ -102,9 +96,6 @@ public class AdminTripsServlet extends HttpServlet {
                 // Đẩy thêm
                 request.setAttribute("stops", stops);
                 request.setAttribute("stopTimes", stopTimes);
-
-                System.out.println("routeId: " + routeId);
-                System.out.println("Stops size: " + stops.size());
                 for (AdminRouteStop s : stops) {
                     System.out.println(s.toString());
                 }

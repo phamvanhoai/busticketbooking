@@ -74,12 +74,10 @@ public class AdminRoutesServlet extends HttpServlet {
             if (editId != null) {
                 int routeId = Integer.parseInt(editId);
                 loadFormData(request, routeId);
-                // Lấy estimatedTime (phút) từ model
-                AdminRoutes route = adminRoutesDAO.getRouteById(routeId);
-                int totalMinutes = route.getEstimatedTime();
-                int hours = totalMinutes / 60;        // chia lấy phần nguyên
-                int minutes = totalMinutes % 60;        // phần dư
-
+                // Lấy estimatedTime từ route_stops
+                int totalMinutes = adminRoutesDAO.getEstimatedTimeByRouteId(routeId);
+                int hours = totalMinutes / 60;
+                int minutes = totalMinutes % 60;
                 request.setAttribute("routeHours", hours);
                 request.setAttribute("routeMinutes", minutes);
                 request.getRequestDispatcher("/WEB-INF/admin/routes/edit-route.jsp")
@@ -102,12 +100,10 @@ public class AdminRoutesServlet extends HttpServlet {
             if (detailId != null) {
                 int routeId = Integer.parseInt(detailId);
                 loadFormData(request, routeId);
-                // Lấy estimatedTime (phút) từ model
-                AdminRoutes route = adminRoutesDAO.getRouteById(routeId);
-                int totalMinutes = route.getEstimatedTime();
-                int hours = totalMinutes / 60;        // chia lấy phần nguyên
-                int minutes = totalMinutes % 60;        // phần dư
-
+                // Lấy estimatedTime từ route_stops
+                int totalMinutes = adminRoutesDAO.getEstimatedTimeByRouteId(routeId);
+                int hours = totalMinutes / 60;
+                int minutes = totalMinutes % 60;
                 request.setAttribute("routeHours", hours);
                 request.setAttribute("routeMinutes", minutes);
                 request.getRequestDispatcher("/WEB-INF/admin/routes/view-route-details.jsp")
@@ -157,9 +153,6 @@ public class AdminRoutesServlet extends HttpServlet {
                     r.setStartLocationId(Integer.parseInt(request.getParameter("startLocationId")));
                     r.setEndLocationId(Integer.parseInt(request.getParameter("endLocationId")));
                     r.setDistanceKm(Double.parseDouble(request.getParameter("distance")));
-                    int h = Integer.parseInt(request.getParameter("hours"));
-                    int m = Integer.parseInt(request.getParameter("minutes"));
-                    r.setEstimatedTime(h * 60 + m);
                     r.setRouteStatus(request.getParameter("routeStatus"));
                     int routeId = adminRoutesDAO.createRoute(r);
 
@@ -230,9 +223,6 @@ public class AdminRoutesServlet extends HttpServlet {
                     route.setStartLocationId(Integer.parseInt(request.getParameter("startLocationId")));
                     route.setEndLocationId(Integer.parseInt(request.getParameter("endLocationId")));
                     route.setDistanceKm(Double.parseDouble(request.getParameter("distance")));
-                    int hours = Integer.parseInt(request.getParameter("hours"));
-                    int minutes = Integer.parseInt(request.getParameter("minutes"));
-                    route.setEstimatedTime(hours * 60 + minutes);
                     route.setRouteStatus(request.getParameter("routeStatus"));
                     adminRoutesDAO.updateRoute(route);
 

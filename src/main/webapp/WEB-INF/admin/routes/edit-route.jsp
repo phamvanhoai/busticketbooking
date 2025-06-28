@@ -52,20 +52,6 @@
                        required value="${route.distanceKm}" />
             </div>
 
-            <!-- Estimated Time -->
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block mb-1 font-medium">Hours</label>
-                    <input type="number" name="hours" min="0" class="w-full border rounded-lg px-4 py-2"
-                           required value="${routeHours}" />
-                </div>
-                <div>
-                    <label class="block mb-1 font-medium">Minutes</label>
-                    <input type="number" name="minutes" min="0" max="59" class="w-full border rounded-lg px-4 py-2"
-                           required value="${routeMinutes}" />
-                </div>
-            </div>
-
             <!-- Status -->
             <div>
                 <label class="block mb-1 font-medium">Status</label>
