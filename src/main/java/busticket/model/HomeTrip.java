@@ -29,6 +29,13 @@ public class HomeTrip {
     private String startLocation;
     private String endLocation;
     
+    
+    private int busTypeId;
+    private int rowsDown;
+    private int colsDown;
+    private int rowsUp;
+    private int colsUp;
+    
     public HomeTrip(int tripId, String origin, String destination,
                     Date tripDate, String tripTime, int duration,
                     String arrivalTime, String busType,
@@ -69,7 +76,49 @@ public class HomeTrip {
         this.bookedSeats  = bookedSeats;
     }
 
+    public int getBusTypeId() {
+        return busTypeId;
+    }
 
+    public void setBusTypeId(int busTypeId) {
+        this.busTypeId = busTypeId;
+    }
+
+    public int getRowsDown() {
+        return rowsDown;
+    }
+
+    public void setRowsDown(int rowsDown) {
+        this.rowsDown = rowsDown;
+    }
+
+    public int getColsDown() {
+        return colsDown;
+    }
+
+    public void setColsDown(int colsDown) {
+        this.colsDown = colsDown;
+    }
+
+    public int getRowsUp() {
+        return rowsUp;
+    }
+
+    public void setRowsUp(int rowsUp) {
+        this.rowsUp = rowsUp;
+    }
+
+    public int getColsUp() {
+        return colsUp;
+    }
+
+    public void setColsUp(int colsUp) {
+        this.colsUp = colsUp;
+    }
+
+
+    
+    
     public String getStartLocation() {
         return startLocation;
     }
