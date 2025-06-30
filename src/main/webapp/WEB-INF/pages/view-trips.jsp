@@ -168,6 +168,7 @@
                         <c:forEach items="${trips}" var="trip" varStatus="st">
                             <div class="card bg-white rounded-xl border border-gray-200 shadow overflow-hidden"
                                  data-trip-id="${trip.tripId}"
+                                 data-price="${trip.price}"
                                  data-bus-type-id="${trip.busTypeId}"
                                  data-rows-down="${trip.rowsDown}" data-cols-down="${trip.colsDown}"
                                  data-rows-up="${trip.rowsUp}"     data-cols-up="${trip.colsUp}">
@@ -222,7 +223,25 @@
                                             <div class="seat-grid-up flex gap-2 mb-4"></div>
                                         </div>
                                     </div>
+
+                                    <!--Display the number of tickets and total amount -->
+                                    <div class="flex flex-col gap-2 mt-4">
+                                        <p class="font-semibold text-gray-800 ticket-count">0 Ticket(s)</p>
+                                        <p class="text-sm text-gray-600 selected-seats">No seat selected</p>  
+                                    </div>
+
+                                    <!-- Display total amount -->
+                                    <div class="flex justify-between items-center mt-4 text-lg font-bold text-orange-500">
+                                        <span>Total amount</span>
+                                        <span class="total-amount">0₫</span>  
+                                    </div>
+
+                                    <!-- Choose button -->
+                                    <button class="choose-btn mt-4 bg-orange-500 text-white px-8 py-2 rounded-full disabled:opacity-50" disabled>
+                                        Choose
+                                    </button>
                                 </div>
+
 
 
                             </div>
@@ -236,48 +255,66 @@
         </div>
     </div>
 
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // build đường dẫn ảnh bằng JS
             const activeIcon = `${pageContext.servletContext.contextPath}/assets/images/icons/seat_active.svg`;
             const disabledIcon = `${pageContext.servletContext.contextPath}/assets/images/icons/seat_disabled.svg`;
+            const selectingIcon = `${pageContext.servletContext.contextPath}/assets/images/icons/seat_selecting.svg`;
 
             const ajaxBase = '${pageContext.servletContext.contextPath}/view-trips?ajax=seats';
 
+            // Lặp qua từng card/chuyến xe
             document.querySelectorAll('.card').forEach(card => {
+                // Tạo biến state riêng cho từng card
+                let selectedSeats = [];
+
                 const tripId = card.dataset.tripId;
+                const tripPrice = Number(card.dataset.price) || 0;
                 const busTypeId = card.dataset.busTypeId;
                 const rowsDown = +card.dataset.rowsDown;
                 const colsDown = +card.dataset.colsDown;
                 const rowsUp = +card.dataset.rowsUp;
                 const colsUp = +card.dataset.colsUp;
 
+                // Select các phần tử bên trong card này
                 const seatBtn = card.querySelector('[data-tab="seat"]');
-
-                const seatPanel = card.querySelector('.tab-content[data-content="seat"]'); // ← đây
+                const seatPanel = card.querySelector('.tab-content[data-content="seat"]');
                 const downWrap = card.querySelector('.seat-grid-down');
                 const upWrap = card.querySelector('.seat-grid-up');
+                
+
+                const selectedSeatsDisplay = card.querySelector('.selected-seats');
+                const totalAmountDisplay = card.querySelector('.total-amount');
+                const ticketCountDisplay = card.querySelector('.ticket-count');
+                const chooseButton = card.querySelector('.choose-btn');
+
+                if (!selectedSeatsDisplay || !totalAmountDisplay || !ticketCountDisplay || !chooseButton) {
+                    console.error("Các phần tử DOM cần thiết không được tìm thấy trong card.");
+                    return;
+                }
 
                 seatBtn.addEventListener('click', async e => {
                     e.stopPropagation();
-                    // ← thêm kiểm tra toggle:
                     if (!seatPanel.classList.contains('hidden')) {
                         seatPanel.classList.add('hidden');
                         return;
                     }
 
-                    // Ẩn các tab khác rồi mở đúng panel seat
+                    // Ẩn các panel khác trong card
                     card.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
                     seatPanel.classList.remove('hidden');
 
+                    // Lấy danh sách ghế qua AJAX
                     const url = ajaxBase
                             + '&busTypeId=' + encodeURIComponent(busTypeId)
                             + '&tripId=' + encodeURIComponent(tripId);
 
                     const res = await fetch(url);
-                    if (!res.ok)
-                        return console.error('Lấy ghế thất bại:', res.statusText);
+                    if (!res.ok) {
+                        console.error('Lấy ghế thất bại:', res.statusText);
+                        return;
+                    }
+
                     const {down, up} = await res.json();
 
                     function renderGrid(container, seats, rows, cols) {
@@ -290,14 +327,39 @@
                                 cell.classList.add('w-8', 'h-8', 'flex', 'items-center', 'justify-center');
                                 const seat = seats.find(s => s.row === r && s.col === c);
                                 if (seat && seat.code) {
-                                    const icon = seat.booked ? disabledIcon : activeIcon;
+                                    let icon = seat.booked ? disabledIcon : activeIcon;
+
+                                    if (selectedSeats.includes(seat.code)) {
+                                        icon = selectingIcon;
+                                        cell.classList.add('border-2', 'border-blue-500');
+                                    }
+
+                                    // --- GIỮ NGUYÊN ---
                                     cell.innerHTML =
                                             '<div class="relative w-full h-full">' +
-                                            '<img src="' + icon + '" alt="Seat ' + seat.code + '" class="w-full h-full"/>' +
+                                            '<img src="' + icon + '" alt="Seat ' + seat.code + '" class="w-full h-full seat-icon" data-seat="' + seat.code + '" />' +
                                             '<span class="absolute inset-0 flex items-center justify-center text-xs font-medium text-blue-800">' +
                                             seat.code +
                                             '</span>' +
                                             '</div>';
+                                    // -----------------
+
+                                    cell.addEventListener('click', () => {
+                                        if (seat.booked)
+                                            return;
+
+                                        if (selectedSeats.includes(seat.code)) {
+                                            selectedSeats = selectedSeats.filter(s => s !== seat.code); // Unselect
+                                        } else {
+                                            selectedSeats.push(seat.code); // Select
+                                        }
+
+                                        renderGrid(downWrap, down, rowsDown, colsDown);
+                                        renderGrid(upWrap, up, rowsUp, colsUp);
+                                        updateSelectionDisplay();
+                                        updateTotalAmount();
+                                        toggleChooseButton();
+                                    });
                                 }
                                 colDiv.appendChild(cell);
                             }
@@ -305,12 +367,35 @@
                         }
                     }
 
+                    // Update ghế đã chọn
+                    function updateSelectionDisplay() {
+                        selectedSeatsDisplay.textContent = selectedSeats.length > 0 ? selectedSeats.join(', ') : 'No seat selected';
+                        ticketCountDisplay.textContent = `${selectedSeats.length} Ticket(s)`;
+                    }
+
+                    // Update tổng tiền (giá cứng, bạn có thể lấy từ biến JS nếu cần)
+                    function updateTotalAmount() {
+                        const selectedSeatsCount = selectedSeats.length;
+                        const totalAmount = selectedSeatsCount * tripPrice;
+                        totalAmountDisplay.textContent = `${totalAmount.toLocaleString()}₫`;
+                    }
+
+                    // Bật/tắt nút chọn
+                    function toggleChooseButton() {
+                        chooseButton.disabled = selectedSeats.length === 0;
+                    }
+
+                    // Lần đầu render seat
                     renderGrid(downWrap, down, rowsDown, colsDown);
                     renderGrid(upWrap, up, rowsUp, colsUp);
+                    updateSelectionDisplay();
+                    updateTotalAmount();
+                    toggleChooseButton();
                 });
             });
         });
     </script>
+
 
 
 
