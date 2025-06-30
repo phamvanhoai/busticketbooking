@@ -5,6 +5,7 @@
 package busticket.DAO;
 
 import busticket.db.DBContext;
+import busticket.model.AdminRouteStop;
 import busticket.model.AdminSeatPosition;
 import busticket.model.HomeTrip;
 import java.math.BigDecimal;
@@ -245,4 +246,36 @@ public class HomeViewTripsDAO extends DBContext {
         }
         return booked;
     }
+
+    public List<AdminRouteStop> getRouteStopsForTrip(int tripId) {
+        List<AdminRouteStop> routeStops = new ArrayList<>();
+        String sql = "SELECT rs.route_stop_number, ls.location_name, rs.route_stop_dwell_minutes, rs.travel_minutes, l.address "
+                + "FROM Route_Stops rs "
+                + "JOIN Locations ls ON rs.location_id = ls.location_id "
+                + "JOIN Routes r ON rs.route_id = r.route_id "
+                + "JOIN Locations l ON r.start_location_id = l.location_id "
+                + "WHERE rs.route_id = (SELECT route_id FROM Trips WHERE trip_id = ?) "
+                + "ORDER BY rs.route_stop_number";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, tripId);  // Truyền tripId vào để lấy đúng RouteStops
+
+            try ( ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    AdminRouteStop stop = new AdminRouteStop();
+                    stop.setStopNumber(rs.getInt("route_stop_number"));
+                    stop.setLocationName(rs.getString("location_name"));
+                    stop.setDwellMinutes(rs.getInt("route_stop_dwell_minutes"));
+                    stop.setTravelMinutes(rs.getInt("travel_minutes"));
+                    stop.setAddress(rs.getString("address"));
+                    routeStops.add(stop);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error retrieving route stops", e);
+        }
+        return routeStops;
+    }
+
 }

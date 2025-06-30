@@ -282,6 +282,45 @@
                                     </button>
                                 </div>
 
+                                <div class="tab-content hidden p-4 border-t" data-content="schedule">
+                                    <!-- Route Stops: Full List -->
+                                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Route Stops</h2>
+                                    <div class="space-y-6">
+                                        <c:if test="${empty trip.routeStops}">
+                                            <div class="p-4 bg-red-100 text-red-700 rounded mb-4">
+                                                Không có dữ liệu Route Stops (stops rỗng/null)!<br>
+                                                Hãy kiểm tra lại Controller truyền stops xuống.
+                                            </div>
+                                        </c:if>
+                                        <c:forEach var="stop" items="${trip.routeStops}" varStatus="status">
+                                            <div class="flex items-start">
+                                                <div class="flex flex-col items-center">
+                                                    <div class="w-3 h-3
+                                                         <c:choose>
+                                                             <c:when test="${status.first}">bg-orange-500</c:when>
+                                                             <c:when test="${status.last}">bg-gray-400</c:when>
+                                                             <c:otherwise>bg-green-400</c:otherwise>
+                                                         </c:choose>
+                                                         rounded-full mt-1"></div>
+                                                    <c:if test="${!status.last}">
+                                                        <div class="flex-1 border-l-2 border-gray-200"></div>
+                                                    </c:if>
+                                                </div>
+                                                <div class="ml-4">
+                                                    <p class="font-medium text-gray-800">
+                                                        ${stopTimes[status.index]} – ${stop.locationName}
+                                                    </p>
+                                                    <p class="text-sm text-gray-500">
+                                                        ${stop.address}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </c:forEach>
+                                    </div>
+                                </div>
+
+
+
 
 
                             </div>
@@ -321,10 +360,6 @@
                 // Hoán đổi giá trị
                 originSelect.value = destinationValue;
                 destinationSelect.value = originValue;
-
-                // Nếu cần, bạn có thể gửi form lại hoặc xử lý logic khác ở đây
-                // Nếu bạn muốn tự động gửi lại form khi switch, có thể làm như sau:
-                // originSelect.form.submit();  // Gửi form
             });
 
 
@@ -353,7 +388,9 @@
                 const colsUp = +card.dataset.colsUp;
 
                 const seatBtn = card.querySelector('[data-tab="seat"]');
+                const scheduleBtn = card.querySelector('[data-tab="schedule"]');
                 const seatPanel = card.querySelector('.tab-content[data-content="seat"]');
+                const schedulePanel = card.querySelector('.tab-content[data-content="schedule"]');
                 const downWrap = card.querySelector('.seat-grid-down');
                 const upWrap = card.querySelector('.seat-grid-up');
 
@@ -366,6 +403,11 @@
                     console.error("Các phần tử DOM cần thiết không được tìm thấy trong card.");
                     return;
                 }
+
+                scheduleBtn.addEventListener('click', () => {
+                    schedulePanel.classList.toggle('hidden');
+                    seatPanel.classList.add('hidden'); // Hide seat when schedule tab is clicked
+                });
 
                 seatBtn.addEventListener('click', async e => {
                     e.stopPropagation();

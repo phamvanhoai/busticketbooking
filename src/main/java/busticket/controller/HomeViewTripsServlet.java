@@ -5,6 +5,7 @@
 package busticket.controller;
 
 import busticket.DAO.HomeViewTripsDAO;
+import busticket.model.AdminRouteStop;
 import busticket.model.AdminSeatPosition;
 import busticket.model.HomeTrip;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,6 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -110,7 +112,6 @@ public class HomeViewTripsServlet extends HttpServlet {
         int offset = (currentPage - 1) * requestsPerPage;
 
         // Gọi DAO để lấy danh sách chuyến đi và phân trang
-
         List<String> locations = homeViewTripsDAO.getAllLocations();
         request.setAttribute("locations", locations);
 
@@ -132,6 +133,30 @@ public class HomeViewTripsServlet extends HttpServlet {
                 offset,
                 requestsPerPage
         );
+
+        // Lấy các điểm dừng cho từng chuyến đi
+        for (HomeTrip trip : trips) {
+            int tripId = trip.getTripId();
+            List<AdminRouteStop> stops = homeViewTripsDAO.getRouteStopsForTrip(tripId);
+
+            // Tính toán giờ đến cho từng điểm dừng
+            List<String> stopTimes = new ArrayList<>();
+            LocalTime curTime = LocalTime.parse(trip.getTripTime()); // tripTime kiểu HH:mm
+
+            for (int i = 0; i < stops.size(); i++) {
+                AdminRouteStop stop = stops.get(i);
+                // Stop đầu lấy giờ xuất phát
+                if (i > 0) {
+                    // Cộng travelMinutes, dwell chỉ cộng nếu muốn tính giờ rời
+                    curTime = curTime.plusMinutes(stop.getTravelMinutes());
+                }
+                stopTimes.add(curTime.toString()); // Tính toán giờ đến và lưu vào stopTimes
+            }
+
+            // Set các thông tin của stops và stopTimes vào trip
+            trip.setRouteStops(stops);
+            trip.setStopTimes(stopTimes);  // Gán stopTimes vào trip
+        }
 
         // Tổng số chuyến đi và tổng số trang
         int totalTrips = homeViewTripsDAO.countTrips(origin, destination, date, ticketCount);
