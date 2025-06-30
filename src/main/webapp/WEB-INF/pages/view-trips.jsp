@@ -9,9 +9,46 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib prefix="fbus" uri="/WEB-INF/tags/implicit.tld" %>
 
 
 <%@include file="/WEB-INF/include/banner.jsp" %>
+
+<c:set var="baseUrl" value="${pageContext.request.contextPath}/view-trips" />
+
+<!-- Thêm tham số 'origin' nếu có -->
+<c:if test="${not empty param.origin}">
+    <c:set var="baseUrl" value="${baseUrl}?origin=${fn:escapeXml(param.origin)}"/>
+</c:if>
+
+<!-- Thêm tham số 'destination' nếu có -->
+<c:if test="${not empty param.destination}">
+    <c:set var="baseUrl"
+           value="${baseUrl}${param.origin != null ? '&' : '?'}destination=${fn:escapeXml(param.destination)}"/>
+</c:if>
+
+<!-- Thêm tham số 'departureDate' nếu có -->
+<c:if test="${not empty param.departureDate}">
+    <c:set var="baseUrl"
+           value="${baseUrl}${(param.origin != null || param.destination != null) ? '&' : '?'}departureDate=${fn:escapeXml(param.departureDate)}"/>
+</c:if>
+
+<!-- Thêm tham số 'ticket' nếu có -->
+<c:if test="${not empty param.ticket}">
+    <c:set var="baseUrl"
+           value="${baseUrl}${(param.origin != null || param.destination != null || param.departureDate != null) ? '&' : '?'}ticket=${fn:escapeXml(param.ticket)}"/>
+</c:if>
+
+<!-- Thêm tham số 'page' cho phân trang, kiểm tra nếu tham số 'page' không tồn tại trong URL -->
+<c:if test="${empty param.page}">
+    <c:set var="baseUrl"
+           value="${baseUrl}${(param.origin != null || param.destination != null || param.departureDate != null || param.ticket != null) ? '&' : '?'}page=${currentPage}"/>
+</c:if>
+
+<!-- Đảm bảo URL có đầy đủ tham số phân trang -->
+
+
+
 <style>
     /* Ẩn tất cả panels Your Trip mặc định */
     .your-trip > div {
@@ -48,7 +85,7 @@
                     <div class="relative flex gap-6 w-full">
                         <div class="flex-1">
                             <label class="block text-base font-semibold text-[#ef5222] mb-2">Origin</label>
-                            <select name="origin" class="w-full h-14 border-2 border-[#ef5222] rounded-xl px-6">
+                            <select name="origin" id="origin" class="w-full h-14 border-2 border-[#ef5222] rounded-xl px-6">
                                 <option value="">Select origin</option>
                                 <c:forEach var="loc" items="${locations}">
                                     <option value="${loc}" <c:if test="${param.origin == loc}">selected</c:if>>${loc}</option>
@@ -56,11 +93,11 @@
                             </select>
                         </div>
                         <div class="absolute top-[60px] left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 rotate-180">
-                            <img src="${pageContext.request.contextPath}/assets/images/icons/switch_location.svg" alt="switch" class="w-12 h-12" />
+                            <img id="switch-icon" src="${pageContext.request.contextPath}/assets/images/icons/switch_location.svg" alt="switch" class="w-12 h-12" />
                         </div>
                         <div class="flex-1">
                             <label class="block text-base font-semibold text-[#ef5222] mb-2">Destination</label>
-                            <select name="destination" class="w-full h-14 border-2 border-[#ef5222] rounded-xl px-6">
+                            <select name="destination" id="destination" class="w-full h-14 border-2 border-[#ef5222] rounded-xl px-6">
                                 <option value="">Select destination</option>
                                 <c:forEach var="loc" items="${locations}">
                                     <option value="${loc}" <c:if test="${param.destination == loc}">selected</c:if>>${loc}</option>
@@ -76,19 +113,22 @@
                             <input type="date" name="departureDate" value="${param.departureDate}" 
                                    class="w-full h-14 border-2 border-[#ef5222] rounded-xl px-6 text-lg font-medium bg-white focus:border-[#fc7b4c] focus:ring-4 focus:ring-orange-100 transition-all duration-300 appearance-none hover:shadow-md" />
                         </div>
+
+                        <!-- Tickets -->
                         <div class="flex-1 relative">
                             <label class="block text-base font-semibold text-[#ef5222] mb-2">Tickets</label>
-                            <select name="tickets" class="w-full h-14 border-2 border-[#ef5222] rounded-xl px-6">
-                                <c:forEach begin="1" end="8" var="i">
-                                    <option value="${i}" <c:if test="${param.tickets == i}">selected</c:if>>${i}</option>
-                                </c:forEach>
-                            </select>
-                            <span class="absolute top-1/2 right-3 -translate-y-1/2 pointer-events-none">
-                                <img src="${pageContext.request.contextPath}/assets/images/icons/arrow_down_select.svg" alt="dropdown" class="w-8 h-8" />
-                            </span>
+                            <div class="relative">
+                                <select name="ticket" class="w-full h-14 border-2 border-[#ef5222] rounded-xl px-6 text-lg font-medium bg-white focus:border-[#fc7b4c] focus:ring-4 focus:ring-orange-100 transition-all duration-300 appearance-none hover:shadow-md">
+                                    <c:forEach begin="1" end="8" var="i">
+                                        <option value="${i}" <c:if test="${param.tickets == i}">selected</c:if>>${i}</option>
+                                    </c:forEach>
+                                </select>
+                                <span class="absolute top-1/2 right-3 -translate-y-1/2 pointer-events-none">
+                                    <img src="${pageContext.request.contextPath}/assets/images/icons/arrow_down_select.svg" alt="dropdown" class="w-8 h-8" />
+                                </span>
+                            </div>
                         </div>
                     </div>
-
                 </div>
                 <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
                     <button type="submit" 
@@ -168,7 +208,7 @@
                         <c:forEach items="${trips}" var="trip" varStatus="st">
                             <div class="card bg-white rounded-xl border border-gray-200 shadow overflow-hidden"
                                  data-trip-id="${trip.tripId}"
-                                 data-price="${trip.price}"
+                                 data-price="${trip.price != null ? trip.price : 0}"
                                  data-bus-type-id="${trip.busTypeId}"
                                  data-rows-down="${trip.rowsDown}" data-cols-down="${trip.colsDown}"
                                  data-rows-up="${trip.rowsUp}"     data-cols-up="${trip.colsUp}">
@@ -233,7 +273,7 @@
                                     <!-- Display total amount -->
                                     <div class="flex justify-between items-center mt-4 text-lg font-bold text-orange-500">
                                         <span>Total amount</span>
-                                        <span class="total-amount">0₫</span>  
+                                        <span class="total-amount">0₫</span>
                                     </div>
 
                                     <!-- Choose button -->
@@ -253,35 +293,69 @@
                 </c:choose>
             </div>
         </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <fbus:adminpagination
+                currentPage="${currentPage}"
+                totalPages="${totalPages}"
+                url="${baseUrl}" />
+        </div>
+
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+
+
+            const switchIcon = document.getElementById('switch-icon');
+            const originSelect = document.getElementById('origin');
+            const destinationSelect = document.getElementById('destination');
+
+            // Lắng nghe sự kiện khi nhấn vào icon switch
+            switchIcon.addEventListener('click', () => {
+                // Lấy giá trị hiện tại của origin và destination
+                const originValue = originSelect.value;
+                const destinationValue = destinationSelect.value;
+
+                // Hoán đổi giá trị
+                originSelect.value = destinationValue;
+                destinationSelect.value = originValue;
+
+                // Nếu cần, bạn có thể gửi form lại hoặc xử lý logic khác ở đây
+                // Nếu bạn muốn tự động gửi lại form khi switch, có thể làm như sau:
+                // originSelect.form.submit();  // Gửi form
+            });
+
+
             const activeIcon = `${pageContext.servletContext.contextPath}/assets/images/icons/seat_active.svg`;
             const disabledIcon = `${pageContext.servletContext.contextPath}/assets/images/icons/seat_disabled.svg`;
             const selectingIcon = `${pageContext.servletContext.contextPath}/assets/images/icons/seat_selecting.svg`;
 
             const ajaxBase = '${pageContext.servletContext.contextPath}/view-trips?ajax=seats';
 
-            // Lặp qua từng card/chuyến xe
             document.querySelectorAll('.card').forEach(card => {
-                // Tạo biến state riêng cho từng card
                 let selectedSeats = [];
 
                 const tripId = card.dataset.tripId;
-                const tripPrice = Number(card.dataset.price) || 0;
+                let tripPrice = Number(card.dataset.price);
+
+                // Kiểm tra giá trị tripPrice hợp lệ
+                if (tripPrice <= 0) {
+                    console.warn("Giá vé không hợp lệ, sử dụng giá mặc định.");
+                    tripPrice = 245000;  // Giá mặc định (nếu cần)
+                }
+
                 const busTypeId = card.dataset.busTypeId;
                 const rowsDown = +card.dataset.rowsDown;
                 const colsDown = +card.dataset.colsDown;
                 const rowsUp = +card.dataset.rowsUp;
                 const colsUp = +card.dataset.colsUp;
 
-                // Select các phần tử bên trong card này
                 const seatBtn = card.querySelector('[data-tab="seat"]');
                 const seatPanel = card.querySelector('.tab-content[data-content="seat"]');
                 const downWrap = card.querySelector('.seat-grid-down');
                 const upWrap = card.querySelector('.seat-grid-up');
-                
 
                 const selectedSeatsDisplay = card.querySelector('.selected-seats');
                 const totalAmountDisplay = card.querySelector('.total-amount');
@@ -300,15 +374,10 @@
                         return;
                     }
 
-                    // Ẩn các panel khác trong card
                     card.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
                     seatPanel.classList.remove('hidden');
 
-                    // Lấy danh sách ghế qua AJAX
-                    const url = ajaxBase
-                            + '&busTypeId=' + encodeURIComponent(busTypeId)
-                            + '&tripId=' + encodeURIComponent(tripId);
-
+                    const url = ajaxBase + '&busTypeId=' + encodeURIComponent(busTypeId) + '&tripId=' + encodeURIComponent(tripId);
                     const res = await fetch(url);
                     if (!res.ok) {
                         console.error('Lấy ghế thất bại:', res.statusText);
@@ -331,34 +400,30 @@
 
                                     if (selectedSeats.includes(seat.code)) {
                                         icon = selectingIcon;
-                                        cell.classList.add('border-2', 'border-blue-500');
+                                        cell.classList.add('text-orange-600');
                                     }
 
-                                    // --- GIỮ NGUYÊN ---
                                     cell.innerHTML =
                                             '<div class="relative w-full h-full">' +
                                             '<img src="' + icon + '" alt="Seat ' + seat.code + '" class="w-full h-full seat-icon" data-seat="' + seat.code + '" />' +
-                                            '<span class="absolute inset-0 flex items-center justify-center text-xs font-medium text-blue-800">' +
-                                            seat.code +
-                                            '</span>' +
+                                            '<span class="absolute inset-0 flex items-center justify-center text-xs font-medium ">' + seat.code + '</span>' +
                                             '</div>';
-                                    // -----------------
 
                                     cell.addEventListener('click', () => {
                                         if (seat.booked)
                                             return;
-
                                         if (selectedSeats.includes(seat.code)) {
-                                            selectedSeats = selectedSeats.filter(s => s !== seat.code); // Unselect
+                                            selectedSeats = selectedSeats.filter(s => s !== seat.code);
                                         } else {
-                                            selectedSeats.push(seat.code); // Select
+                                            selectedSeats.push(seat.code);
                                         }
 
-                                        renderGrid(downWrap, down, rowsDown, colsDown);
-                                        renderGrid(upWrap, up, rowsUp, colsUp);
+                                        cell.querySelector('.seat-icon').src = selectedSeats.includes(seat.code) ? selectingIcon : activeIcon;
+                                        cell.classList.toggle('text-orange-600', selectedSeats.includes(seat.code));
+
                                         updateSelectionDisplay();
-                                        updateTotalAmount();
                                         toggleChooseButton();
+                                        updateTotalAmount();
                                     });
                                 }
                                 colDiv.appendChild(cell);
@@ -367,33 +432,50 @@
                         }
                     }
 
-                    // Update ghế đã chọn
                     function updateSelectionDisplay() {
                         selectedSeatsDisplay.textContent = selectedSeats.length > 0 ? selectedSeats.join(', ') : 'No seat selected';
                         ticketCountDisplay.textContent = `${selectedSeats.length} Ticket(s)`;
                     }
 
-                    // Update tổng tiền (giá cứng, bạn có thể lấy từ biến JS nếu cần)
-                    function updateTotalAmount() {
-                        const selectedSeatsCount = selectedSeats.length;
-                        const totalAmount = selectedSeatsCount * tripPrice;
-                        totalAmountDisplay.textContent = `${totalAmount.toLocaleString()}₫`;
+                    function formatNumber(number) {
+                        return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
                     }
 
-                    // Bật/tắt nút chọn
+                    function updateTotalAmount() {
+
+
+                        const selectedSeatsCount = selectedSeats.length;
+
+                        const totalAmount = selectedSeatsCount * tripPrice;
+
+                        const formattedAmount = formatNumber(totalAmount);
+                        let finalText;
+                        if (selectedSeatsCount > 0) {
+                            finalText = formattedAmount + '₫'; // Tách biệt việc nối chuỗi
+                        } else {
+                            finalText = '0₫';
+                        }
+
+                        totalAmountDisplay.textContent = finalText;
+
+
+                    }
+
+
                     function toggleChooseButton() {
                         chooseButton.disabled = selectedSeats.length === 0;
                     }
 
-                    // Lần đầu render seat
                     renderGrid(downWrap, down, rowsDown, colsDown);
                     renderGrid(upWrap, up, rowsUp, colsUp);
                     updateSelectionDisplay();
-                    updateTotalAmount();
                     toggleChooseButton();
+
+                    updateTotalAmount();
                 });
             });
         });
+
     </script>
 
 

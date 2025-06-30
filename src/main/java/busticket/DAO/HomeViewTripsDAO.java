@@ -38,7 +38,7 @@ public class HomeViewTripsDAO extends DBContext {
         return locations;
     }
 
-    public List<HomeTrip> getTrips(String origin, String destination, Date date) {
+    public List<HomeTrip> getTrips(String origin, String destination, Date date, Integer ticketCount, int offset, int limit) {
         List<HomeTrip> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
                 "SELECT "
@@ -82,6 +82,14 @@ public class HomeViewTripsDAO extends DBContext {
         if (date != null) {
             sql.append(" AND CAST(t.departure_time AS date) = ?");
         }
+        if (ticketCount != null && ticketCount >= 0) {
+            sql.append(" AND (b.capacity - (SELECT COUNT(*) "
+                    + "     FROM Tickets tk "
+                    + "    WHERE tk.trip_id = t.trip_id AND tk.ticket_status = 'Booked')) >= ?");
+        }
+
+        sql.append(" ORDER BY t.trip_id ASC ")
+                .append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
 
         try ( PreparedStatement ps = getConnection().prepareStatement(sql.toString())) {
             int idx = 1;
@@ -94,6 +102,11 @@ public class HomeViewTripsDAO extends DBContext {
             if (date != null) {
                 ps.setDate(idx++, date);
             }
+            if (ticketCount != null && ticketCount > 0) {
+                ps.setInt(idx++, ticketCount);
+            }
+            ps.setInt(idx++, offset);
+            ps.setInt(idx++, limit);
 
             try ( ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -133,6 +146,58 @@ public class HomeViewTripsDAO extends DBContext {
             throw new RuntimeException(e);
         }
         return list;
+    }
+
+// Phương thức đếm tổng số chuyến đi
+    public int countTrips(String origin, String destination, Date date, Integer ticketCount) {
+        StringBuilder sql = new StringBuilder(
+                "SELECT COUNT(*) AS total FROM Trips t "
+                + "JOIN Routes r ON t.route_id = r.route_id "
+                + "JOIN Locations ls ON r.start_location_id = ls.location_id "
+                + "JOIN Locations le ON r.end_location_id = le.location_id "
+                + "JOIN Buses b ON t.bus_id = b.bus_id "
+                + "JOIN Bus_Types bt ON b.bus_type_id = bt.bus_type_id "
+                + "WHERE t.departure_time > GETDATE()"
+        );
+        if (origin != null) {
+            sql.append(" AND ls.location_name = ?");
+        }
+        if (destination != null) {
+            sql.append(" AND le.location_name = ?");
+        }
+        if (date != null) {
+            sql.append(" AND CAST(t.departure_time AS date) = ?");
+        }
+        if (ticketCount != null && ticketCount >= 0) {
+            sql.append(" AND (b.capacity - (SELECT COUNT(*) "
+                    + "     FROM Tickets tk "
+                    + "    WHERE tk.trip_id = t.trip_id AND tk.ticket_status = 'Booked')) >= ?");
+        }
+
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql.toString())) {
+            int idx = 1;
+            if (origin != null) {
+                ps.setString(idx++, origin);
+            }
+            if (destination != null) {
+                ps.setString(idx++, destination);
+            }
+            if (date != null) {
+                ps.setDate(idx++, date);
+            }
+            if (ticketCount != null && ticketCount > 0) {
+                ps.setInt(idx++, ticketCount);
+            }
+
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("total");
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return 0;
     }
 
     public List<AdminSeatPosition> getSeatPositions(int busTypeId, String zone) throws SQLException {

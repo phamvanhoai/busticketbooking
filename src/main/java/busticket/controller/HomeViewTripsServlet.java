@@ -62,14 +62,16 @@ public class HomeViewTripsServlet extends HttpServlet {
                     m.put("code", s.getCode());
                     m.put("booked", booked.contains(s.getCode()));
                     downJson.add(m);
-                }   for (AdminSeatPosition s : up) {
+                }
+                for (AdminSeatPosition s : up) {
                     Map<String, Object> m = new HashMap<>();
                     m.put("row", s.getRow());
                     m.put("col", s.getCol());
                     m.put("code", s.getCode());
                     m.put("booked", booked.contains(s.getCode()));
                     upJson.add(m);
-                }   Map<String, Object> result = new HashMap<>();
+                }
+                Map<String, Object> result = new HashMap<>();
                 result.put("down", downJson);
                 result.put("up", upJson);
                 response.setContentType("application/json;charset=UTF-8");
@@ -84,31 +86,65 @@ public class HomeViewTripsServlet extends HttpServlet {
         String origin = request.getParameter("origin");
         String destination = request.getParameter("destination");
         String depDate = request.getParameter("departureDate");
+        String ticketCountParam = request.getParameter("ticket");
+        Integer ticketCount = ticketCountParam != null && !ticketCountParam.isEmpty() ? Integer.parseInt(ticketCountParam) : null;
         Date date = null;
         if (depDate != null && !depDate.trim().isEmpty()) {
             date = Date.valueOf(depDate);
         }
 
+        // Xử lý phân trang
+        int requestsPerPage = 10; // Số lượng chuyến đi hiển thị trên mỗi trang
+        int currentPage = 1; // Mặc định trang đầu tiên
+
+        // Kiểm tra tham số page trong URL
+        if (request.getParameter("page") != null) {
+            try {
+                currentPage = Integer.parseInt(request.getParameter("page"));
+            } catch (NumberFormatException e) {
+                currentPage = 1;  // Nếu không phải số, mặc định trang là 1
+            }
+        }
+
+        // Tính toán offset cho truy vấn SQL
+        int offset = (currentPage - 1) * requestsPerPage;
+
+        // Gọi DAO để lấy danh sách chuyến đi và phân trang
+
         List<String> locations = homeViewTripsDAO.getAllLocations();
         request.setAttribute("locations", locations);
 
+        // Kiểm tra sự hợp lệ của origin và destination
         boolean hasOrigin = origin != null && !origin.trim().isEmpty();
         boolean hasDestination = destination != null && !destination.trim().isEmpty();
-        if (hasOrigin ^ hasDestination) {
-            request.setAttribute("error", "Vui lòng chọn cả điểm đi và điểm đến.");
-            request.getRequestDispatcher("/WEB-INF/pages/view-trips.jsp")
-                    .forward(request, response);
+        if (hasOrigin ^ hasDestination || (origin != null && origin.equals(destination))) {
+            request.setAttribute("error", "Vui lòng chọn cả điểm đi và điểm đến, và chúng không thể giống nhau.");
+            request.getRequestDispatcher("/WEB-INF/pages/view-trips.jsp").forward(request, response);
             return;
         }
 
+        // Lấy danh sách chuyến đi với phân trang
         List<HomeTrip> trips = homeViewTripsDAO.getTrips(
                 hasOrigin ? origin : null,
                 hasDestination ? destination : null,
-                date
+                date,
+                ticketCount,
+                offset,
+                requestsPerPage
         );
+
+        // Tổng số chuyến đi và tổng số trang
+        int totalTrips = homeViewTripsDAO.countTrips(origin, destination, date, ticketCount);
+        int totalPages = (int) Math.ceil((double) totalTrips / requestsPerPage);
+
+        // Set các thuộc tính vào request
         request.setAttribute("trips", trips);
-        request.getRequestDispatcher("/WEB-INF/pages/view-trips.jsp")
-                .forward(request, response);
+        request.setAttribute("totalTrips", totalTrips);
+        request.setAttribute("currentPage", currentPage);
+        request.setAttribute("totalPages", totalPages);
+
+        // Chuyển tiếp yêu cầu đến JSP mà không thay đổi URL
+        request.getRequestDispatcher("/WEB-INF/pages/view-trips.jsp").forward(request, response);
     }
 
     /**
@@ -124,28 +160,6 @@ public class HomeViewTripsServlet extends HttpServlet {
             throws ServletException, IOException {
 
         HomeViewTripsDAO homeViewTripsDAO = new HomeViewTripsDAO();
-        String origin = emptyToNull(request.getParameter("origin"));
-        String destination = emptyToNull(request.getParameter("destination"));
-        String depDate = emptyToNull(request.getParameter("departureDate"));
-        Date date = null;
-        if (depDate != null) {
-            try {
-                date = Date.valueOf(LocalDate.parse(depDate));
-            } catch (Exception ignored) {
-            }
-        }
-
-        List<HomeTrip> trips = homeViewTripsDAO.getTrips(origin, destination, date);
-        List<String> locations = homeViewTripsDAO.getAllLocations();
-
-        request.setAttribute("locations", locations);
-        request.setAttribute("trips", trips);
-        request.setAttribute("selectedOrigin", origin);
-        request.setAttribute("selectedDestination", destination);
-        request.setAttribute("selectedDate", depDate);
-
-        request.getRequestDispatcher("/WEB-INF/pages/view-trips.jsp")
-                .forward(request, response);
     }
 
     /**
