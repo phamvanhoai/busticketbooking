@@ -6,12 +6,15 @@ package busticket.model;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.List;
+import busticket.model.AdminRouteStop;
 
 /**
  *
  * @author Pham Van Hoai - CE181744
  */
 public class HomeTrip {
+
     private int tripId;
     private String origin;
     private String destination;
@@ -22,24 +25,47 @@ public class HomeTrip {
     private String busType;
     private int blankSeats;
     private BigDecimal price;      // nếu không có cột price, bạn có thể set null hoặc mặc định
-    
+
     private int capacity;
     private int bookedSeats;
-    
+
     private String startLocation;
     private String endLocation;
-    
-    
+
     private int busTypeId;
     private int rowsDown;
     private int colsDown;
     private int rowsUp;
     private int colsUp;
-    
+
+    // New field to hold Route Stops
+    private List<AdminRouteStop> routeStops;
+
+// Getter and Setter for routeStops
+    public List<AdminRouteStop> getRouteStops() {
+        return routeStops;
+    }
+
+    public void setRouteStops(List<AdminRouteStop> routeStops) {
+        this.routeStops = routeStops;
+    }
+
+    // Thêm biến lưu trữ danh sách giờ đến cho các điểm dừng
+    private List<String> stopTimes;
+
+    // Getter và Setter cho stopTimes
+    public List<String> getStopTimes() {
+        return stopTimes;
+    }
+
+    public void setStopTimes(List<String> stopTimes) {
+        this.stopTimes = stopTimes;
+    }
+
     public HomeTrip(int tripId, String origin, String destination,
-                    Date tripDate, String tripTime, int duration,
-                    String arrivalTime, String busType,
-                    int capacity, int bookedSeats, BigDecimal price) {
+            Date tripDate, String tripTime, int duration,
+            String arrivalTime, String busType,
+            int capacity, int bookedSeats, BigDecimal price) {
         this.tripId = tripId;
         this.origin = origin;
         this.destination = destination;
@@ -55,25 +81,25 @@ public class HomeTrip {
     }
 
     public HomeTrip(int tripId,
-                    String origin,
-                    String destination,
-                    Date tripDate,
-                    String tripTime,
-                    int duration,
-                    String arrivalTime,
-                    String busType,
-                    int capacity,
-                    int bookedSeats) {
-        this.tripId       = tripId;
-        this.origin       = origin;
-        this.destination  = destination;
-        this.tripDate     = tripDate;
-        this.tripTime     = tripTime;
-        this.duration     = duration;
-        this.arrivalTime  = arrivalTime;
-        this.busType      = busType;
-        this.capacity     = capacity;
-        this.bookedSeats  = bookedSeats;
+            String origin,
+            String destination,
+            Date tripDate,
+            String tripTime,
+            int duration,
+            String arrivalTime,
+            String busType,
+            int capacity,
+            int bookedSeats) {
+        this.tripId = tripId;
+        this.origin = origin;
+        this.destination = destination;
+        this.tripDate = tripDate;
+        this.tripTime = tripTime;
+        this.duration = duration;
+        this.arrivalTime = arrivalTime;
+        this.busType = busType;
+        this.capacity = capacity;
+        this.bookedSeats = bookedSeats;
     }
 
     public int getBusTypeId() {
@@ -116,9 +142,6 @@ public class HomeTrip {
         this.colsUp = colsUp;
     }
 
-
-    
-    
     public String getStartLocation() {
         return startLocation;
     }
@@ -134,8 +157,6 @@ public class HomeTrip {
     public void setEndLocation(String endLocation) {
         this.endLocation = endLocation;
     }
-    
-    
 
     public HomeTrip() {
     }
@@ -235,21 +256,21 @@ public class HomeTrip {
     public void setBookedSeats(int bookedSeats) {
         this.bookedSeats = bookedSeats;
     }
-    
+
     @Override
     public String toString() {
-        return "HomeTrip{" +
-               "tripId=" + tripId +
-               ", origin='" + origin + '\'' +
-               ", destination='" + destination + '\'' +
-               ", tripDate=" + tripDate +
-               ", tripTime='" + tripTime + '\'' +
-               ", duration=" + duration +
-               ", arrivalTime='" + arrivalTime + '\'' +
-               ", busType='" + busType + '\'' +
-               ", capacity=" + capacity +
-               ", bookedSeats=" + bookedSeats +
-               '}';
+        return "HomeTrip{"
+                + "tripId=" + tripId
+                + ", origin='" + origin + '\''
+                + ", destination='" + destination + '\''
+                + ", tripDate=" + tripDate
+                + ", tripTime='" + tripTime + '\''
+                + ", duration=" + duration
+                + ", arrivalTime='" + arrivalTime + '\''
+                + ", busType='" + busType + '\''
+                + ", capacity=" + capacity
+                + ", bookedSeats=" + bookedSeats
+                + '}';
     }
 
 }
