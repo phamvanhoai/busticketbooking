@@ -85,90 +85,70 @@ public class HomeViewTripsServlet extends HttpServlet {
         }
 
         // Lấy filter params cho view thông thường
-        String origin = request.getParameter("origin");
-        String destination = request.getParameter("destination");
-        String depDate = request.getParameter("departureDate");
-        String ticketCountParam = request.getParameter("ticket");
-        Integer ticketCount = ticketCountParam != null && !ticketCountParam.isEmpty() ? Integer.parseInt(ticketCountParam) : null;
-        Date date = null;
-        if (depDate != null && !depDate.trim().isEmpty()) {
-            date = Date.valueOf(depDate);
-        }
+        String origin = emptyToNull(request.getParameter("origin"));
+        String destination = emptyToNull(request.getParameter("destination"));
+        String depDate = emptyToNull(request.getParameter("departureDate"));
+        String ticketCountParam = emptyToNull(request.getParameter("ticket"));
+        Integer ticketCount = ticketCountParam != null ? Integer.parseInt(ticketCountParam) : null;
+        Date date = depDate != null ? Date.valueOf(depDate) : null;
 
         // Xử lý phân trang
-        int requestsPerPage = 10; // Số lượng chuyến đi hiển thị trên mỗi trang
-        int currentPage = 1; // Mặc định trang đầu tiên
-
-        // Kiểm tra tham số page trong URL
+        int requestsPerPage = 10;
+        int currentPage = 1;
         if (request.getParameter("page") != null) {
             try {
                 currentPage = Integer.parseInt(request.getParameter("page"));
             } catch (NumberFormatException e) {
-                currentPage = 1;  // Nếu không phải số, mặc định trang là 1
+                currentPage = 1;
             }
         }
-
-        // Tính toán offset cho truy vấn SQL
         int offset = (currentPage - 1) * requestsPerPage;
 
-        // Gọi DAO để lấy danh sách chuyến đi và phân trang
+        // Lấy danh sách locations
         List<String> locations = homeViewTripsDAO.getAllLocations();
         request.setAttribute("locations", locations);
 
         // Kiểm tra sự hợp lệ của origin và destination
-        boolean hasOrigin = origin != null && !origin.trim().isEmpty();
-        boolean hasDestination = destination != null && !destination.trim().isEmpty();
+        boolean hasOrigin = origin != null;
+        boolean hasDestination = destination != null;
         if (hasOrigin ^ hasDestination || (origin != null && origin.equals(destination))) {
             request.setAttribute("error", "Vui lòng chọn cả điểm đi và điểm đến, và chúng không thể giống nhau.");
             request.getRequestDispatcher("/WEB-INF/pages/view-trips.jsp").forward(request, response);
             return;
         }
 
-        // Lấy danh sách chuyến đi với phân trang
+        // Lấy danh sách chuyến đi
         List<HomeTrip> trips = homeViewTripsDAO.getTrips(
-                hasOrigin ? origin : null,
-                hasDestination ? destination : null,
-                date,
-                ticketCount,
-                offset,
-                requestsPerPage
+                origin, destination, date, ticketCount, offset, requestsPerPage
         );
 
-        // Lấy các điểm dừng cho từng chuyến đi
+        // Lấy các điểm dừng và tính stopTimes cho từng chuyến đi
         for (HomeTrip trip : trips) {
             int tripId = trip.getTripId();
             List<AdminRouteStop> stops = homeViewTripsDAO.getRouteStopsForTrip(tripId);
-
-            // Tính toán giờ đến cho từng điểm dừng
             List<String> stopTimes = new ArrayList<>();
-            LocalTime curTime = LocalTime.parse(trip.getTripTime()); // tripTime kiểu HH:mm
-
+            LocalTime curTime = LocalTime.parse(trip.getTripTime());
             for (int i = 0; i < stops.size(); i++) {
                 AdminRouteStop stop = stops.get(i);
-                // Stop đầu lấy giờ xuất phát
                 if (i > 0) {
-                    // Cộng travelMinutes, dwell chỉ cộng nếu muốn tính giờ rời
-                    curTime = curTime.plusMinutes(stop.getTravelMinutes());
+                    curTime = curTime.plusMinutes(stop.getTravelMinutes() + stop.getDwellMinutes());
                 }
-                stopTimes.add(curTime.toString()); // Tính toán giờ đến và lưu vào stopTimes
+                stopTimes.add(curTime.toString().substring(0, 5)); // Lấy HH:mm
             }
-
-            // Set các thông tin của stops và stopTimes vào trip
             trip.setRouteStops(stops);
-            trip.setStopTimes(stopTimes);  // Gán stopTimes vào trip
+            trip.setStopTimes(stopTimes);
         }
 
-        // Tổng số chuyến đi và tổng số trang
+        // Tính tổng số trang
         int totalTrips = homeViewTripsDAO.countTrips(origin, destination, date, ticketCount);
         int totalPages = (int) Math.ceil((double) totalTrips / requestsPerPage);
 
-        // Set các thuộc tính vào request
+        // Set attributes
         request.setAttribute("trips", trips);
         request.setAttribute("totalTrips", totalTrips);
         request.setAttribute("currentPage", currentPage);
         request.setAttribute("totalPages", totalPages);
 
-        // Chuyển tiếp yêu cầu đến JSP mà không thay đổi URL
         request.getRequestDispatcher("/WEB-INF/pages/view-trips.jsp").forward(request, response);
     }
 
