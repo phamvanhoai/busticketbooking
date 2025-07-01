@@ -418,6 +418,22 @@
 
             const ajaxBase = '${pageContext.servletContext.contextPath}/view-trips?ajax=seats';
 
+
+            // Hàm đóng tất cả các tab của các card khác
+            function closeAllTabsExceptCurrent(currentCard) {
+                document.querySelectorAll('.card').forEach(card => {
+                    if (card !== currentCard) {
+                        card.querySelectorAll('.tab-content').forEach(tab => {
+                            tab.classList.add('hidden');
+                        });
+                        // Xóa trạng thái active của các nút tab trong card khác
+                        card.querySelectorAll('button[data-tab]').forEach(btn => {
+                            btn.classList.remove('active');
+                        });
+                    }
+                });
+            }
+
             document.querySelectorAll('.card').forEach(card => {
                 let selectedSeats = [];
 
@@ -459,6 +475,7 @@
 
                 scheduleBtn.addEventListener('click', () => {
                     setActiveTab(scheduleBtn);
+                    closeAllTabsExceptCurrent(card);
 
                     schedulePanel.classList.toggle('hidden');
                     seatPanel.classList.add('hidden'); // Hide seat when schedule tab is clicked
@@ -469,6 +486,7 @@
                 // Handle Transshipment button click
                 transBtn.addEventListener('click', () => {
                     setActiveTab(transBtn);
+                    closeAllTabsExceptCurrent(card);
                     transPanel.classList.toggle('hidden');
                     seatPanel.classList.add('hidden');  // Hide seat panel when transshipment tab is clicked
                     schedulePanel.classList.add('hidden');  // Hide schedule panel when transshipment tab is clicked
@@ -478,6 +496,7 @@
                 // Handle Policy button click
                 policyBtn.addEventListener('click', () => {
                     setActiveTab(policyBtn);
+                    closeAllTabsExceptCurrent(card);
                     policyPanel.classList.toggle('hidden');
                     seatPanel.classList.add('hidden');
                     schedulePanel.classList.add('hidden');
@@ -501,6 +520,7 @@
                 seatBtn.addEventListener('click', async e => {
                     e.stopPropagation();
                     setActiveTab(seatBtn);
+                    closeAllTabsExceptCurrent(card);
                     if (!seatPanel.classList.contains('hidden')) {
                         seatPanel.classList.add('hidden');
                         return;
