@@ -54,6 +54,13 @@
     .your-trip > div {
         display: none;
     }
+    /* CSS để thêm hiệu ứng active cho tab */
+    button[data-tab].active {
+        color: rgb(239, 82, 34);
+        text-shadow: 0 0 .25px rgb(239, 82, 34);
+    }
+
+
     /* Sinh CSS highlight và hiển thị panel tương ứng */
     <c:forEach items="${trips}" var="trip" varStatus="st">
         #trip${st.index+1}:checked ~ .layout .sidebar .your-trip .trip${st.index+1} {
@@ -120,7 +127,7 @@
                             <div class="relative">
                                 <select name="ticket" class="w-full h-14 border-2 border-[#ef5222] rounded-xl px-6 text-lg font-medium bg-white focus:border-[#fc7b4c] focus:ring-4 focus:ring-orange-100 transition-all duration-300 appearance-none hover:shadow-md">
                                     <c:forEach begin="1" end="8" var="i">
-                                        <option value="${i}" <c:if test="${param.tickets == i}">selected</c:if>>${i}</option>
+                                        <option value="${i}" <c:if test="${param.ticket == i}">selected</c:if>>${i}</option>
                                     </c:forEach>
                                 </select>
                                 <span class="absolute top-1/2 right-3 -translate-y-1/2 pointer-events-none">
@@ -215,10 +222,10 @@
                                 <label for="trip${st.index+1}" class="block p-4 cursor-pointer hover:shadow-lg transition">
                                     <div class="flex justify-between items-center">
                                         <div>
-                                            <p class="text-lg font-bold">${trip.tripTime}</p>
+                                            <p class="text-2xl font-bold">${trip.tripTime}</p>
                                             <p class="text-sm text-gray-600">${trip.origin}</p>
                                         </div>
-                                        <div class="text-center text-sm text-gray-500">
+                                        <div class="text-center text-sm text-gray-600">
                                             <c:choose>
                                                 <c:when test="${trip.duration < 60}">${trip.duration}m</c:when>
                                                 <c:otherwise>
@@ -230,7 +237,7 @@
                                             </c:choose>
                                         </div>
                                         <div>
-                                            <p class="text-lg font-bold">${trip.arrivalTime}</p>
+                                            <p class="text-2xl font-bold">${trip.arrivalTime}</p>
                                             <p class="text-sm text-gray-600">${trip.destination}</p>
                                         </div>
                                     </div>
@@ -254,12 +261,12 @@
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <!-- Downstairs block -->
                                         <div>
-                                            <h4 class="font-semibold mb-2">Downstairs:</h4>
+                                            <h2 class="font-semibold mb-2">Downstairs:</h2>
                                             <div class="seat-grid-down flex gap-2 mb-4"></div>
                                         </div>
                                         <!-- Upstairs block -->
                                         <div>
-                                            <h4 class="font-semibold mb-2">Upstairs:</h4>
+                                            <h2 class="font-semibold mb-2">Upstairs:</h2>
                                             <div class="seat-grid-up flex gap-2 mb-4"></div>
                                         </div>
                                     </div>
@@ -292,6 +299,11 @@
                                                 Hãy kiểm tra lại Controller truyền stops xuống.
                                             </div>
                                         </c:if>
+                                        <c:if test="${fn:length(trip.routeStops) != fn:length(trip.stopTimes)}">
+                                            <div class="p-4 bg-red-100 text-red-700 rounded mb-4">
+                                                Dữ liệu stopTimes không khớp với routeStops! Hãy kiểm tra lại Controller.
+                                            </div>
+                                        </c:if>
                                         <c:forEach var="stop" items="${trip.routeStops}" varStatus="status">
                                             <div class="flex items-start">
                                                 <div class="flex flex-col items-center">
@@ -303,15 +315,15 @@
                                                          </c:choose>
                                                          rounded-full mt-1"></div>
                                                     <c:if test="${!status.last}">
-                                                        <div class="flex-1 border-l-2 border-gray-200"></div>
+                                                        <div class="flex-1 border-l-2 border-gray-200 h-full"></div>
                                                     </c:if>
                                                 </div>
                                                 <div class="ml-4">
                                                     <p class="font-medium text-gray-800">
-                                                        ${stopTimes[status.index]} – ${stop.locationName}
+                                                        ${trip.stopTimes[status.index]} – ${stop.locationName}
                                                     </p>
                                                     <p class="text-sm text-gray-500">
-                                                        ${stop.address}
+                                                        ${stop.address} (Travel: ${stop.travelMinutes}m, Dwell: ${stop.dwellMinutes}m)
                                                     </p>
                                                 </div>
                                             </div>
@@ -319,9 +331,46 @@
                                     </div>
                                 </div>
 
+                                <div class="tab-content hidden p-4 border-t" data-content="trans">
+                                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Door-to-door Pickup/Dropoff:</h2>
+                                    <ul class="list-disc pl-5 space-y-2 text-gray-700">
+                                        <li><strong>Time to receive guests:</strong> 4 hours before.</li>
+                                        <li><strong>Pick-up time:</strong> Prepare 2-3 hours in advance, due to the high traffic density in the city and will combine pick up at many different points. The specific pick-up time will be contacted by the driver.</li>
+                                        <li><strong>Small alleys can't turn around:</strong> Cars pick up passengers at the beginning of the alley/street.</li>
+                                        <li><strong>Do not accept areas with no parking signs:</strong> The car will pick up at the nearest location possible.</li>
+                                        <li><strong>Luggage:</strong> Compact luggage under 20kg, do not transport attached pets, no carrying items with odors or that leak on the vehicle.</li>
+                                    </ul>
+                                </div>
 
+                                <div class="tab-content hidden p-4 border-t" data-content="policy">
+                                    <h2 class="font-semibold text-lg">Cancellation Policy</h2>
+                                    <p>Tickets can only be exchanged once.</p>
+                                    <p>The cost of ticket cancellation is from 10% to 30% of the fare depending on the cancellation time compared to the departure time indicated on the ticket and the number of individual/group tickets applicable under current regulations.</p>
+                                    <p>If you need to change or cancel a paid ticket, you need to contact the Call Center 1900 6067 or the ticket counter at the latest 24 hours before the departure time indicated on the ticket, on email or text message. Further instructions will follow.</p>
 
+                                    <h2 class="font-semibold text-lg">Requirements when boarding</h2>
+                                    <p>Please be present at the Office/Bus Station (Direct pickup location) 30 minutes before the departure time for boarding procedures (for holidays and Tet, please arrive 60 minutes in advance).</p>
+                                    <p>Present the ticket information sent via SMS/Email/Futa App or contact the ticket counter to receive ticket information before boarding.</p>
+                                    <p>Do not bring food/beverages with strong odors on board.</p>
+                                    <p>No smoking, consumption of alcoholic beverages, or use of stimulants on the bus.</p>
+                                    <p>Do not bring flammable or explosive items on board.</p>
+                                    <p>Do not litter on the bus.</p>
+                                    <p>Do not bring pets on board.</p>
 
+                                    <h2 class="font-semibold text-lg">Hand Baggage</h2>
+                                    <p>The total weight of luggage must not exceed 20kg.</p>
+                                    <p>Bulky goods are not allowed to be transported.</p>
+
+                                    <h2 class="font-semibold text-lg">Children & Pregnant Passengers</h2>
+                                    <p>Children under 6 years old, with a height of 1.3m or below, and weighing less than 30kg do not need to purchase a ticket.</p>
+                                    <p>In case a child does not meet any of the three criteria above, they will need to purchase one ticket equivalent to an adult ticket.</p>
+                                    <p>Each adult is allowed to accompany a maximum of one child.</p>
+                                    <p>Pregnant passengers should ensure their health during the entire journey.</p>
+
+                                    <h2 class="font-semibold text-lg">Pick-up ticket</h2>
+                                    <p>Please contact the hotline at 19006067 to register at least 2 hours before the scheduled departure time and kindly prepare small and compact luggage (maximum 20kg).</p>
+                                    <p>Please note that we only provide pick-up services at some convenient locations along the route.</p>
+                                </div>
 
                             </div>
                         </c:forEach>
@@ -389,8 +438,12 @@
 
                 const seatBtn = card.querySelector('[data-tab="seat"]');
                 const scheduleBtn = card.querySelector('[data-tab="schedule"]');
+                const transBtn = card.querySelector('[data-tab="trans"]');  // Transshipment button
+                const policyBtn = card.querySelector('[data-tab="policy"]');  // Policy button
                 const seatPanel = card.querySelector('.tab-content[data-content="seat"]');
                 const schedulePanel = card.querySelector('.tab-content[data-content="schedule"]');
+                const transPanel = card.querySelector('.tab-content[data-content="trans"]');  // Transshipment panel
+                const policyPanel = card.querySelector('.tab-content[data-content="policy"]');  // Policy panel
                 const downWrap = card.querySelector('.seat-grid-down');
                 const upWrap = card.querySelector('.seat-grid-up');
 
@@ -405,12 +458,49 @@
                 }
 
                 scheduleBtn.addEventListener('click', () => {
+                    setActiveTab(scheduleBtn);
+
                     schedulePanel.classList.toggle('hidden');
                     seatPanel.classList.add('hidden'); // Hide seat when schedule tab is clicked
+                    transPanel.classList.add('hidden');  // Hide transshipment panel when schedule tab is clicked
+                    policyPanel.classList.add('hidden');
                 });
+
+                // Handle Transshipment button click
+                transBtn.addEventListener('click', () => {
+                    setActiveTab(transBtn);
+                    transPanel.classList.toggle('hidden');
+                    seatPanel.classList.add('hidden');  // Hide seat panel when transshipment tab is clicked
+                    schedulePanel.classList.add('hidden');  // Hide schedule panel when transshipment tab is clicked
+                    policyPanel.classList.add('hidden');
+                });
+
+                // Handle Policy button click
+                policyBtn.addEventListener('click', () => {
+                    setActiveTab(policyBtn);
+                    policyPanel.classList.toggle('hidden');
+                    seatPanel.classList.add('hidden');
+                    schedulePanel.classList.add('hidden');
+                    transPanel.classList.add('hidden');
+                });
+
+                // Handle the active state for the buttons
+                function setActiveTab(button) {
+                    // Remove 'active' class from all buttons
+                    seatBtn.classList.remove('active');
+                    scheduleBtn.classList.remove('active');
+                    transBtn.classList.remove('active');
+                    policyBtn.classList.remove('active');
+
+                    // Add 'active' class to the clicked button
+                    button.classList.add('active');
+                }
+
+
 
                 seatBtn.addEventListener('click', async e => {
                     e.stopPropagation();
+                    setActiveTab(seatBtn);
                     if (!seatPanel.classList.contains('hidden')) {
                         seatPanel.classList.add('hidden');
                         return;
