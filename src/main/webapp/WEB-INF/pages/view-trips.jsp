@@ -255,6 +255,8 @@
                                     <button data-tab="trans"    class="px-3 py-1 hover:text-orange-500">Transshipment</button>
                                     <button data-tab="policy"   class="px-3 py-1 hover:text-orange-500">Policy</button>
                                     <button class="ml-auto px-4 py-1 bg-orange-100 text-orange-600 rounded-full text-sm">Select trip</button>
+    
+
                                 </div>
 
                                 <div class="tab-content hidden p-4 border-t" data-content="seat">

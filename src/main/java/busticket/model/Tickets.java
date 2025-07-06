@@ -11,6 +11,7 @@ import java.sql.Timestamp;
  * @author Pham Van Hoai - CE181744
  */
 public class Tickets {
+
     private int ticketId;
     private int tripId;
     private int userId;
@@ -36,8 +37,6 @@ public class Tickets {
         this.dropoffLocationId = dropoffLocationId;
     }
 
-    
-    
     public int getTicketId() {
         return ticketId;
     }
@@ -109,5 +108,5 @@ public class Tickets {
     public void setDropoffLocationId(int dropoffLocationId) {
         this.dropoffLocationId = dropoffLocationId;
     }
-    
+
 }
