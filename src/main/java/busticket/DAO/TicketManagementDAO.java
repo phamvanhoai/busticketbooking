@@ -6,6 +6,7 @@ package busticket.DAO;
 
 import busticket.db.DBContext;
 import busticket.model.Invoices;
+import busticket.model.Review;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -22,11 +23,14 @@ public class TicketManagementDAO extends DBContext {
     public List<Invoices> getAllInvoices(String ticketCode, String route, String status, int offset, int limit) {
         List<Invoices> invoicesList = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-                "SELECT i.invoice_id, i.invoice_code, i.invoice_total_amount, i.payment_method, i.invoice_status, "
-                + "       COUNT(t.ticket_id) AS ticket_count, "
-                + "       CONCAT(ls.location_name, N' → ', le.location_name) AS route, "
-                + "       tr.departure_time AS departure_time, " // Thêm dòng này để lấy departure_time
-                + "       u.user_name AS customer_name "
+                "SELECT i.invoice_id, i.invoice_code, i.invoice_total_amount, "
+                + "i.payment_method, i.invoice_status, "
+                + "COUNT(t.ticket_id) AS ticket_count, "
+                + "CONCAT(ls.location_name, N' → ', le.location_name) AS route, "
+                + "tr.departure_time, "
+                + "u.user_name AS customer_name, "
+                + "ir.review_rating, "
+                + "ir.review_text "
                 + "FROM Invoices i "
                 + "JOIN Invoice_Items ii ON i.invoice_id = ii.invoice_id "
                 + "JOIN Tickets t ON t.ticket_id = ii.ticket_id "
@@ -35,6 +39,7 @@ public class TicketManagementDAO extends DBContext {
                 + "JOIN Locations ls ON r.start_location_id = ls.location_id "
                 + "JOIN Locations le ON r.end_location_id = le.location_id "
                 + "JOIN Users u ON i.user_id = u.user_id "
+                + "LEFT JOIN Invoice_Reviews ir ON i.invoice_id = ir.invoice_id "
                 + "WHERE 1=1 "
         );
 
@@ -49,7 +54,10 @@ public class TicketManagementDAO extends DBContext {
             sql.append(" AND i.invoice_status = ?");
         }
 
-        sql.append(" GROUP BY i.invoice_id, i.invoice_code, i.invoice_total_amount, i.payment_method, i.invoice_status, ls.location_name, le.location_name, u.user_name, tr.departure_time ");
+        sql.append(" GROUP BY i.invoice_id, i.invoice_code, i.invoice_total_amount, "
+                + "i.payment_method, i.invoice_status, "
+                + "ls.location_name, le.location_name, u.user_name, tr.departure_time, "
+                + "ir.review_rating, ir.review_text ");
         sql.append(" ORDER BY i.invoice_id ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql.toString())) {
@@ -79,6 +87,13 @@ public class TicketManagementDAO extends DBContext {
                     invoice.setDepartureTime(rs.getTimestamp("departure_time"));
                     invoice.setCustomerName(rs.getString("customer_name"));// Gán departureTime cho invoice
                     invoicesList.add(invoice);
+                    invoice.setReviewRating(
+                            rs.getObject("review_rating") != null
+                            ? rs.getInt("review_rating")
+                            : null
+                    );
+                    invoice.setReviewText(rs.getString("review_text"));
+                    invoice.setReviewed(rs.getObject("review_rating") != null);
                 }
             }
         } catch (SQLException ex) {
@@ -213,8 +228,10 @@ public class TicketManagementDAO extends DBContext {
     // Để lấy thông tin hóa đơn cụ thể, bạn có thể sử dụng phương thức này trong Servlet
     public Invoices getInvoiceById(int invoiceId) {
         Invoices invoice = null;
-        String sql = "SELECT i.invoice_id, i.invoice_code, i.invoice_total_amount, i.payment_method, i.invoice_full_name, "
-                + "i.invoice_status, i.paid_at, CONCAT(ls.location_name, N' → ', le.location_name) AS route "
+        String sql = "SELECT i.invoice_id, i.invoice_code, i.invoice_total_amount, "
+                + "i.payment_method, i.invoice_full_name, i.invoice_status, i.paid_at, "
+                + "CONCAT(ls.location_name, N' → ', le.location_name) AS route, "
+                + "tr.departure_time "
                 + "FROM Invoices i "
                 + "JOIN Invoice_Items ii ON i.invoice_id = ii.invoice_id "
                 + "JOIN Tickets t ON t.ticket_id = ii.ticket_id "
@@ -225,7 +242,8 @@ public class TicketManagementDAO extends DBContext {
                 + "WHERE i.invoice_id = ?";
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, invoiceId);  // Set the invoiceId parameter
+
+            ps.setInt(1, invoiceId);
 
             try ( ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -235,15 +253,104 @@ public class TicketManagementDAO extends DBContext {
                     invoice.setInvoiceTotalAmount(rs.getFloat("invoice_total_amount"));
                     invoice.setPaymentMethod(rs.getString("payment_method"));
                     invoice.setInvoiceStatus(rs.getString("invoice_status"));
-                    invoice.setPaidAt(rs.getTimestamp("paid_at"));  // Set the paid_at field
-                    invoice.setRoute(rs.getString("route"));  // Set the route
-                    invoice.setCustomerName(rs.getString("invoice_full_name")); // Set the customer name from invoice_full_name
+                    invoice.setPaidAt(rs.getTimestamp("paid_at"));
+                    invoice.setRoute(rs.getString("route"));
+                    invoice.setCustomerName(rs.getString("invoice_full_name"));
+                    invoice.setDepartureTime(rs.getTimestamp("departure_time"));
                 }
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
         return invoice;
+    }
+
+    // Thêm review mới
+    public boolean addReview(int invoiceId, int rating, String text) {
+        String sql = "INSERT INTO Invoice_Reviews (invoice_id, review_rating, review_text, review_created_at) VALUES (?, ?, ?, GETDATE())";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, invoiceId);
+            ps.setInt(2, rating);
+            ps.setString(3, text);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+// Kiểm tra đã đánh giá chưa
+    public boolean hasReviewed(int invoiceId) {
+        String sql = "SELECT 1 FROM Invoice_Reviews WHERE invoice_id = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, invoiceId);
+            ResultSet rs = ps.executeQuery();
+            return rs.next(); // Nếu có dòng kết quả nghĩa là đã đánh giá
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean addInvoiceReview(int invoiceId, int rating, String reviewText) {
+        String sql = "INSERT INTO Invoice_Reviews (invoice_id, review_rating, review_text, review_created_at) "
+                + "VALUES (?, ?, ?, GETDATE())";
+        try (
+                 Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql);) {
+            ps.setInt(1, invoiceId);
+            ps.setInt(2, rating);
+            ps.setString(3, reviewText);
+            ps.executeUpdate();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public Review getReviewByInvoiceId(int invoiceId) {
+        String sql = "SELECT review_rating, review_text FROM Invoice_Reviews WHERE invoice_id = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, invoiceId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Review review = new Review();
+                review.setRating(rs.getInt("review_rating"));
+                review.setText(rs.getString("review_text"));
+                return review;
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean updateReview(int invoiceId, int rating, String text) {
+        String sql = "UPDATE Invoice_Reviews SET review_rating = ?, review_text = ?, review_updated_at = GETDATE() WHERE invoice_id = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, rating);
+            ps.setString(2, text);
+            ps.setInt(3, invoiceId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateInvoiceReview(int invoiceId, int rating, String reviewText) {
+        String sql = "UPDATE Invoice_Reviews "
+                + "SET review_rating = ?, review_text = ?, review_created_at = GETDATE() "
+                + "WHERE invoice_id = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, rating);
+            ps.setString(2, reviewText);
+            ps.setInt(3, invoiceId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
     }
 
 }

@@ -77,44 +77,60 @@
                         <th class="px-4 py-3 font-medium">Actions</th>
                     </tr>
                 </thead>
+
                 <tbody class="divide-y">
-                    <c:forEach var="invoice" items="${invoicesList}">
-                        <tr>
-                            <td class="px-4 py-3">${invoice.invoiceCode}</td>
-                            <td class="px-4 py-3">${invoice.ticketCount}</td>
-                            <td class="px-4 py-3">${invoice.route}</td>
-                            <td class="px-4 py-3">${invoice.departureTime}</td> 
-                            <td class="px-4 py-3">${invoice.invoiceTotalAmount}₫</td>
-                            <td class="px-4 py-3">${invoice.paymentMethod}</td>
-                            <td class="px-4 py-3">
-                                <c:choose>
-                                    <c:when test="${invoice.invoiceStatus == 'Paid'}">
-                                        <span class="bg-green-100 text-white text-xs px-2 py-1 rounded-full">${invoice.invoiceStatus}</span>
-                                    </c:when>
-                                    <c:when test="${invoice.invoiceStatus == 'Expires'}">
-                                        <span class="bg-red-100 text-white text-xs px-2 py-1 rounded-full">${invoice.invoiceStatus}</span>
-                                    </c:when>
-                                    <c:when test="${invoice.invoiceStatus == 'Cancelled'}">
-                                        <span class="bg-gray-100 text-white text-xs px-2 py-1 rounded-full">${invoice.invoiceStatus}</span>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <span class="bg-gray-200 text-white text-xs px-2 py-1 rounded-full">${invoice.invoiceStatus}</span>
-                                    </c:otherwise>
-                                </c:choose>
-                            </td>
-                            <td class="px-4 py-3">
-                                <a href="${pageContext.servletContext.contextPath}/ticket-management?review=${invoice.invoiceId}"><button class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm px-3 py-1 rounded-full">
-                                    Review
-                                    </button></a>
-                                <a href="${pageContext.servletContext.contextPath}/ticket-management?cancel=${invoice.invoiceId}"><button class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm px-3 py-1 rounded-full">
+                    <c:if test="${not empty errorMessage}">
+                    <div class="bg-red-100 text-red-700 p-4 rounded mb-4">
+                        ${errorMessage}
+                    </div>
+                </c:if>
+
+                <c:if test="${not empty successMessage}">
+                    <div class="bg-green-100 text-green-700 p-4 rounded mb-4">
+                        ${successMessage}
+                    </div>
+                </c:if>
+                <c:forEach var="invoice" items="${invoicesList}">
+                    <tr>
+                        <td class="px-4 py-3">${invoice.invoiceCode}</td>
+                        <td class="px-4 py-3">${invoice.ticketCount}</td>
+                        <td class="px-4 py-3">${invoice.route}</td>
+                        <td class="px-4 py-3">${invoice.departureTime}</td> 
+                        <td class="px-4 py-3">${invoice.invoiceTotalAmount}₫</td>
+                        <td class="px-4 py-3">${invoice.paymentMethod}</td>
+                        <td class="px-4 py-3">
+                            <c:choose>
+                                <c:when test="${invoice.invoiceStatus == 'Paid'}">
+                                    <span class="bg-green-100 text-white text-xs px-2 py-1 rounded-full">${invoice.invoiceStatus}</span>
+                                </c:when>
+                                <c:when test="${invoice.invoiceStatus == 'Expires'}">
+                                    <span class="bg-red-100 text-white text-xs px-2 py-1 rounded-full">${invoice.invoiceStatus}</span>
+                                </c:when>
+                                <c:when test="${invoice.invoiceStatus == 'Cancelled'}">
+                                    <span class="bg-gray-100 text-white text-xs px-2 py-1 rounded-full">${invoice.invoiceStatus}</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="bg-gray-200 text-white text-xs px-2 py-1 rounded-full">${invoice.invoiceStatus}</span>
+                                </c:otherwise>
+                            </c:choose>
+                        </td>
+                        <td class="px-4 py-3">
+                            <a href="${pageContext.request.contextPath}/ticket-management?review=${invoice.invoiceId}"
+                               class="inline-block px-4 py-2 rounded-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold transition">
+                                ${invoice.reviewed ? "Edit Review" : "Review"}
+                            </a>
+                            <a href="${pageContext.servletContext.contextPath}/ticket-management?action=cancel&invoiceId=${invoice.invoiceId}">
+                                <button class="inline-block px-4 py-2 rounded-full bg-gray-300 hover:bg-gray-400 text-gray-800 text-sm font-semibold transition">
                                     Cancel
-                                    </button></a>
-                            </td>
-                        </tr>
-                    </c:forEach>
+                                </button>
+                            </a>
+                        </td>
+                    </tr>
+                </c:forEach>
                 </tbody>
             </table>
         </div>
+
 
         <!-- Pagination -->
         <div class="flex justify-center space-x-2 mt-6">
