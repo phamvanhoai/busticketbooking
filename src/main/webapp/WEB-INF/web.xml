@@ -128,6 +128,10 @@
         <servlet-name>DriverLicenseServlet</servlet-name>
         <servlet-class>busticket.controller.DriverLicenseServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>ScheduleServlet</servlet-name>
+        <servlet-class>busticket.controller.ScheduleServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
         <url-pattern>/admin/dashboard</url-pattern>
@@ -256,6 +260,10 @@
     <servlet-mapping>
         <servlet-name>DriverLicenseServlet</servlet-name>
         <url-pattern>/driver/driver-license</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ScheduleServlet</servlet-name>
+        <url-pattern>/schedule</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
