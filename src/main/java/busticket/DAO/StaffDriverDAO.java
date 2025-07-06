@@ -32,8 +32,8 @@ public class StaffDriverDAO extends DBContext {
 
             while (rs.next()) {
                 Driver d = new Driver();
-                d.setDriverId(rs.getString("driver_id"));
-                d.setFullName(rs.getString("full_name"));
+                d.setDriverId(rs.getInt("driver_id"));
+                d.setDriverName(rs.getString("full_name"));
                 d.setPhone(rs.getString("phone"));
                 list.add(d);
             }

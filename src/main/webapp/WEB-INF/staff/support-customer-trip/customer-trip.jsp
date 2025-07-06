@@ -5,35 +5,57 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@include file="/WEB-INF/include/staff/staff-header.jsp" %>
+<%@ taglib prefix="c"   uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn"  uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fbus" uri="/WEB-INF/tags/implicit.tld" %>
 
+<%@ include file="/WEB-INF/include/staff/staff-header.jsp" %>
 
+<c:set var="baseUrl" value="${pageContext.request.contextPath}/staff/support-customer-trip"/>
+
+<c:if test="${not empty param.search}">
+    <c:set var="baseUrl"
+           value="${baseUrl}?search=${fn:escapeXml(param.search)}"/>
+</c:if>
+<c:if test="${param.status ne 'All'}">
+    <c:set var="baseUrl"
+           value="${baseUrl}${param.search!=null?'&':'?'}status=${fn:escapeXml(param.status)}"/>
+</c:if>
+<c:if test="${not empty param.page}">
+    <c:set var="baseUrl"
+           value="${baseUrl}${(param.search!=null||param.status ne 'All')?'&':'?'}page=${fn:escapeXml(param.page)}"/>
+</c:if>
 
 <body class="bg-[#f9fafb]">
-
     <div class="p-6 space-y-6">
-        <h2 class="text-2xl font-bold text-orange-600">Support Change Trip for Customer</h2>
+
+        <h2 class="text-2xl font-bold text-orange-600">Manage Invoice Cancel Requests</h2>
 
         <!-- Search & Filter -->
-        <div class="flex flex-wrap items-center gap-4">
+        <form method="get"
+              action="${pageContext.request.contextPath}/staff/support-customer-trip"
+              class="flex flex-wrap items-center gap-4 mb-4">
             <div class="flex flex-1 max-w-md">
                 <input
                     type="text"
-                    placeholder="Search by Request ID or Customer"
-                    class="flex-1 border border-gray-300 rounded-l-lg px-4 py-2 focus:outline-none"
-                    />
-                <button class="bg-orange-500 hover:bg-orange-600 text-white px-4 rounded-r-lg">
-                    
+                    name="search"
+                    value="${fn:escapeXml(search)}"
+                    placeholder="Search by Request ID, Invoice Code, or Customer"
+                    class="flex-1 border border-gray-300 rounded-l-lg px-4 py-2 focus:outline-none"/>
+                <button type="submit"
+                        class="bg-orange-500 hover:bg-orange-600 text-white px-4 rounded-r-lg">
                     Search
                 </button>
             </div>
-            <select class="border border-gray-300 rounded-lg px-4 py-2">
-                <option value="All">All Statuses</option>
-                <option value="Pending">Pending</option>
-                <option value="Approved">Approved</option>
-                <option value="Rejected">Rejected</option>
+            <select name="status"
+                    class="border border-gray-300 rounded-lg px-4 py-2">
+                <option value="All"      ${status=='All'      ? 'selected':''}>All Statuses</option>
+                <option value="Pending"  ${status=='Pending'  ? 'selected':''}>Pending</option>
+                <option value="Approved" ${status=='Approved' ? 'selected':''}>Approved</option>
+                <option value="Rejected" ${status=='Rejected' ? 'selected':''}>Rejected</option>
             </select>
-        </div>
+        </form>
 
         <!-- Table -->
         <div class="overflow-x-auto bg-white rounded-2xl shadow">
@@ -41,104 +63,84 @@
                 <thead class="bg-orange-50">
                     <tr>
                         <th class="px-6 py-3 text-left font-medium text-orange-600">Request ID</th>
+                        <th class="px-6 py-3 text-left font-medium text-orange-600">Invoice ID</th>
+                        <th class="px-6 py-3 text-left font-medium text-orange-600">Invoice Code</th>
                         <th class="px-6 py-3 text-left font-medium text-orange-600">Customer</th>
-                        <th class="px-6 py-3 text-left font-medium text-orange-600">Old Trip</th>
-                        <th class="px-6 py-3 text-left font-medium text-orange-600">New Trip</th>
-                        <th class="px-6 py-3 text-left font-medium text-orange-600">Date</th>
+                        <th class="px-6 py-3 text-left font-medium text-orange-600">Request Date</th>
+                        <th class="px-6 py-3 text-left font-medium text-orange-600">Reason</th>
                         <th class="px-6 py-3 text-left font-medium text-orange-600">Status</th>
                         <th class="px-6 py-3 text-left font-medium text-orange-600">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Row 1 -->
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-6 py-4">REQ1</td>
-                        <td class="px-6 py-4">Customer 1</td>
-                        <td class="px-6 py-4">HCM → Can Tho</td>
-                        <td class="px-6 py-4">HCM → Vung Tau</td>
-                        <td class="px-6 py-4">10/06/2025</td>
-                        <td class="px-6 py-4">
-                            <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700">Pending</span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <button class="flex items-center gap-1 text-blue-600 hover:underline">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="text-blue-600 text-xl" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg> View
-                            </button>
-                        </td>
-                    </tr>
+                    <c:forEach var="r" items="${requests}">
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-6 py-4">${r.requestId}</td>
+                            <td class="px-6 py-4">${r.invoiceId}</td>
+                            <td class="px-6 py-4">${r.invoiceCode}</td>
+                            <td class="px-6 py-4">${r.customerName}</td>
+                            <td class="px-6 py-4">
+                                <fmt:formatDate value="${r.requestDate}" pattern="dd/MM/yyyy HH:mm"/>
+                            </td>
+                            <td class="px-6 py-4">${r.cancelReason}</td>
+                            <td class="px-6 py-4">
+                                <c:choose>
+                                    <c:when test="${r.requestStatus=='Pending'}">
+                                        <span class="inline-block px-3 py-1 rounded-full text-sm bg-yellow-100 text-yellow-700">Pending</span>
+                                    </c:when>
+                                    <c:when test="${r.requestStatus=='Approved'}">
+                                        <span class="inline-block px-3 py-1 rounded-full text-sm bg-green-100 text-green-700">Approved</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="inline-block px-3 py-1 rounded-full text-sm bg-red-100 text-red-700">Rejected</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td class="px-6 py-4">
+                                <c:choose>
+                                    <c:when test="${r.requestStatus == 'Pending'}">
+                                        <div class="flex items-center gap-2">
+                                            <form action="${pageContext.request.contextPath}/staff/support-customer-trip"
+                                                  method="post" class="inline">
+                                                <input type="hidden" name="requestId" value="${r.requestId}"/>
+                                                <input type="hidden" name="search"    value="${fn:escapeXml(search)}"/>
+                                                <input type="hidden" name="status"    value="${status}"/>
+                                                <input type="hidden" name="page"      value="${currentPage}"/>
+                                                <button name="action" value="approve"
+                                                        class="text-green-600 hover:underline">Approve</button>
+                                            </form>
+                                            <form action="${pageContext.request.contextPath}/staff/support-customer-trip"
+                                                  method="post" class="inline">
+                                                <input type="hidden" name="requestId" value="${r.requestId}"/>
+                                                <input type="hidden" name="search"    value="${fn:escapeXml(search)}"/>
+                                                <input type="hidden" name="status"    value="${status}"/>
+                                                <input type="hidden" name="page"      value="${currentPage}"/>
+                                                <button name="action" value="reject"
+                                                        class="text-red-600 hover:underline">Reject</button>
+                                            </form>
+                                        </div>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="text-gray-500">—</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
 
-                    <!-- Row 2 -->
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-6 py-4">REQ2</td>
-                        <td class="px-6 py-4">Customer 2</td>
-                        <td class="px-6 py-4">Can Tho → Chau Doc</td>
-                        <td class="px-6 py-4">Da Nang → Hue</td>
-                        <td class="px-6 py-4">11/06/2025</td>
-                        <td class="px-6 py-4">
-                            <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">Approved</span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <button class="flex items-center gap-1 text-blue-600 hover:underline">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="text-blue-600 text-xl" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg> View
-                            </button>
-                        </td>
-                    </tr>
-
-                    <!-- Row 3 -->
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-6 py-4">REQ3</td>
-                        <td class="px-6 py-4">Customer 3</td>
-                        <td class="px-6 py-4">HCM → Can Tho</td>
-                        <td class="px-6 py-4">HCM → Vung Tau</td>
-                        <td class="px-6 py-4">12/06/2025</td>
-                        <td class="px-6 py-4">
-                            <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700">Rejected</span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <button class="flex items-center gap-1 text-blue-600 hover:underline">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="text-blue-600 text-xl" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg> View
-                            </button>
-                        </td>
-                    </tr>
-
-                    <!-- Row 4 -->
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-6 py-4">REQ4</td>
-                        <td class="px-6 py-4">Customer 4</td>
-                        <td class="px-6 py-4">Can Tho → Chau Doc</td>
-                        <td class="px-6 py-4">Da Nang → Hue</td>
-                        <td class="px-6 py-4">13/06/2025</td>
-                        <td class="px-6 py-4">
-                            <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700">Pending</span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <button class="flex items-center gap-1 text-blue-600 hover:underline">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="text-blue-600 text-xl" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg> View
-                            </button>
-                        </td>
-                    </tr>
+                        </tr>
+                    </c:forEach>
                 </tbody>
             </table>
         </div>
 
         <!-- Pagination -->
-        <div class="flex justify-center mt-6 gap-2">
-            <button class="px-3 py-1 rounded-md border bg-orange-500 text-white">1</button>
-            <button class="px-3 py-1 rounded-md border bg-white text-orange-500 border-orange-300 hover:bg-orange-100">2</button>
-            <button class="px-3 py-1 rounded-md border bg-white text-orange-500 border-orange-300 hover:bg-orange-100">3</button>
-            <button class="px-3 py-1 rounded-md border bg-white text-orange-500 border-orange-300 hover:bg-orange-100">4</button>
+        <div class="flex justify-center mt-6">
+            <fbus:adminpagination
+                currentPage="${currentPage}"
+                totalPages="${totalPages}"
+                url="${baseUrl}" />
         </div>
 
     </div>
-
     <%-- CONTENT HERE--%>
 
     <%@include file="/WEB-INF/include/staff/staff-footer.jsp" %>

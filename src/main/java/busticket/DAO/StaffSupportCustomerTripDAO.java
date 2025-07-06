@@ -1,0 +1,199 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package busticket.DAO;
+
+import busticket.db.DBContext;
+import busticket.model.StaffSupportCustomerTrip;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ *
+ * @author pc
+ */
+public class StaffSupportCustomerTripDAO extends DBContext {
+
+    /**
+     * Lấy danh sách yêu cầu theo search/filter và phân trang
+     */
+    public List<StaffSupportCustomerTrip> getRequests(
+            String search, String status,
+            int offset, int limit) {
+
+        List<StaffSupportCustomerTrip> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+                "SELECT icr.request_id, icr.invoice_id, inv.invoice_code, "
+                + "       u.user_name AS customerName, icr.request_date, "
+                + "       icr.cancel_reason, icr.request_status, "
+                + "       icr.approved_by_staff_id, icr.approval_date "
+                + "FROM Invoice_Cancel_Requests icr "
+                + "  JOIN Users u    ON icr.user_id    = u.user_id "
+                + "  JOIN Invoices inv ON icr.invoice_id = inv.invoice_id "
+                + "WHERE 1=1"
+        );
+
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append(" AND (CAST(icr.request_id AS varchar) LIKE ? ")
+                    .append("      OR inv.invoice_code LIKE ? ")
+                    .append("      OR u.user_name LIKE ?)");
+        }
+        if (status != null && !status.isEmpty() && !"All".equals(status)) {
+            sql.append(" AND icr.request_status = ?");
+        }
+        sql.append(" ORDER BY icr.request_date DESC")
+                .append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql.toString())) {
+            int idx = 1;
+            if (search != null && !search.trim().isEmpty()) {
+                String like = "%" + search.trim() + "%";
+                ps.setString(idx++, like);
+                ps.setString(idx++, like);
+                ps.setString(idx++, like);
+            }
+            if (status != null && !status.isEmpty() && !"All".equals(status)) {
+                ps.setString(idx++, status);
+            }
+            ps.setInt(idx++, offset);
+            ps.setInt(idx, limit);
+
+            try ( ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    StaffSupportCustomerTrip r = new StaffSupportCustomerTrip();
+                    r.setRequestId(rs.getInt("request_id"));
+                    r.setInvoiceId(rs.getInt("invoice_id"));
+                    r.setInvoiceCode(rs.getString("invoice_code"));
+                    r.setCustomerName(rs.getString("customerName"));
+                    r.setRequestDate(rs.getTimestamp("request_date"));
+                    r.setCancelReason(rs.getString("cancel_reason"));
+                    r.setRequestStatus(rs.getString("request_status"));
+                    r.setApprovedByStaffId(
+                            (Integer) rs.getObject("approved_by_staff_id")
+                    );
+                    r.setApprovalDate(rs.getTimestamp("approval_date"));
+                    list.add(r);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    /**
+     * Đếm tổng số bản ghi theo cùng điều kiện search/filter
+     */
+    public int getTotalCount(String search, String status) {
+        StringBuilder sql = new StringBuilder(
+                "SELECT COUNT(*) "
+                + "FROM Invoice_Cancel_Requests icr "
+                + "  JOIN Users u    ON icr.user_id    = u.user_id "
+                + "  JOIN Invoices inv ON icr.invoice_id = inv.invoice_id "
+                + "WHERE 1=1"
+        );
+
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append(" AND (CAST(icr.request_id AS varchar) LIKE ? ")
+                    .append("      OR inv.invoice_code LIKE ? ")
+                    .append("      OR u.user_name LIKE ?)");
+        }
+        if (status != null && !status.isEmpty() && !"All".equals(status)) {
+            sql.append(" AND icr.request_status = ?");
+        }
+
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql.toString())) {
+            int idx = 1;
+            if (search != null && !search.trim().isEmpty()) {
+                String like = "%" + search.trim() + "%";
+                ps.setString(idx++, like);
+                ps.setString(idx++, like);
+                ps.setString(idx++, like);
+            }
+            if (status != null && !status.isEmpty() && !"All".equals(status)) {
+                ps.setString(idx, status);
+            }
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    /**
+     * Cập nhật status (Approved/Rejected) trên yêu cầu hủy hoá đơn, nếu
+     * Approved thì đánh dấu hoá đơn là Cancelled, nếu Rejected thì đánh dấu hoá
+     * đơn về Paid.
+     */
+    public void updateStatus(int requestId, String newStatus, int staffId) {
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            conn.setAutoCommit(false);
+
+            // 1) Cập nhật request
+            String sql1 = "UPDATE Invoice_Cancel_Requests "
+                    + "SET request_status = ?, approved_by_staff_id = ?, approval_date = GETDATE() "
+                    + "WHERE request_id = ?";
+            try ( PreparedStatement ps1 = conn.prepareStatement(sql1)) {
+                ps1.setString(1, newStatus);
+                ps1.setInt(2, staffId);
+                ps1.setInt(3, requestId);
+                ps1.executeUpdate();
+            }
+
+            // 2) Cập nhật status của Invoice
+            if ("Approved".equalsIgnoreCase(newStatus)) {
+                String sql2 = "UPDATE Invoices "
+                        + "SET invoice_status = 'Cancelled' "
+                        + "WHERE invoice_id = ("
+                        + "  SELECT invoice_id FROM Invoice_Cancel_Requests WHERE request_id = ?"
+                        + ")";
+                try ( PreparedStatement ps2 = conn.prepareStatement(sql2)) {
+                    ps2.setInt(1, requestId);
+                    ps2.executeUpdate();
+                }
+
+            } else if ("Rejected".equalsIgnoreCase(newStatus)) {
+                String sql3 = "UPDATE Invoices "
+                        + "SET invoice_status = 'Paid' "
+                        + "WHERE invoice_id = ("
+                        + "  SELECT invoice_id FROM Invoice_Cancel_Requests WHERE request_id = ?"
+                        + ")";
+                try ( PreparedStatement ps3 = conn.prepareStatement(sql3)) {
+                    ps3.setInt(1, requestId);
+                    ps3.executeUpdate();
+                }
+            }
+
+            conn.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
+
+}

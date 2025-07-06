@@ -5,13 +5,27 @@
 package busticket.controller;
 
 import busticket.DAO.AdminRoutesDAO;
+import busticket.model.AdminBusTypes;
+import busticket.model.AdminLocations;
+import busticket.model.AdminRoutePrice;
+import busticket.model.AdminRouteStop;
 import busticket.model.AdminRoutes;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.faces.view.Location;
 
 /**
  *
@@ -31,155 +45,277 @@ public class AdminRoutesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        AdminRoutesDAO dao = new AdminRoutesDAO();
-
-        if (request.getParameter("add") != null) {
-            request.getRequestDispatcher("/WEB-INF/admin/routes/add-route.jsp").forward(request, response);
-            return;
+        AdminRoutesDAO adminRoutesDAO = new AdminRoutesDAO();
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            Object success = session.getAttribute("success");
+            Object error = session.getAttribute("error");
+            if (success != null) {
+                request.setAttribute("success", success);
+                session.removeAttribute("success");
+            }
+            if (error != null) {
+                request.setAttribute("error", error);
+                session.removeAttribute("error");
+            }
         }
 
-        if (request.getParameter("editId") != null) {
-    int id = Integer.parseInt(request.getParameter("editId"));
-    AdminRoutes route = dao.getRouteById(id);  // Gọi phương thức để lấy tuyến đường
-    request.setAttribute("route", route);  // Đặt đối tượng route vào request
-    request.getRequestDispatcher("/WEB-INF/admin/routes/edit-route.jsp").forward(request, response);
-    return;
-}
-
-    // Chức năng Delete
-    if (request.getParameter("delete") != null) {
-        int routeId = Integer.parseInt(request.getParameter("delete"));
-        AdminRoutes route = dao.getRouteById(routeId);  // Lấy thông tin tuyến đường cần xóa
-        if (route != null) {
-            request.setAttribute("route", route);  // Set dữ liệu vào request để hiển thị trên form
-            request.getRequestDispatcher("/WEB-INF/admin/routes/delete-route.jsp").forward(request, response);
-        } else {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Route not found.");
-        }
-        return;
-    }
-
-// Fetch all routes
-        // Pagination setup
-    int requestsPerPage = 10;  // Số dòng mỗi trang
-    int currentPage = 1;  // Mặc định trang 1
-    if (request.getParameter("page") != null) {
         try {
-            currentPage = Integer.parseInt(request.getParameter("page"));
-        } catch (NumberFormatException e) {
-            currentPage = 1;
+            // --- Show add form ---
+            if (request.getParameter("add") != null) {
+                loadFormData(request, 0);
+                request.getRequestDispatcher("/WEB-INF/admin/routes/add-route.jsp")
+                        .forward(request, response);
+                return;
+            }
+
+            // --- Show edit form ---
+            String editId = request.getParameter("editId");
+            if (editId != null) {
+                int routeId = Integer.parseInt(editId);
+                loadFormData(request, routeId);
+                // Lấy estimatedTime từ route_stops
+                int totalMinutes = adminRoutesDAO.getEstimatedTimeByRouteId(routeId);
+                int hours = totalMinutes / 60;
+                int minutes = totalMinutes % 60;
+                request.setAttribute("routeHours", hours);
+                request.setAttribute("routeMinutes", minutes);
+                request.getRequestDispatcher("/WEB-INF/admin/routes/edit-route.jsp")
+                        .forward(request, response);
+                return;
+            }
+
+            // --- Show delete confirmation ---
+            String deleteId = request.getParameter("delete");
+            if (deleteId != null) {
+                int routeId = Integer.parseInt(deleteId);
+                request.setAttribute("route", adminRoutesDAO.getRouteById(routeId));
+                request.getRequestDispatcher("/WEB-INF/admin/routes/delete-route.jsp")
+                        .forward(request, response);
+                return;
+            }
+
+            // --- Show detail form ---
+            String detailId = request.getParameter("detail");
+            if (detailId != null) {
+                int routeId = Integer.parseInt(detailId);
+                loadFormData(request, routeId);
+                // Lấy estimatedTime từ route_stops
+                int totalMinutes = adminRoutesDAO.getEstimatedTimeByRouteId(routeId);
+                int hours = totalMinutes / 60;
+                int minutes = totalMinutes % 60;
+                request.setAttribute("routeHours", hours);
+                request.setAttribute("routeMinutes", minutes);
+                request.getRequestDispatcher("/WEB-INF/admin/routes/view-route-details.jsp")
+                        .forward(request, response);
+                return;
+            }
+
+            // --- List with pagination ---
+            int perPage = 10;
+            int page = 1;
+            if (request.getParameter("page") != null) {
+                try {
+                    page = Integer.parseInt(request.getParameter("page"));
+                } catch (NumberFormatException ignored) {
+                }
+            }
+            int offset = (page - 1) * perPage;
+            List<AdminRoutes> routes = adminRoutesDAO.getAllRoutes(offset, perPage);
+            int total = adminRoutesDAO.countRoutes();
+            int totalPages = (int) Math.ceil((double) total / perPage);
+
+            request.setAttribute("routes", routes);
+            request.setAttribute("currentPage", page);
+            request.setAttribute("totalPages", totalPages);
+            request.setAttribute("locations", adminRoutesDAO.getAllLocations());
+            request.getRequestDispatcher("/WEB-INF/admin/routes/routes.jsp")
+                    .forward(request, response);
+
+        } catch (SQLException ex) {
+            throw new ServletException("Error loading routes", ex);
         }
-    }
-    int offset = (currentPage - 1) * requestsPerPage;
-
-    // Fetch routes with pagination
-    List<AdminRoutes> routesList = dao.getAllRoutes(offset, requestsPerPage);
-    int totalRoutes = dao.countRoutes();
-    int totalPages = (int) Math.ceil((double) totalRoutes / requestsPerPage);
-
-    // Set attributes for JSP
-    request.setAttribute("routes", routesList);
-    request.setAttribute("currentPage", currentPage);
-    request.setAttribute("totalPages", totalPages);
-        request.getRequestDispatcher("/WEB-INF/admin/routes/routes.jsp")
-                .forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        AdminRoutesDAO dao = new AdminRoutesDAO();
-
+        AdminRoutesDAO adminRoutesDAO = new AdminRoutesDAO();
         String action = request.getParameter("action");
-        if ("create".equalsIgnoreCase(action)) {
-            AdminRoutes r = new AdminRoutes();
-            r.setStartLocation(request.getParameter("origin"));
-            r.setEndLocation(request.getParameter("destination"));
+        String baseUrl = request.getContextPath() + "/admin/routes";
+        HttpSession session = request.getSession();
 
-            // Kiểm tra và xử lý estimatedTime (Chuyển từ HH:mm:ss sang phút)
-            try {
-                String estimatedTimeStr = request.getParameter("estimatedTime");
+        try {
+            if ("create".equalsIgnoreCase(action)) {
+                try {
+                    // --- 1) Tạo route chính ---
+                    AdminRoutes r = new AdminRoutes();
+                    r.setStartLocationId(Integer.parseInt(request.getParameter("startLocationId")));
+                    r.setEndLocationId(Integer.parseInt(request.getParameter("endLocationId")));
+                    r.setDistanceKm(Double.parseDouble(request.getParameter("distance")));
+                    r.setRouteStatus(request.getParameter("routeStatus"));
+                    int routeId = adminRoutesDAO.createRoute(r);
 
-                int estimatedTimeInMinutes = convertTimeToMinutes(estimatedTimeStr);  // Hàm chuyển từ HH:mm:ss sang phút
-                r.setEstimatedTime(String.format("%d minutes", estimatedTimeInMinutes));  // Lưu kết quả ở dạng phút
-            } catch (Exception e) {
-                e.printStackTrace();
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid estimated time format. Please use HH:mm:ss format.");
+                    // --- 2) Prices: đọc mảng ---
+                    String[] busTypes = request.getParameterValues("pricesBusTypeId[]");
+                    String[] prices = request.getParameterValues("pricesPrice[]");
+                    if (busTypes != null && prices != null) {
+                        int n = Math.min(busTypes.length, prices.length);
+                        for (int i = 0; i < n; i++) {
+                            String bt = busTypes[i].trim();
+                            String pr = prices[i].trim();
+                            if (!bt.isEmpty() && !pr.isEmpty()) {
+                                adminRoutesDAO.addRoutePrice(
+                                        routeId,
+                                        Integer.parseInt(bt),
+                                        new BigDecimal(pr)
+                                );
+                            }
+                        }
+                    }
+
+                    // --- 3) Stops: đọc mảng ---
+                    String[] locs = request.getParameterValues("stopsLocationId[]");
+                    String[] dwells = request.getParameterValues("stopsDwellMinutes[]");
+                    String[] travels = request.getParameterValues("stopsTravelMinutes[]");
+                    if (locs != null && dwells != null && travels != null) {
+                        List<AdminRouteStop> stops = new ArrayList<>();
+                        int mStops = Math.min(Math.min(locs.length, dwells.length), travels.length);
+                        for (int i = 0; i < mStops; i++) {
+                            String sl = locs[i].trim();
+                            String dw = dwells[i].trim();
+                            String tr = travels[i].trim();
+                            if (!sl.isEmpty() && !dw.isEmpty() && !tr.isEmpty()) {
+                                AdminRouteStop stop = new AdminRouteStop(
+                                        routeId,
+                                        stops.size() + 1,
+                                        Integer.parseInt(sl),
+                                        Integer.parseInt(dw)
+                                );
+                                stop.setTravelMinutes(Integer.parseInt(tr));
+                                stops.add(stop);
+                            }
+                        }
+                        if (!stops.isEmpty()) {
+                            adminRoutesDAO.addRouteStops(routeId, stops);
+                        }
+                    }
+
+                    session.setAttribute("success", "Route created successfully!");
+                    response.sendRedirect(baseUrl);
+                    return;
+
+                } catch (Exception ex) {
+                    log("Error creating route", ex);
+                    request.setAttribute("error", "Create failed: " + ex.getMessage());
+                    loadFormData(request, 0);
+                    request.getRequestDispatcher("/WEB-INF/admin/routes/add-route.jsp")
+                            .forward(request, response);
+                    return;
+                }
+
+            } else if ("update".equalsIgnoreCase(action)) {
+                try {
+                    // --- 1) Cập nhật route chính ---
+                    int routeId = Integer.parseInt(request.getParameter("routeId"));
+                    AdminRoutes route = new AdminRoutes();
+                    route.setRouteId(routeId);
+                    route.setStartLocationId(Integer.parseInt(request.getParameter("startLocationId")));
+                    route.setEndLocationId(Integer.parseInt(request.getParameter("endLocationId")));
+                    route.setDistanceKm(Double.parseDouble(request.getParameter("distance")));
+                    route.setRouteStatus(request.getParameter("routeStatus"));
+                    adminRoutesDAO.updateRoute(route);
+
+                    // --- 2) Prices: xóa cũ + thêm mới (mảng) ---
+                    adminRoutesDAO.deleteRoutePrices(routeId);
+                    String[] busTypes = request.getParameterValues("pricesBusTypeId[]");
+                    String[] prices = request.getParameterValues("pricesPrice[]");
+                    if (busTypes != null && prices != null) {
+                        int n = Math.min(busTypes.length, prices.length);
+                        for (int i = 0; i < n; i++) {
+                            String bt = busTypes[i].trim();
+                            String pr = prices[i].trim();
+                            if (!bt.isEmpty() && !pr.isEmpty()) {
+                                adminRoutesDAO.addRoutePrice(
+                                        routeId,
+                                        Integer.parseInt(bt),
+                                        new BigDecimal(pr)
+                                );
+                            }
+                        }
+                    }
+
+                    // --- 3) Stops: xóa cũ + thêm mới (mảng) ---
+                    adminRoutesDAO.deleteRouteStops(routeId);
+                    String[] locs = request.getParameterValues("stopsLocationId[]");
+                    String[] dwells = request.getParameterValues("stopsDwellMinutes[]");
+                    String[] travels = request.getParameterValues("stopsTravelMinutes[]");
+                    if (locs != null && dwells != null && travels != null) {
+                        List<AdminRouteStop> newStops = new ArrayList<>();
+                        int mStops = Math.min(Math.min(locs.length, dwells.length), travels.length);
+                        for (int i = 0; i < mStops; i++) {
+                            String sl = locs[i].trim();
+                            String dw = dwells[i].trim();
+                            String tr = travels[i].trim();
+                            if (!sl.isEmpty() && !dw.isEmpty() && !tr.isEmpty()) {
+                                AdminRouteStop stop = new AdminRouteStop(
+                                        routeId,
+                                        newStops.size() + 1,
+                                        Integer.parseInt(sl),
+                                        Integer.parseInt(dw)
+                                );
+                                stop.setTravelMinutes(Integer.parseInt(tr));
+                                newStops.add(stop);
+                            }
+                        }
+                        if (!newStops.isEmpty()) {
+                            adminRoutesDAO.addRouteStops(routeId, newStops);
+                        }
+                    }
+
+                    session.setAttribute("success", "Route updated successfully!");
+                    response.sendRedirect(baseUrl);
+                    return;
+
+                } catch (Exception ex) {
+                    log("Error updating route", ex);
+                    request.setAttribute("error", "Update failed: " + ex.getMessage());
+                    loadFormData(request, Integer.parseInt(request.getParameter("routeId")));
+                    request.getRequestDispatcher("/WEB-INF/admin/routes/edit-route.jsp")
+                            .forward(request, response);
+                    return;
+                }
+
+            } else if ("delete".equalsIgnoreCase(action)) {
+                int routeId = Integer.parseInt(request.getParameter("routeId"));
+                adminRoutesDAO.deleteRoute(routeId);
+                session.setAttribute("success", "Route deleted successfully!");
+                response.sendRedirect(baseUrl);
                 return;
             }
 
-            // Kiểm tra và xử lý distance
-            String distanceStr = request.getParameter("distance");
-            if (distanceStr != null && !distanceStr.isEmpty()) {
-                // Loại bỏ "km" nếu có
-                distanceStr = distanceStr.replace("km", "").trim(); // Loại bỏ "km" và khoảng trắng
-                try {
-                    double distance = Double.parseDouble(distanceStr);  // Chuyển đổi phần số thành Double
-                    r.setDistanceKm(distance);  // Lưu giá trị distance
-                } catch (NumberFormatException e) {
-                    e.printStackTrace();
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid distance format. Please provide a valid number.");
-                    return;
-                }
-            }
+            // Unknown action
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unknown action");
 
-            try {
-                dao.createRoute(r);
-                response.sendRedirect("routes");
-            } catch (Exception e) {
-                e.printStackTrace();
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error creating route.");
-            }
-            return;
+        } catch (SQLException ex) {
+            throw new ServletException("Error processing routes", ex);
         }
-
-        if ("update".equalsIgnoreCase(action)) {
-        // Xử lý cập nhật tuyến đường
-        int routeId = Integer.parseInt(request.getParameter("route_id"));
-        AdminRoutes r = new AdminRoutes();
-        r.setRouteId(routeId);
-        r.setStartLocation(request.getParameter("origin"));
-        r.setEndLocation(request.getParameter("destination"));
-        r.setDistanceKm(Double.parseDouble(request.getParameter("distance")));
-        r.setEstimatedTime(request.getParameter("estimatedTime"));
-
-        try {
-            dao.updateRoute(r);  // Gọi phương thức cập nhật tuyến đường trong DAO
-            response.sendRedirect("routes");  // Redirect về danh sách tuyến đường
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error updating route.");
-        }
-        return;
     }
 
-    if ("delete".equalsIgnoreCase(action)) {
-        // Xử lý xóa tuyến đường
-        int routeId = Integer.parseInt(request.getParameter("route_id"));
-        try {
-            dao.deleteRoute(routeId);  // Gọi phương thức xóa tuyến đường trong DAO
-            response.sendRedirect("routes");  // Redirect về danh sách tuyến đường
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error deleting route.");
-        }
-        return;
+    private void loadFormData(HttpServletRequest request, int routeId) throws SQLException {
+        AdminRoutesDAO adminRoutesDAO = new AdminRoutesDAO();
+
+        AdminRoutes route = adminRoutesDAO.getRouteById(routeId);
+        List<AdminRouteStop> stops = adminRoutesDAO.getRouteStops(routeId);
+        List<AdminRoutePrice> prices = adminRoutesDAO.getPricesByRouteId(routeId);
+        List<AdminLocations> locations = adminRoutesDAO.getAllLocations();
+        List<AdminBusTypes> busTypes = adminRoutesDAO.getAllBusTypes();
+
+        request.setAttribute("route", route);
+        request.setAttribute("stops", stops);
+        request.setAttribute("prices", prices);
+        request.setAttribute("locations", locations);
+        request.setAttribute("busTypes", busTypes);
     }
-}
 
-// Hàm chuyển đổi từ HH:mm:ss sang số phút
-    private int convertTimeToMinutes(String timeStr) throws Exception {
-        // Kiểm tra xem timeStr có đúng định dạng không
-        if (timeStr == null || !timeStr.matches("^\\d{2}:\\d{2}:\\d{2}$")) {
-            throw new Exception("Invalid time format. Expected HH:mm:ss.");
-        }
-
-        String[] timeParts = timeStr.split(":");
-        int hours = Integer.parseInt(timeParts[0]);
-        int minutes = Integer.parseInt(timeParts[1]);
-
-        // Tính tổng số phút
-        return hours * 60 + minutes;
-    }
 }

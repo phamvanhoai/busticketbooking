@@ -4,15 +4,17 @@
  */
 package busticket.controller;
 
-import busticket.DAO.BookingDAO;
-import busticket.db.DBContext;
-import busticket.model.Booking;
+import busticket.DAO.TicketManagementDAO;
+import busticket.model.Invoices;
+import busticket.model.Review;
+import busticket.model.Users;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -33,52 +35,137 @@ public class TicketManagementServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Lấy đường dẫn từ URL (xóa phần base path như "/ticket-management")
-        String path = request.getPathInfo();
-
-        if (path == null) {
-            response.sendRedirect(request.getContextPath() + "/ticket-management/cancel-ticket");
+        // Get the logged-in user's ID from session
+        HttpSession session = request.getSession();
+        if (session == null || session.getAttribute("currentUser") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
-        // Dựa trên path để chuyển hướng tới các JSP khác nhau
-        switch (path) {
-            case "/cancel-ticket":
-                int userId = 1; // hoặc lấy từ session
-                List<Booking> bookings = new BookingDAO(new DBContext().getConnection()).getBookingsByUserId(userId);
-                request.setAttribute("bookings", bookings);
-                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/cancel-ticket.jsp").forward(request, response);
-                break;
-            case "/view-bookings":
-                int userIdInvoice = 1; // TODO: Lấy từ session sau
+        // Get user from session
+        Users users = (Users) session.getAttribute("currentUser");
+        TicketManagementDAO ticketManagementDAO = new TicketManagementDAO();
 
-                // Lấy thông tin lọc từ request
-                String ticketCode = request.getParameter("ticketCode");
-                String departureDate = request.getParameter("departureDate");
-                String route = request.getParameter("route");
-                String status = request.getParameter("status");
+        String cancel = request.getParameter("cancel");
+        if (cancel != null) {
+            try {
+                int invoiceId = Integer.parseInt(cancel);
+                Invoices invoice = ticketManagementDAO.getInvoiceById(invoiceId);
 
-                // Gọi DAO mới có chức năng lọc
-                busticket.DAO.InvoiceDAO invoiceDAO = new busticket.DAO.InvoiceDAO(new DBContext().getConnection());
-                List<busticket.model.InvoiceView> invoices = invoiceDAO.searchInvoices(userIdInvoice, ticketCode, departureDate, route, status);
-
-                // Truyền dữ liệu vào JSP
-                request.setAttribute("invoices", invoices);
-                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp").forward(request, response);
-                break;
-
-            // Thêm các trường hợp khác nếu cần
-            case "/booking-history":
-                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/booking-history.jsp").forward(request, response);
-                break;
-            case "/my-tickets":
-                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/my-tickets.jsp").forward(request, response);
-                break;
-            default:
-                // Nếu không khớp với bất kỳ URL nào, có thể redirect về trang mặc định
-                response.sendRedirect(request.getContextPath() + "/ticket-management/cancel-ticket");
-                break;
+                if (invoice != null) {
+                    request.setAttribute("invoice", invoice);
+                    request.getRequestDispatcher("/WEB-INF/pages/ticket-management/cancel-ticket.jsp")
+                            .forward(request, response);
+                    return;
+                } else {
+                    request.setAttribute("errorMessage", "Invoice not found!");
+                    request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp")
+                            .forward(request, response);
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                request.setAttribute("errorMessage", "Invalid invoice ID format!");
+                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp")
+                        .forward(request, response);
+                return;
+            }
         }
+
+        // View details (optional)
+        String detail = request.getParameter("detail");
+        if (detail != null) {
+            // Handle view details logic if needed
+        }
+
+        String review = request.getParameter("review");
+        if (review != null) {
+            try {
+                int invoiceId = Integer.parseInt(review);
+                Invoices invoice = ticketManagementDAO.getInvoiceById(invoiceId);
+
+                if (invoice != null) {
+                    Date now = new Date();
+
+                    if ("Paid".equalsIgnoreCase(invoice.getInvoiceStatus())
+                            && invoice.getDepartureTime() != null
+                            && !invoice.getDepartureTime().after(now)) {
+
+                        // Lấy review cũ nếu có
+                        Review reviewObj = ticketManagementDAO.getReviewByInvoiceId(invoiceId);
+                        if (reviewObj != null) {
+                            invoice.setReviewRating(reviewObj.getRating());
+                            invoice.setReviewText(reviewObj.getText());
+                        }
+                        request.setAttribute("invoice", invoice);
+                        request.getRequestDispatcher("/WEB-INF/pages/ticket-management/review-booking.jsp")
+                                .forward(request, response);
+                        return;
+
+                    } else {
+                        response.sendRedirect(request.getContextPath() + "/ticket-management?status=trip_not_completed");
+                        return;
+                    }
+
+                } else {
+                    request.setAttribute("errorMessage", "Invoice not found!");
+                    request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp")
+                            .forward(request, response);
+                    return;
+                }
+
+            } catch (NumberFormatException e) {
+                request.setAttribute("errorMessage", "Invalid invoice ID format!");
+
+                String statusParam = request.getParameter("status");
+                if ("trip_not_completed".equals(statusParam)) {
+                    request.setAttribute("errorMessage", "Trip chưa hoàn thành. Không thể đánh giá!");
+                }
+                if ("review_error".equals(statusParam)) {
+                    request.setAttribute("errorMessage", "Đã xảy ra lỗi khi thực hiện review!");
+                }
+                if ("review_success".equals(statusParam)) {
+                    request.setAttribute("successMessage", "Review thành công!");
+                }
+                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp")
+                        .forward(request, response);
+                return;
+            }
+        }
+
+        // Default logic: list bookings with filters & pagination
+        int userId = users.getUser_id();
+        String ticketCode = request.getParameter("ticketCode");
+        String route = request.getParameter("route");
+        String status = request.getParameter("status");
+
+        int currentPage = 1;
+        int recordsPerPage = 10;
+
+        if (request.getParameter("page") != null) {
+            try {
+                currentPage = Integer.parseInt(request.getParameter("page"));
+            } catch (NumberFormatException e) {
+                currentPage = 1;
+            }
+        }
+
+        int offset = (currentPage - 1) * recordsPerPage;
+
+        List<String> locations = ticketManagementDAO.getAllLocations();
+        List<Invoices> invoicesList = ticketManagementDAO.getAllInvoices(ticketCode, route, status, offset, recordsPerPage);
+        int totalRecords = ticketManagementDAO.getTotalInvoicesCount(ticketCode, route, status);
+        int totalPages = (int) Math.ceil((double) totalRecords / recordsPerPage);
+
+        request.setAttribute("invoicesList", invoicesList);
+        request.setAttribute("locations", locations);
+        request.setAttribute("ticketCode", ticketCode);
+        request.setAttribute("route", route);
+        request.setAttribute("status", status);
+        request.setAttribute("currentPage", currentPage);
+        request.setAttribute("totalPages", totalPages);
+
+        request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp")
+                .forward(request, response);
     }
 
     /**
@@ -93,6 +180,100 @@ public class TicketManagementServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        // Lấy thông tin từ session (người dùng đang đăng nhập)
+        HttpSession session = request.getSession();
+        Users user = (Users) session.getAttribute("currentUser");
+        if (user == null) {
+            response.sendRedirect("/login");
+            return;
+        }
+
+        // Lấy thông tin từ form
+        String action = request.getParameter("action");
+        TicketManagementDAO ticketManagementDAO = new TicketManagementDAO();
+
+        if (action == null) {
+            // Nếu không có action thì coi như lỗi
+            response.sendRedirect(request.getContextPath() + "/ticket-management?status=invalid_action");
+            return;
+        }
+
+        // ========================
+        // CANCEL LOGIC
+        // ========================
+        if (action.equalsIgnoreCase("cancel")) {
+            String invoiceIdStr = request.getParameter("invoiceId");
+            String cancellationReason = request.getParameter("reason");
+
+            if (invoiceIdStr == null || invoiceIdStr.isEmpty()) {
+                System.out.println("Cancel Error: invoiceId missing");
+                response.sendRedirect(request.getContextPath() + "/ticket-management?status=cancel_error");
+                return;
+            }
+
+            try {
+                int invoiceId = Integer.parseInt(invoiceIdStr);
+                boolean success = ticketManagementDAO.cancelInvoice(invoiceIdStr, cancellationReason, user.getUser_id());
+
+                if (success) {
+                    response.sendRedirect(request.getContextPath() + "/ticket-management?status=Pending Cancellation");
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/ticket-management?status=error");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Cancel Error: invalid invoiceId format");
+                response.sendRedirect(request.getContextPath() + "/ticket-management?status=cancel_error");
+            }
+        } // ========================
+        // REVIEW LOGIC
+        // ========================
+        else if (action.equalsIgnoreCase("review")) {
+            String invoiceIdStr = request.getParameter("invoiceId");
+            String ratingStr = request.getParameter("rating");
+            String reviewText = request.getParameter("reviewText");
+
+            if (invoiceIdStr == null || invoiceIdStr.isEmpty()) {
+                System.out.println("Review Error: invoiceId is missing");
+                response.sendRedirect(request.getContextPath() + "/ticket-management?status=review_error");
+                return;
+            }
+
+            if (ratingStr == null || ratingStr.isEmpty()) {
+                System.out.println("Review Error: rating is missing");
+                response.sendRedirect(request.getContextPath() + "/ticket-management?status=review_error");
+                return;
+            }
+
+            try {
+                int invoiceId = Integer.parseInt(invoiceIdStr);
+                int rating = Integer.parseInt(ratingStr);
+
+                // Kiểm tra đã review chưa
+                boolean hasReviewed = ticketManagementDAO.hasReviewed(invoiceId);
+                boolean success;
+
+                if (hasReviewed) {
+                    success = ticketManagementDAO.updateInvoiceReview(invoiceId, rating, reviewText);
+                    System.out.println("Review UPDATE for invoiceId = " + invoiceId);
+                } else {
+                    success = ticketManagementDAO.addInvoiceReview(invoiceId, rating, reviewText);
+                    System.out.println("Review INSERT for invoiceId = " + invoiceId);
+                }
+
+                if (success) {
+                    response.sendRedirect(request.getContextPath() + "/ticket-management?status=review_success");
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/ticket-management?status=review_error");
+                }
+
+            } catch (NumberFormatException e) {
+                System.out.println("Review Error: Invalid number format");
+                e.printStackTrace();
+                response.sendRedirect(request.getContextPath() + "/ticket-management?status=review_error");
+            }
+        } else {
+            response.sendRedirect(request.getContextPath() + "/ticket-management?status=invalid_action");
+        }
     }
 
     /**

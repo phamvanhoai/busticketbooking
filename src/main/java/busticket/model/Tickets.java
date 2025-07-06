@@ -4,57 +4,40 @@
  */
 package busticket.model;
 
-
-import java.util.Date; 
+import java.sql.Timestamp;
 
 /**
  *
  * @author Pham Van Hoai - CE181744
  */
 public class Tickets {
-
     private int ticketId;
-    private String tripCode; // Assuming trip_code or similar for easy identification
-    private String routeStartLocation;
-    private String routeEndLocation;
-    private String seatNumber;
-    private String ticketCode;
-    private double fare; // Corresponds to Route_Pricing.price
-    private Date departureTime;
+    private int tripId;
+    private int userId;
     private String ticketStatus;
-    private String busType; // For cancel-ticket, showing bus type and available seats
-    private int availableSeats; // For cancel-ticket
+    private Timestamp checkIn;
+    private Timestamp checkOut;
+    private String ticketCode;
+    private int pickupLocationId;
+    private int dropoffLocationId;
 
-    // Constructor for view-bookings
-    public Tickets(int ticketId, String routeStartLocation, String routeEndLocation,
-            String seatNumber, String ticketCode, double fare, Date departureTime,
-            String ticketStatus) {
-        this.ticketId = ticketId;
-        this.routeStartLocation = routeStartLocation;
-        this.routeEndLocation = routeEndLocation;
-        this.seatNumber = seatNumber;
-        this.ticketCode = ticketCode;
-        this.fare = fare;
-        this.departureTime = departureTime;
-        this.ticketStatus = ticketStatus;
-    }
-
-    // Constructor for cancel-ticket (might need more details or a separate model)
-    public Tickets(int ticketId, String routeStartLocation, String routeEndLocation,
-            String busType, int availableSeats, double fare) {
-        this.ticketId = ticketId;
-        this.routeStartLocation = routeStartLocation;
-        this.routeEndLocation = routeEndLocation;
-        this.busType = busType;
-        this.availableSeats = availableSeats;
-        this.fare = fare;
-    }
-
-    // Default constructor
     public Tickets() {
     }
 
-    // Getters and Setters
+    public Tickets(int ticketId, int tripId, int userId, String ticketStatus, Timestamp checkIn, Timestamp checkOut, String ticketCode, int pickupLocationId, int dropoffLocationId) {
+        this.ticketId = ticketId;
+        this.tripId = tripId;
+        this.userId = userId;
+        this.ticketStatus = ticketStatus;
+        this.checkIn = checkIn;
+        this.checkOut = checkOut;
+        this.ticketCode = ticketCode;
+        this.pickupLocationId = pickupLocationId;
+        this.dropoffLocationId = dropoffLocationId;
+    }
+
+    
+    
     public int getTicketId() {
         return ticketId;
     }
@@ -63,60 +46,20 @@ public class Tickets {
         this.ticketId = ticketId;
     }
 
-    public String getTripCode() {
-        return tripCode;
+    public int getTripId() {
+        return tripId;
     }
 
-    public void setTripCode(String tripCode) {
-        this.tripCode = tripCode;
+    public void setTripId(int tripId) {
+        this.tripId = tripId;
     }
 
-    public String getRouteStartLocation() {
-        return routeStartLocation;
+    public int getUserId() {
+        return userId;
     }
 
-    public void setRouteStartLocation(String routeStartLocation) {
-        this.routeStartLocation = routeStartLocation;
-    }
-
-    public String getRouteEndLocation() {
-        return routeEndLocation;
-    }
-
-    public void setRouteEndLocation(String routeEndLocation) {
-        this.routeEndLocation = routeEndLocation;
-    }
-
-    public String getSeatNumber() {
-        return seatNumber;
-    }
-
-    public void setSeatNumber(String seatNumber) {
-        this.seatNumber = seatNumber;
-    }
-
-    public String getTicketCode() {
-        return ticketCode;
-    }
-
-    public void setTicketCode(String ticketCode) {
-        this.ticketCode = ticketCode;
-    }
-
-    public double getFare() {
-        return fare;
-    }
-
-    public void setFare(double fare) {
-        this.fare = fare;
-    }
-
-    public Date getDepartureTime() {
-        return departureTime;
-    }
-
-    public void setDepartureTime(Date departureTime) {
-        this.departureTime = departureTime;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public String getTicketStatus() {
@@ -127,19 +70,44 @@ public class Tickets {
         this.ticketStatus = ticketStatus;
     }
 
-    public String getBusType() {
-        return busType;
+    public Timestamp getCheckIn() {
+        return checkIn;
     }
 
-    public void setBusType(String busType) {
-        this.busType = busType;
+    public void setCheckIn(Timestamp checkIn) {
+        this.checkIn = checkIn;
     }
 
-    public int getAvailableSeats() {
-        return availableSeats;
+    public Timestamp getCheckOut() {
+        return checkOut;
     }
 
-    public void setAvailableSeats(int availableSeats) {
-        this.availableSeats = availableSeats;
+    public void setCheckOut(Timestamp checkOut) {
+        this.checkOut = checkOut;
     }
+
+    public String getTicketCode() {
+        return ticketCode;
+    }
+
+    public void setTicketCode(String ticketCode) {
+        this.ticketCode = ticketCode;
+    }
+
+    public int getPickupLocationId() {
+        return pickupLocationId;
+    }
+
+    public void setPickupLocationId(int pickupLocationId) {
+        this.pickupLocationId = pickupLocationId;
+    }
+
+    public int getDropoffLocationId() {
+        return dropoffLocationId;
+    }
+
+    public void setDropoffLocationId(int dropoffLocationId) {
+        this.dropoffLocationId = dropoffLocationId;
+    }
+    
 }

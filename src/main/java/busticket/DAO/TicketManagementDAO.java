@@ -4,16 +4,15 @@
  */
 package busticket.DAO;
 
-import busticket.db.DBContext; // Import lớp DBContext
-import busticket.model.Tickets; // Import mô hình Ticket (đã đổi tên từ Ticket thành Tickets theo code của bạn)
+import busticket.db.DBContext;
+import busticket.model.Invoices;
+import busticket.model.Review;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -21,104 +20,337 @@ import java.util.logging.Logger;
  */
 public class TicketManagementDAO extends DBContext {
 
-     private static final Logger LOGGER = Logger.getLogger(TicketManagementDAO.class.getName());
+    public List<Invoices> getAllInvoices(String ticketCode, String route, String status, int offset, int limit) {
+        List<Invoices> invoicesList = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+                "SELECT i.invoice_id, i.invoice_code, i.invoice_total_amount, "
+                + "i.payment_method, i.invoice_status, "
+                + "COUNT(t.ticket_id) AS ticket_count, "
+                + "CONCAT(ls.location_name, N' → ', le.location_name) AS route, "
+                + "tr.departure_time, "
+                + "u.user_name AS customer_name, "
+                + "ir.review_rating, "
+                + "ir.review_text "
+                + "FROM Invoices i "
+                + "JOIN Invoice_Items ii ON i.invoice_id = ii.invoice_id "
+                + "JOIN Tickets t ON t.ticket_id = ii.ticket_id "
+                + "JOIN Trips tr ON tr.trip_id = t.trip_id "
+                + "JOIN Routes r ON r.route_id = tr.route_id "
+                + "JOIN Locations ls ON r.start_location_id = ls.location_id "
+                + "JOIN Locations le ON r.end_location_id = le.location_id "
+                + "JOIN Users u ON i.user_id = u.user_id "
+                + "LEFT JOIN Invoice_Reviews ir ON i.invoice_id = ir.invoice_id "
+                + "WHERE 1=1 "
+        );
 
-    public List<Tickets> getBookingsByUserId(int userId) {
-        List<Tickets> bookings = new ArrayList<>();
-        String sql = "SELECT t.ticket_id, sl.location_name AS start_location_name, el.location_name AS end_location_name, " +
-                     "ts.seat_number, t.ticket_code, rp.price, tr.departure_time, t.ticket_status, " +
-                     "pl.location_name AS pickup_location_name, dl.location_name AS dropoff_location_name " +
-                     "FROM Tickets t " +
-                     "JOIN Trips tr ON t.trip_id = tr.trip_id " +
-                     "JOIN Routes r ON tr.route_id = r.route_id " +
-                     "JOIN Locations sl ON r.start_location_id = sl.location_id " +
-                     "JOIN Locations el ON r.end_location_id = el.location_id " +
-                     "JOIN Ticket_Seat ts ON t.ticket_id = ts.ticket_id " +
-                     "LEFT JOIN Route_Pricing rp ON tr.route_id = rp.route_id AND GETDATE() BETWEEN rp.effective_from AND rp.effective_to " +
-                     "LEFT JOIN Locations pl ON t.pickup_location_id = pl.location_id " +
-                     "LEFT JOIN Locations dl ON t.dropoff_location_id = dl.location_id " +
-                     "WHERE t.user_id = ? " +
-                     "ORDER BY tr.departure_time DESC";
+        // Lọc dữ liệu theo các tham số
+        if (ticketCode != null && !ticketCode.isEmpty()) {
+            sql.append(" AND i.invoice_code LIKE ?");
+        }
+        if (route != null && !route.isEmpty()) {
+            sql.append(" AND (ls.location_name + ' → ' + le.location_name) LIKE ?");
+        }
+        if (status != null && !status.isEmpty()) {
+            sql.append(" AND i.invoice_status = ?");
+        }
 
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        sql.append(" GROUP BY i.invoice_id, i.invoice_code, i.invoice_total_amount, "
+                + "i.payment_method, i.invoice_status, "
+                + "ls.location_name, le.location_name, u.user_name, tr.departure_time, "
+                + "ir.review_rating, ir.review_text ");
+        sql.append(" ORDER BY i.invoice_id ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
 
-            ps.setInt(1, userId);
-            try (ResultSet rs = ps.executeQuery()) {
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int idx = 1;
+            if (ticketCode != null && !ticketCode.isEmpty()) {
+                ps.setString(idx++, "%" + ticketCode + "%");
+            }
+            if (route != null && !route.isEmpty()) {
+                ps.setString(idx++, "%" + route + "%");
+            }
+            if (status != null && !status.isEmpty()) {
+                ps.setString(idx++, status);
+            }
+            ps.setInt(idx++, offset);
+            ps.setInt(idx, limit);
+
+            try ( ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    Tickets ticket = new Tickets();
-                    ticket.setTicketId(rs.getInt("ticket_id"));
-                    ticket.setRouteStartLocation(rs.getString("start_location_name"));
-                    ticket.setRouteEndLocation(rs.getString("end_location_name"));
-                    ticket.setSeatNumber(rs.getString("seat_number"));
-                    ticket.setTicketCode(rs.getString("ticket_code"));
-                    ticket.setFare(rs.getDouble("price"));
-                    ticket.setDepartureTime(rs.getTimestamp("departure_time"));
-                    ticket.setTicketStatus(rs.getString("ticket_status"));
-                    bookings.add(ticket);
+                    Invoices invoice = new Invoices();
+                    invoice.setInvoiceId(rs.getInt("invoice_id"));
+                    invoice.setInvoiceCode(rs.getString("invoice_code"));
+                    invoice.setInvoiceTotalAmount(rs.getFloat("invoice_total_amount"));
+                    invoice.setPaymentMethod(rs.getString("payment_method"));
+                    invoice.setInvoiceStatus(rs.getString("invoice_status"));
+                    invoice.setTicketCount(rs.getInt("ticket_count"));
+                    invoice.setRoute(rs.getString("route"));
+                    invoice.setDepartureTime(rs.getTimestamp("departure_time"));
+                    invoice.setCustomerName(rs.getString("customer_name"));// Gán departureTime cho invoice
+                    invoicesList.add(invoice);
+                    invoice.setReviewRating(
+                            rs.getObject("review_rating") != null
+                            ? rs.getInt("review_rating")
+                            : null
+                    );
+                    invoice.setReviewText(rs.getString("review_text"));
+                    invoice.setReviewed(rs.getObject("review_rating") != null);
                 }
             }
         } catch (SQLException ex) {
-            LOGGER.log(Level.SEVERE, "Error fetching bookings for user ID: " + userId, ex);
+            ex.printStackTrace();
         }
-        return bookings;
+        return invoicesList;
     }
 
-    public Tickets getTicketById(int ticketId) {
-        // Implementation remains the same
-        return null;
-    }
+    public int getTotalInvoicesCount(String ticketCode, String route, String status) {
+        StringBuilder sql = new StringBuilder(
+                "SELECT COUNT(*) "
+                + "FROM Invoices i "
+                + "JOIN Invoice_Items ii ON i.invoice_id = ii.invoice_id "
+                + "JOIN Tickets t ON ii.ticket_id = t.ticket_id "
+                + "JOIN Trips trip ON t.trip_id = trip.trip_id "
+                + "JOIN Routes r ON trip.route_id = r.route_id "
+                + "JOIN Locations ls ON r.start_location_id = ls.location_id "
+                + "JOIN Locations le ON r.end_location_id = le.location_id "
+                + "WHERE 1=1"
+        );
 
-    public boolean cancelTicket(int ticketId) {
-        String sql = "UPDATE Tickets SET ticket_status = 'Cancelled' WHERE ticket_id = ? AND ticket_status NOT IN ('Cancelled', 'Checked Out')";
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, ticketId);
-            int rowsAffected = ps.executeUpdate();
-            return rowsAffected > 0;
+        if (ticketCode != null && !ticketCode.isEmpty()) {
+            sql.append(" AND i.invoice_code LIKE ?");
+        }
+        if (route != null && !route.isEmpty()) {
+            sql.append(" AND (ls.location_name + ' → ' + le.location_name) LIKE ?");
+        }
+        if (status != null && !status.isEmpty()) {
+            sql.append(" AND i.invoice_status = ?");
+        }
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int idx = 1;
+            if (ticketCode != null && !ticketCode.isEmpty()) {
+                ps.setString(idx++, "%" + ticketCode + "%");
+            }
+            if (route != null && !route.isEmpty()) {
+                ps.setString(idx++, "%" + route + "%");
+            }
+            if (status != null && !status.isEmpty()) {
+                ps.setString(idx++, status);
+            }
+
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
         } catch (SQLException ex) {
-            LOGGER.log(Level.SEVERE, "Error canceling ticket with ID: " + ticketId, ex);
+            ex.printStackTrace();
+        }
+        return 0;
+    }
+
+    public List<String> getAllLocations() {
+        List<String> locations = new ArrayList<>();
+        String query = "SELECT DISTINCT location_name FROM Locations";
+
+        try ( PreparedStatement ps = getConnection().prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                locations.add(rs.getString("location_name"));
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+        return locations;
+    }
+
+    // Cập nhật trạng thái hóa đơn và lưu yêu cầu hủy
+    public boolean cancelInvoice(String invoiceId, String cancellationReason, int userId) {
+        // SQL để cập nhật trạng thái hóa đơn thành 'Cancelled'
+        String updateInvoiceSQL = "UPDATE Invoices SET invoice_status = 'Pending Cancellation' WHERE invoice_id = ?";
+
+        // SQL để lưu thông tin yêu cầu hủy vào bảng Invoice_Cancel_Requests
+        String insertCancelRequestSQL = "INSERT INTO Invoice_Cancel_Requests (invoice_id, cancel_reason, user_id) VALUES (?, ?, ?)";
+
+        Connection conn = null;
+        PreparedStatement ps1 = null;
+        PreparedStatement ps2 = null;
+
+        try {
+            // Mở kết nối
+            conn = getConnection();
+            // Bắt đầu giao dịch (transaction)
+            conn.setAutoCommit(false);
+
+            // Cập nhật trạng thái hóa đơn
+            ps1 = conn.prepareStatement(updateInvoiceSQL);
+            ps1.setString(1, invoiceId);
+            ps1.executeUpdate();
+
+            // Lưu yêu cầu hủy vào bảng Invoice_Cancel_Requests
+            ps2 = conn.prepareStatement(insertCancelRequestSQL);
+            ps2.setString(1, invoiceId);
+            ps2.setString(2, cancellationReason);
+            ps2.setInt(3, userId);
+            ps2.executeUpdate();
+
+            // Nếu tất cả các câu lệnh SQL chạy thành công, commit giao dịch
+            conn.commit();
+            return true;
+        } catch (SQLException ex) {
+            // Nếu có lỗi xảy ra, rollback giao dịch
+            ex.printStackTrace();
+            try {
+                if (conn != null) {
+                    conn.rollback(); // Rollback nếu có lỗi
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return false;
+        } finally {
+            // Đảm bảo rằng các tài nguyên được đóng đúng cách
+            try {
+                if (ps1 != null) {
+                    ps1.close();
+                }
+                if (ps2 != null) {
+                    ps2.close();
+                }
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    // Để lấy thông tin hóa đơn cụ thể, bạn có thể sử dụng phương thức này trong Servlet
+    public Invoices getInvoiceById(int invoiceId) {
+        Invoices invoice = null;
+        String sql = "SELECT i.invoice_id, i.invoice_code, i.invoice_total_amount, "
+                + "i.payment_method, i.invoice_full_name, i.invoice_status, i.paid_at, "
+                + "CONCAT(ls.location_name, N' → ', le.location_name) AS route, "
+                + "tr.departure_time "
+                + "FROM Invoices i "
+                + "JOIN Invoice_Items ii ON i.invoice_id = ii.invoice_id "
+                + "JOIN Tickets t ON t.ticket_id = ii.ticket_id "
+                + "JOIN Trips tr ON tr.trip_id = t.trip_id "
+                + "JOIN Routes r ON r.route_id = tr.route_id "
+                + "JOIN Locations ls ON r.start_location_id = ls.location_id "
+                + "JOIN Locations le ON r.end_location_id = le.location_id "
+                + "WHERE i.invoice_id = ?";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, invoiceId);
+
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    invoice = new Invoices();
+                    invoice.setInvoiceId(rs.getInt("invoice_id"));
+                    invoice.setInvoiceCode(rs.getString("invoice_code"));
+                    invoice.setInvoiceTotalAmount(rs.getFloat("invoice_total_amount"));
+                    invoice.setPaymentMethod(rs.getString("payment_method"));
+                    invoice.setInvoiceStatus(rs.getString("invoice_status"));
+                    invoice.setPaidAt(rs.getTimestamp("paid_at"));
+                    invoice.setRoute(rs.getString("route"));
+                    invoice.setCustomerName(rs.getString("invoice_full_name"));
+                    invoice.setDepartureTime(rs.getTimestamp("departure_time"));
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return invoice;
+    }
+
+    // Thêm review mới
+    public boolean addReview(int invoiceId, int rating, String text) {
+        String sql = "INSERT INTO Invoice_Reviews (invoice_id, review_rating, review_text, review_created_at) VALUES (?, ?, ?, GETDATE())";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, invoiceId);
+            ps.setInt(2, rating);
+            ps.setString(3, text);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
             return false;
         }
     }
 
-    public List<Tickets> getCancellableTicketsByUserId(int userId) {
-        List<Tickets> cancellableTickets = new ArrayList<>();
-        String sql = "SELECT t.ticket_id, sl.location_name AS start_location_name, el.location_name AS end_location_name, " +
-                     "bt.bus_type_name, b.capacity - ISNULL(SUM(CASE WHEN t2.ticket_status NOT IN ('Cancelled', 'Checked Out') THEN 1 ELSE 0 END), 0) AS current_available_seats, " +
-                     "rp.price " +
-                     "FROM Tickets t " +
-                     "JOIN Trips tr ON t.trip_id = tr.trip_id " +
-                     "JOIN Routes r ON tr.route_id = r.route_id " +
-                     "JOIN Locations sl ON r.start_location_id = sl.location_id " +
-                     "JOIN Locations el ON r.end_location_id = el.location_id " +
-                     "JOIN Buses b ON tr.bus_id = b.bus_id " +
-                     "JOIN Bus_Types bt ON b.bus_type_id = bt.bus_type_id " +
-                     "LEFT JOIN Route_Pricing rp ON tr.route_id = rp.route_id AND GETDATE() BETWEEN rp.effective_from AND rp.effective_to " +
-                     "LEFT JOIN Tickets t2 ON tr.trip_id = t2.trip_id AND t2.ticket_status NOT IN ('Cancelled', 'Checked Out') " +
-                     "WHERE t.user_id = ? AND t.ticket_status IN ('Confirmed', 'Pending') AND tr.departure_time > GETDATE() " +
-                     "GROUP BY t.ticket_id, sl.location_name, el.location_name, bt.bus_type_name, b.capacity, rp.price " +
-                     "ORDER BY tr.departure_time ASC";
+// Kiểm tra đã đánh giá chưa
+    public boolean hasReviewed(int invoiceId) {
+        String sql = "SELECT 1 FROM Invoice_Reviews WHERE invoice_id = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, invoiceId);
+            ResultSet rs = ps.executeQuery();
+            return rs.next(); // Nếu có dòng kết quả nghĩa là đã đánh giá
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
 
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+    public boolean addInvoiceReview(int invoiceId, int rating, String reviewText) {
+        String sql = "INSERT INTO Invoice_Reviews (invoice_id, review_rating, review_text, review_created_at) "
+                + "VALUES (?, ?, ?, GETDATE())";
+        try (
+                 Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql);) {
+            ps.setInt(1, invoiceId);
+            ps.setInt(2, rating);
+            ps.setString(3, reviewText);
+            ps.executeUpdate();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
-            ps.setInt(1, userId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Tickets ticket = new Tickets();
-                    ticket.setTicketId(rs.getInt("ticket_id"));
-                    ticket.setRouteStartLocation(rs.getString("start_location_name"));
-                    ticket.setRouteEndLocation(rs.getString("end_location_name"));
-                    ticket.setBusType(rs.getString("bus_type_name"));
-                    ticket.setAvailableSeats(rs.getInt("current_available_seats"));
-                    ticket.setFare(rs.getDouble("price"));
-                    cancellableTickets.add(ticket);
-                }
+    public Review getReviewByInvoiceId(int invoiceId) {
+        String sql = "SELECT review_rating, review_text FROM Invoice_Reviews WHERE invoice_id = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, invoiceId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Review review = new Review();
+                review.setRating(rs.getInt("review_rating"));
+                review.setText(rs.getString("review_text"));
+                return review;
             }
         } catch (SQLException ex) {
-            LOGGER.log(Level.SEVERE, "Error fetching cancellable tickets for user ID: " + userId, ex);
+            ex.printStackTrace();
         }
-        return cancellableTickets;
+        return null;
     }
+
+    public boolean updateReview(int invoiceId, int rating, String text) {
+        String sql = "UPDATE Invoice_Reviews SET review_rating = ?, review_text = ?, review_updated_at = GETDATE() WHERE invoice_id = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, rating);
+            ps.setString(2, text);
+            ps.setInt(3, invoiceId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateInvoiceReview(int invoiceId, int rating, String reviewText) {
+        String sql = "UPDATE Invoice_Reviews "
+                + "SET review_rating = ?, review_text = ?, review_created_at = GETDATE() "
+                + "WHERE invoice_id = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, rating);
+            ps.setString(2, reviewText);
+            ps.setInt(3, invoiceId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
 }

@@ -112,16 +112,16 @@ public class AdminBusesDAO extends DBContext {
     }
 
     // Cập nhật xe buýt
-    // Cập nhật xe buýt
     public void updateBus(AdminBuses bus) throws SQLException {
-        String sql = "UPDATE Buses SET plate_number = ?, bus_type_id = ?, capacity = ?, bus_status = ? WHERE bus_id = ?";
+        String sql = "UPDATE Buses SET bus_code = ?, plate_number = ?, bus_type_id = ?, capacity = ?, bus_status = ? WHERE bus_id = ?";
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, bus.getPlateNumber()); // Số hiệu xe
-            ps.setInt(2, bus.getBusTypeId()); // bus_type_id (loại xe buýt)
-            ps.setInt(3, bus.getCapacity()); // Sức chứa
-            ps.setString(4, bus.getBusStatus()); // Trạng thái xe
-            ps.setInt(5, bus.getBusId()); // bus_id (ID của xe buýt)
+            ps.setString(1, bus.getBusCode());
+            ps.setString(2, bus.getPlateNumber()); // Số hiệu xe
+            ps.setInt(3, bus.getBusTypeId()); // bus_type_id (loại xe buýt)
+            ps.setInt(4, bus.getCapacity()); // Sức chứa
+            ps.setString(5, bus.getBusStatus()); // Trạng thái xe
+            ps.setInt(6, bus.getBusId()); // bus_id (ID của xe buýt)
             ps.executeUpdate(); // Thực hiện cập nhật
         }
     }

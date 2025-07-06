@@ -10,6 +10,7 @@
 
 <%@include file="/WEB-INF/include/banner.jsp" %>
 
+
 <body class="min-h-screen bg-white py-14 px-6">
 
     <div class="max-w-[1024px] mx-auto">
