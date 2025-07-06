@@ -11,6 +11,7 @@ import java.sql.Timestamp;
  * @author Pham Van Hoai - CE181744
  */
 public class Invoices {
+
     private int invoiceId;
     private int userId;
     private float invoiceTotalAmount;
@@ -18,16 +19,23 @@ public class Invoices {
     private Timestamp paidAt;
     private String invoiceCode;
     private String invoiceStatus;
-    private int ticketCount; 
+    private int ticketCount;
     private String route;
     private Timestamp departureTime;
-    
-    private String customerName; // Add this field
+    private String customerName; // Thông tin khách hàng
+    private Integer reviewRating;
+    private String reviewText;
+    private boolean reviewed; // ✅ Đánh giá: đã review hay chưa
 
+    // Constructor mặc định
     public Invoices() {
     }
 
-    public Invoices(int invoiceId, int userId, float invoiceTotalAmount, String paymentMethod, Timestamp paidAt, String invoiceCode, String invoiceStatus, int ticketCount, String route, Timestamp departureTime, String customerName) {
+    // Constructor đầy đủ (bạn có thể cập nhật nếu dùng)
+    public Invoices(int invoiceId, int userId, float invoiceTotalAmount, String paymentMethod,
+            Timestamp paidAt, String invoiceCode, String invoiceStatus, int ticketCount,
+            String route, Timestamp departureTime, String customerName,
+            Integer reviewRating, String reviewText, boolean reviewed) {
         this.invoiceId = invoiceId;
         this.userId = userId;
         this.invoiceTotalAmount = invoiceTotalAmount;
@@ -39,9 +47,35 @@ public class Invoices {
         this.route = route;
         this.departureTime = departureTime;
         this.customerName = customerName;
+        this.reviewRating = reviewRating;
+        this.reviewText = reviewText;
+        this.reviewed = reviewed;
     }
 
-    
+    // Getter/Setter
+    public Integer getReviewRating() {
+        return reviewRating;
+    }
+
+    public void setReviewRating(Integer reviewRating) {
+        this.reviewRating = reviewRating;
+    }
+
+    public String getReviewText() {
+        return reviewText;
+    }
+
+    public void setReviewText(String reviewText) {
+        this.reviewText = reviewText;
+    }
+
+    public boolean isReviewed() {
+        return reviewed;
+    }
+
+    public void setReviewed(boolean reviewed) {
+        this.reviewed = reviewed;
+    }
 
     public String getCustomerName() {
         return customerName;
@@ -58,7 +92,7 @@ public class Invoices {
     public void setDepartureTime(Timestamp departureTime) {
         this.departureTime = departureTime;
     }
-    
+
     public String getRoute() {
         return route;
     }
@@ -74,7 +108,7 @@ public class Invoices {
     public void setTicketCount(int ticketCount) {
         this.ticketCount = ticketCount;
     }
-    
+
     public int getInvoiceId() {
         return invoiceId;
     }
@@ -130,6 +164,4 @@ public class Invoices {
     public void setInvoiceStatus(String invoiceStatus) {
         this.invoiceStatus = invoiceStatus;
     }
-    
-    
 }
