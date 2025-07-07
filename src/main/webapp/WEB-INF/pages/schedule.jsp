@@ -216,7 +216,7 @@
         </div>
         <!-- Row 5 -->
         <div
-          class="grid justify-items-center items-center px-4 py-4 border-b last;border-b-0"
+          class="grid justify-items-center items-center px-4 py-4 border-b last border-b-0"
           style="grid-template-columns:6fr 2fr 3fr 4fr 2fr auto;"
         >
           <div class="flex items-center gap-2 text-orange	font-medium">
