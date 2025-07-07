@@ -132,6 +132,10 @@
         <servlet-name>BookingPaymentServlet</servlet-name>
         <servlet-class>busticket.controller.BookingPaymentServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>ScheduleServlet</servlet-name>
+        <servlet-class>busticket.controller.ScheduleServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
         <url-pattern>/admin/dashboard</url-pattern>
@@ -264,6 +268,10 @@
     <servlet-mapping>
         <servlet-name>BookingPaymentServlet</servlet-name>
         <url-pattern>/booking-payment</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ScheduleServlet</servlet-name>
+        <url-pattern>/schedule</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
