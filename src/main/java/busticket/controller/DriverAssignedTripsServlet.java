@@ -28,6 +28,13 @@ public class DriverAssignedTripsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
+        String action = request.getParameter("action");
+
+        if (request.getParameter("roll-call") != null) {
+            request.getRequestDispatcher("/WEB-INF/driver/assigned-trips/passenger-roll-call.jsp")
+                    .forward(request, response);
+            return;
+        }
         request.getRequestDispatcher("/WEB-INF/driver/assigned-trips.jsp")
                 .forward(request, response);
     } 

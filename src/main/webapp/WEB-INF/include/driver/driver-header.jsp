@@ -15,7 +15,7 @@
         <!-- Tailwind CSS -->
         <script src="https://cdn.tailwindcss.com"></script>
         <!-- Font Awesome -->
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/all.min.css">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js">
         <style>
             /* Hide the dropdown by default */
@@ -76,12 +76,16 @@
                             <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("request-trip-change.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
                                 <a href="${pageContext.servletContext.contextPath}/driver/trip-change">
                                     <span class="text-base"><i class="fas fa-table"></i></span>
-                                    <span>Request Trip Change</span>
+                                    <span>Request Cancel Trip</span>
+                                </a>
+                            </div>
+                            <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("driver-license.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
+                                <a href="${pageContext.servletContext.contextPath}/driver/driver-license">
+                                    <span class="text-base"><i class="fas fa-table"></i></span>
+                                    <span>Driver License</span>
                                 </a>
                             </div>
                         </div>
-
-                        
                     </div>
 
                     <div class="mt-auto text-[10px] text-white text-center px-2">

@@ -18,46 +18,46 @@ import java.util.logging.Logger;
  */
 public class DBContext {
 
-    public Connection conn;
-    private final String DB_URL = "jdbc:sqlserver://localhost\\BusTicketDatabase:1433;databaseName=BusTicket;encrypt=true;trustServerCertificate=true";
+private final String DB_URL = "jdbc:sqlserver://localhost\\BusTicketDatabase:1433;databaseName=BusTicket;encrypt=true;trustServerCertificate=true";
     private final String DB_USER = "sa";
     private final String DB_PWD = "123";
 
     public DBContext() {
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            this.conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PWD);
-        } catch (ClassNotFoundException | SQLException ex) {
-            Logger.getLogger(DBContext.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            ex.printStackTrace();
         }
     }
 
-    public Connection getConnection() {
-        return conn;
+    
+    public Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(DB_URL, DB_USER, DB_PWD);
     }
-
     // Phuong thuc cac lenh INSERT, UPDATE, DELETE
-    public int execQuery(String query, Object[] params) throws SQLException {
-        PreparedStatement pStatement = conn.prepareStatement(query);
-        if (params != null) {
-            for (int i = 0; i < params.length; i++) {
-                pStatement.setObject(i + 1, params[i]);
+        public int execQuery(String query, Object[] params) throws SQLException {
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
+            if (params != null) {
+                for (int i = 0; i < params.length; i++) {
+                    ps.setObject(i + 1, params[i]);
+                }
             }
+            return ps.executeUpdate();
         }
-        return pStatement.executeUpdate();
     }
 
-    public ResultSet execSelectQuery(String query, Object[] params) throws SQLException {
-        PreparedStatement pStatement = conn.prepareStatement(query);
+     public ResultSet execSelectQuery(String query, Object[] params) throws SQLException {
+        Connection conn = getConnection(); // giữ conn mở để ResultSet vẫn dùng được
+        PreparedStatement ps = conn.prepareStatement(query);
         if (params != null) {
             for (int i = 0; i < params.length; i++) {
-                pStatement.setObject(i + 1, params[i]);
+                ps.setObject(i + 1, params[i]);
             }
         }
-        return pStatement.executeQuery();
+        return ps.executeQuery(); // conn phải được đóng sau khi dùng ResultSet
     }
     
-    public ResultSet execSelectQuery(String query) throws SQLException {
-        return this.execSelectQuery(query,null);
+     public ResultSet execSelectQuery(String query) throws SQLException {
+        return execSelectQuery(query, null);
     }
 }

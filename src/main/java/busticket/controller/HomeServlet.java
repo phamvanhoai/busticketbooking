@@ -5,12 +5,14 @@
 
 package busticket.controller;
 
+import busticket.DAO.HomeViewTripsDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
 
 /**
  *
@@ -30,6 +32,12 @@ public class HomeServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
+        
+        HomeViewTripsDAO homeViewTripsDAO = new HomeViewTripsDAO();
+
+        // Lấy danh sách locations
+        List<String> locations = homeViewTripsDAO.getAllLocations();
+        request.setAttribute("locations", locations);
         // Chuyển tiếp yêu cầu tới home.jsp
         request.getRequestDispatcher("/WEB-INF/pages/home.jsp").forward(request, response);
     } 

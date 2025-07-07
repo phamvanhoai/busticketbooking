@@ -16,8 +16,8 @@
         <!-- Tailwind CSS -->
         <script src="https://cdn.tailwindcss.com"></script>
         <!-- Font Awesome -->
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js">
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/all.min.css">
+<!--        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js">-->
         <style>
             /* Hide the dropdown by default */
             .dropdown-content {
@@ -80,6 +80,12 @@
                                     <span>Manage Trips</span>
                                 </a>
                             </div>
+                            <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("locations.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
+                                <a href="${pageContext.servletContext.contextPath}/admin/locations">
+                                    <span class="text-base"><i class="fas fa-table"></i></span>
+                                    <span>Manage Locations</span>
+                                </a>
+                            </div>  
                             <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("routes.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
                                 <a href="${pageContext.servletContext.contextPath}/admin/routes">
                                     <span class="text-base"><i class="fas fa-table"></i></span>
@@ -106,7 +112,7 @@
                             </div>
                         </div>
 
-                        
+
                     </div>
 
                     <div class="mt-auto text-[10px] text-white text-center px-2">

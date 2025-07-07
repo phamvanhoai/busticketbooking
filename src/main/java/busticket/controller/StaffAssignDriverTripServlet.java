@@ -4,18 +4,21 @@
  */
 package busticket.controller;
 
-import busticket.DAO.DriverTripDAO;
-import busticket.DAO.StaffDriverDAO;
-import busticket.DAO.TripDAO;
+import busticket.DAO.StaffAssignDriverDAO;
 import busticket.model.Driver;
-import busticket.model.Trip;
+import busticket.model.StaffTrip;
+
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.List;
+
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.List;
+import java.util.ArrayList;
 
 /**
  *
@@ -23,69 +26,165 @@ import java.util.List;
  */
 public class StaffAssignDriverTripServlet extends HttpServlet {
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
+    private static final long serialVersionUID = 1L;
+    private final StaffAssignDriverDAO dao = new StaffAssignDriverDAO();
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        TripDAO tripDAO = new TripDAO();
-        StaffDriverDAO driverDAO = new StaffDriverDAO();
+        try {
+            // Get filters
+            String search = request.getParameter("search");
+            String date = request.getParameter("date");
+            String routeId = request.getParameter("routeId");
+            String status = request.getParameter("status");
+            String action = request.getParameter("action");
+            String tripIdParam = request.getParameter("tripId");
 
-        List<Trip> tripList = tripDAO.getAllAvailableTrips();
-        List<Driver> driverList = driverDAO.getAllDrivers();
+            // Handle 'Remove Driver' action
+            if ("remove".equals(action) && tripIdParam != null) {
+                try {
+                    int tripId = Integer.parseInt(tripIdParam);
+                    dao.removeDriver(tripId);
+                    request.getSession().setAttribute("success", "Driver removed from trip successfully.");
+                } catch (Exception e) {
+                    request.getSession().setAttribute("error", "Unable to remove driver from trip.");
+                }
+                response.sendRedirect(request.getContextPath() + "/staff/assign-driver-trip");
+                return;
+            }
 
-        request.setAttribute("trips", tripList);
-        request.setAttribute("drivers", driverList);
+            // Pagination
+            int page = 1;
+            int pageSize = 10;
+            String pageRaw = request.getParameter("page");
+            if (pageRaw != null && pageRaw.matches("\\d+")) {
+                page = Integer.parseInt(pageRaw);
+            }
+            int offset = (page - 1) * pageSize;
 
-        request.getRequestDispatcher("/WEB-INF/staff/driver-trip/assign-driver-to-trip.jsp")
-                .forward(request, response);
+            // Total results
+            int totalRows = dao.countAvailableTrips(search, date, routeId, status);
+            int totalPages = (int) Math.ceil(totalRows * 1.0 / pageSize);
+
+            // Fetch trip list
+            List<StaffTrip> trips = dao.getAvailableTripsWithPaging(search, date, routeId, status, offset, pageSize);
+
+            // Dropdown filters
+            request.setAttribute("distinctRoutes", dao.getDistinctRoutes());
+            request.setAttribute("driverList", dao.getAvailableDrivers());
+
+            // Pass data to JSP
+            request.setAttribute("tripList", trips);
+            request.setAttribute("currentPage", page);
+            request.setAttribute("numOfPages", totalPages);
+            request.setAttribute("search", search);
+            request.setAttribute("date", date);
+            request.setAttribute("dateFilter", date);
+            request.setAttribute("routeId", routeId);
+            request.setAttribute("status", status);
+
+            // Build pagination URL while keeping filters
+            StringBuilder base = new StringBuilder(request.getContextPath()).append("/staff/assign-driver-trip");
+            List<String> q = new ArrayList<>();
+            if (search != null && !search.isEmpty()) {
+                q.add("search=" + search);
+            }
+            if (date != null && !date.isEmpty()) {
+                q.add("date=" + date);
+            }
+            if (routeId != null && !routeId.isEmpty()) {
+                q.add("routeId=" + routeId);
+            }
+            if (status != null && !status.isEmpty()) {
+                q.add("status=" + status);
+            }
+            if (!q.isEmpty()) {
+                base.append("?").append(String.join("&", q));
+            }
+
+            request.setAttribute("baseUrlWithSearch", base.toString());
+            request.getRequestDispatcher("/WEB-INF/staff/driver-trip/assign-driver-to-trip.jsp").forward(request, response);
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            response.sendError(500, "Internal Server Error: " + ex.getMessage());
+        }
     }
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String tripId = request.getParameter("tripId");
-        String driverId = request.getParameter("driverId");
+        try {
+            String tripId = request.getParameter("tripId");
+            String driverId = request.getParameter("driverId");
 
-        if (tripId == null || driverId == null || tripId.isEmpty() || driverId.isEmpty()) {
-            request.getSession().setAttribute("error", "Please select both Trip and Driver.");
-            response.sendRedirect(request.getContextPath() + "/staff/assign-driver-trip");
-            return;
-        }
+            // Assign driver to trip
+            if (tripId != null && !tripId.isEmpty()) {
+                if (driverId == null || driverId.isEmpty()) {
+                    request.getSession().setAttribute("error", "Please select a driver to assign!");
+                    response.sendRedirect(request.getContextPath() + "/staff/assign-driver-trip");
+                    return;
+                }
 
-        DriverTripDAO dao = new DriverTripDAO();
+                int tripIdInt = Integer.parseInt(tripId);
+                int driverIdInt = Integer.parseInt(driverId);
 
-        int tripIdInt = Integer.parseInt(tripId);
-        int driverIdInt = Integer.parseInt(driverId);
+                boolean success;
+                if (dao.isDriverAssigned(tripIdInt)) {
+                    success = dao.updateDriverAssignment(driverIdInt, tripIdInt);
+                    request.getSession().setAttribute(success ? "success" : "error",
+                            success ? "Driver updated successfully." : "Driver update failed.");
+                } else {
+                    success = dao.assignDriverToTrip(driverIdInt, tripIdInt);
+                    request.getSession().setAttribute(success ? "success" : "error",
+                            success ? "Driver assigned successfully." : "Driver assignment failed.");
+                }
 
-        if (dao.isDriverAssigned(tripIdInt)) {
-            request.getSession().setAttribute("error", "This trip already has a driver assigned.");
-        } else {
-            boolean success = dao.assignDriverToTrip(driverIdInt, tripIdInt);
-            if (success) {
-                request.getSession().setAttribute("success", "Driver assigned to trip successfully.");
-            } else {
-                request.getSession().setAttribute("error", "Failed to assign driver. Please try again.");
+                response.sendRedirect(request.getContextPath() + "/staff/assign-driver-trip");
+                return;
             }
-        }
 
-        // Redirect to avoid duplicate form error when F5
-        response.sendRedirect(request.getContextPath() + "/staff/assign-driver-trip");
+            // Filter trips
+            String search = request.getParameter("search");
+            String date = request.getParameter("date");
+            String routeId = request.getParameter("routeId");
+            String status = request.getParameter("status");
+
+            // Pagination
+            int page = 1;
+            String pageRaw = request.getParameter("page");
+            if (pageRaw != null && pageRaw.matches("\\d+")) {
+                page = Integer.parseInt(pageRaw);
+            }
+            int pageSize = 10;
+            int offset = (page - 1) * pageSize;
+
+            int totalRows = dao.countAvailableTrips(search, date, routeId, status);
+            int totalPages = (int) Math.ceil(totalRows * 1.0 / pageSize);
+            List<StaffTrip> trips = dao.getAvailableTripsWithPaging(search, date, routeId, status, offset, pageSize);
+
+            // Set attributes
+            request.setAttribute("tripList", trips);
+            request.setAttribute("currentPage", page);
+            request.setAttribute("numOfPages", totalPages);
+            request.setAttribute("search", search);
+            request.setAttribute("date", date);
+            request.setAttribute("dateFilter", date);
+            request.setAttribute("routeId", routeId);
+            request.setAttribute("status", status);
+            request.setAttribute("baseUrlWithSearch", request.getContextPath() + "/staff/assign-driver-trip");
+            request.setAttribute("distinctRoutes", dao.getDistinctRoutes());
+            request.setAttribute("driverList", dao.getAvailableDrivers());
+
+            request.getRequestDispatcher("/WEB-INF/staff/driver-trip/assign-driver-to-trip.jsp")
+                    .forward(request, response);
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            request.getSession().setAttribute("error", "Unexpected error occurred: " + ex.getMessage());
+            response.sendRedirect(request.getContextPath() + "/staff/assign-driver-trip");
+        }
     }
 
     /**

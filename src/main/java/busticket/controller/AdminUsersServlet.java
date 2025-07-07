@@ -4,7 +4,10 @@
  */
 package busticket.controller;
 
+import busticket.DAO.AdminUserDriverLicenseHistoryDAO;
 import busticket.DAO.AdminUsersDAO;
+import busticket.model.AdminDrivers;
+import busticket.model.AdminUserDriverLicenseHistory;
 import busticket.model.AdminUsers;
 import busticket.util.InputValidator;
 import busticket.util.PasswordUtils;
@@ -13,12 +16,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.sql.PreparedStatement;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.util.Date;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -41,69 +46,116 @@ public class AdminUsersServlet extends HttpServlet {
 
         AdminUsersDAO adminUserDAO = new AdminUsersDAO();
 
-        // Check if the request contains ?add → forward to the Add User form
-        if (request.getParameter("add") != null) {
+        String uri = request.getRequestURI();
+        String contextPath = request.getContextPath();
+        String path = uri.substring(contextPath.length());
+
+        if (path.equals("/admin/users/add")) {
             request.getRequestDispatcher("/WEB-INF/admin/users/add-user.jsp").forward(request, response);
             return;
         }
 
-        // Handle request to edit a user if ?editId is present
-        String editId = request.getParameter("editId");
-        if (editId != null) {
+        if (path.equals("/admin/users/edit")) {
             try {
-                int userId = Integer.parseInt(editId);
+                int userId = Integer.parseInt(request.getParameter("id"));
+                AdminUsers user = adminUserDAO.getUserById(userId);
+                if (user == null) {
+                    response.sendRedirect(contextPath + "/pages/404.jsp");
+                    return;
+                }
+                request.setAttribute("user", user);
+
+                if ("Driver".equals(user.getRole())) {
+                    AdminDrivers driverInfo = adminUserDAO.getDriverByUserId(userId);
+                    request.setAttribute("driverInfo", driverInfo);
+                }
+
+                request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp").forward(request, response);
+                return;
+            } catch (NumberFormatException e) {
+                response.sendRedirect(contextPath + "/admin/users");
+                return;
+            }
+        }
+
+        if ("/admin/users/view".equals(path)) {
+            try {
+                int userId = Integer.parseInt(request.getParameter("id"));
                 AdminUsers user = adminUserDAO.getUserById(userId);
 
-                // If user not found → redirect to 404 page
                 if (user == null) {
-                    response.sendRedirect(request.getContextPath() + "/pages/404.jsp");
+                    response.sendRedirect(contextPath + "/pages/404.jsp");
                     return;
                 }
 
-                // Set user data and forward to the edit-user.jsp page
                 request.setAttribute("user", user);
-                request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp").forward(request, response);
+
+                if ("Driver".equals(user.getRole())) {
+                    AdminDrivers driverInfo = adminUserDAO.getDriverByUserId(userId);
+                    request.setAttribute("driverInfo", driverInfo);
+
+                    AdminUserDriverLicenseHistoryDAO historyDAO = new AdminUserDriverLicenseHistoryDAO();
+                    List<AdminUserDriverLicenseHistory> licenseHistory = historyDAO.getLicenseHistoryByUserId(userId);
+                    request.setAttribute("licenseHistory", licenseHistory);
+                }
+
+                request.getRequestDispatcher("/WEB-INF/admin/users/view-user.jsp").forward(request, response);
                 return;
 
             } catch (NumberFormatException e) {
-                // If editId is invalid (not a number) → redirect to user list
-                response.sendRedirect(request.getContextPath() + "/admin/users");
+                response.sendRedirect(contextPath + "/admin/users");
                 return;
             }
         }
 
-        // Retrieve search query from the query string (?search=...)
-        String searchQuery = request.getParameter("search");
+        if (path.equals("/admin/users/upgrade-license")) {
+            try {
+                int userId = Integer.parseInt(request.getParameter("id"));
+                AdminUsers user = adminUserDAO.getUserById(userId);
+                if (user == null || !"Driver".equals(user.getRole())) {
+                    response.sendRedirect(contextPath + "/pages/404.jsp");
+                    return;
+                }
 
-        // Pagination setup: default to 10 users per page
+                AdminDrivers driverInfo = adminUserDAO.getDriverByUserId(userId);
+                request.setAttribute("user", user);
+                request.setAttribute("driverInfo", driverInfo);
+
+                request.getRequestDispatcher("/WEB-INF/admin/users/upgrade-license.jsp").forward(request, response);
+                return;
+            } catch (NumberFormatException e) {
+                response.sendRedirect(contextPath + "/admin/users");
+                return;
+            }
+        }
+
+        String searchQuery = request.getParameter("search");
+        String roleFilter = request.getParameter("role");
+
         int usersPerPage = 10;
         int currentPage = 1;
-        if (request.getParameter("page") != null) {
-            try {
-                currentPage = Integer.parseInt(request.getParameter("page"));
-            } catch (NumberFormatException e) {
-                currentPage = 1; // Fall back to page 1 if the page parameter is invalid
+        try {
+            String pageStr = request.getParameter("page");
+            if (pageStr != null && pageStr.matches("\\d+")) {
+                currentPage = Integer.parseInt(pageStr);
             }
+        } catch (NumberFormatException ignored) {
         }
+
         int offset = (currentPage - 1) * usersPerPage;
-
-        // Retrieve paginated user list (with optional search filter)
-        List<AdminUsers> adminUsers = adminUserDAO.getAllAdminUsers(searchQuery, offset, usersPerPage);
-        int totalUsers = adminUserDAO.countUsersByFilter(searchQuery);
+        List<AdminUsers> adminUsers = adminUserDAO.getAllAdminUsers(searchQuery, roleFilter, offset, usersPerPage);
+        int totalUsers = adminUserDAO.countAllAdminUsers(searchQuery, roleFilter);
         int totalPages = (int) Math.ceil((double) totalUsers / usersPerPage);
-
-        // Calculate the number of users currently displayed (used for stats)
         int currentTotalUsers = (currentPage < totalPages ? usersPerPage * currentPage : totalUsers);
 
-        // Set attributes for rendering in JSP
-        request.setAttribute("users", adminUsers);                     // List of users
-        request.setAttribute("totalUsers", totalUsers);               // Total number of users
-        request.setAttribute("searchQuery", searchQuery);             // Search query (if any)
-        request.setAttribute("totalPages", totalPages);               // Total number of pages
-        request.setAttribute("currentPage", currentPage);             // Current page number
-        request.setAttribute("currentTotalUsers", currentTotalUsers); // Users currently displayed
+        request.setAttribute("users", adminUsers);
+        request.setAttribute("search", searchQuery);
+        request.setAttribute("role", roleFilter);
+        request.setAttribute("totalUsers", totalUsers);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("currentPage", currentPage);
+        request.setAttribute("currentTotalUsers", currentTotalUsers);
 
-        // Forward to the user list page
         request.getRequestDispatcher("/WEB-INF/admin/users/users.jsp").forward(request, response);
     }
 
@@ -121,10 +173,52 @@ public class AdminUsersServlet extends HttpServlet {
 
         String action = request.getParameter("action");
         AdminUsersDAO adminUsersDAO = new AdminUsersDAO();
-        boolean redirected = false; // Used to prevent multiple forwards or redirects
+        boolean redirected = false;
 
         try {
-            // Handle account creation
+            if ("upgradeLicense".equals(action)) {
+                try {
+                    int userId = Integer.parseInt(request.getParameter("userId"));
+                    String oldLicenseClass = request.getParameter("oldLicenseClass");
+                    String newLicenseClass = request.getParameter("newLicenseClass");
+                    String reason = request.getParameter("reason");
+
+                    if (!"D".equals(oldLicenseClass) || !"D2".equals(newLicenseClass)) {
+                        request.setAttribute("error", "Only upgrades from D to D2 are allowed.");
+                        AdminUsers user = adminUsersDAO.getUserById(userId);
+                        AdminDrivers driverInfo = adminUsersDAO.getDriverByUserId(userId);
+                        request.setAttribute("user", user);
+                        request.setAttribute("driverInfo", driverInfo);
+                        request.getRequestDispatcher("/WEB-INF/admin/users/upgrade-license.jsp").forward(request, response);
+                        return;
+                    }
+
+                    AdminUserDriverLicenseHistoryDAO historyDAO = new AdminUserDriverLicenseHistoryDAO();
+                    AdminUsers currentAdmin = (AdminUsers) request.getSession().getAttribute("adminUser");
+                    int adminId = currentAdmin != null ? currentAdmin.getUser_id() : 0;
+
+                    int inserted = historyDAO.insertLicenseUpgradeHistory(userId, oldLicenseClass, newLicenseClass, adminId, reason);
+                    if (inserted > 0) {
+                        AdminDrivers driver = adminUsersDAO.getDriverByUserId(userId);
+                        driver.setLicenseClass(newLicenseClass);
+                        adminUsersDAO.updateDriver(driver);
+
+                        response.sendRedirect(request.getContextPath() + "/admin/users/view?id=" + userId + "&message=license_upgraded");
+                    } else {
+                        request.setAttribute("error", "Failed to upgrade license. Please try again.");
+                        AdminUsers user = adminUsersDAO.getUserById(userId);
+                        AdminDrivers driverInfo = adminUsersDAO.getDriverByUserId(userId);
+                        request.setAttribute("user", user);
+                        request.setAttribute("driverInfo", driverInfo);
+                        request.getRequestDispatcher("/WEB-INF/admin/users/upgrade-license.jsp").forward(request, response);
+                    }
+                    return;
+                } catch (NumberFormatException e) {
+                    response.sendRedirect(request.getContextPath() + "/admin/users");
+                    return;
+                }
+            }
+
             if ("add".equals(action)) {
                 String name = request.getParameter("name");
                 String email = request.getParameter("email");
@@ -132,10 +226,10 @@ public class AdminUsersServlet extends HttpServlet {
                 String confirmPassword = request.getParameter("confirmPassword");
                 String role = request.getParameter("role");
                 String status = request.getParameter("status");
+                String phone = request.getParameter("phone");
 
                 List<String> errorMessages = new ArrayList<>();
 
-                // Validate input fields
                 if (name == null || name.isEmpty()) {
                     errorMessages.add("Full Name is required.");
                 }
@@ -151,107 +245,297 @@ public class AdminUsersServlet extends HttpServlet {
                 if (!password.equals(confirmPassword)) {
                     errorMessages.add("Passwords do not match.");
                 }
-                if (adminUsersDAO.isEmailExists(email)) {
-                    errorMessages.add("Email already exists!");
-                }
                 if (!InputValidator.isEmailValid(email)) {
-                    errorMessages.add("Invalid email format. Example: user@example.com");
+                    errorMessages.add("Invalid email format.");
                 }
                 if (!InputValidator.isPasswordValid(password)) {
-                    errorMessages.add("Password must be at least 8 characters with 1 letter & 1 number.");
+                    errorMessages.add("Password must be at least 8 characters, including 1 letter and 1 number.");
+                }
+                if (adminUsersDAO.isEmailExists(email)) {
+                    errorMessages.add("Email already exists.");
+                }
+                if (phone != null && !phone.trim().isEmpty()) {
+                    if (!InputValidator.isVietnamesePhoneValid(phone)) {
+                        errorMessages.add("Invalid Vietnamese phone number.");
+                    } else if (adminUsersDAO.isPhoneExists(phone)) {
+                        errorMessages.add("Phone number already exists.");
+                    }
                 }
 
-                // If there are validation errors, return to the add-user form
+                List<String> validRoles = Arrays.asList("Staff", "Admin", "Customer", "Driver");
+                if (!validRoles.contains(role)) {
+                    errorMessages.add("Invalid role selected.");
+                }
+
                 if (!errorMessages.isEmpty()) {
                     request.setAttribute("errors", errorMessages);
                     request.getRequestDispatcher("/WEB-INF/admin/users/add-user.jsp").forward(request, response);
                     redirected = true;
                     return;
                 }
+                if ("Driver".equals(role)) {
+                    String licenseNumber = request.getParameter("licenseNumber");
+                    String licenseClass = request.getParameter("licenseClass");
+                    String hireDateStr = request.getParameter("hireDate");
 
-                // Create new user with hashed password
-                String hashedPassword = PasswordUtils.hashPassword(password);
-                Timestamp createdAt = Timestamp.from(Instant.now());
-                AdminUsers user = new AdminUsers(0, name, email, hashedPassword, role, status, createdAt);
+                    if (licenseNumber == null || licenseNumber.trim().isEmpty()) {
+                        errorMessages.add("License Number is required for drivers.");
+                    } else if (!InputValidator.isLicenseNumberValid(licenseNumber)) {
+                        errorMessages.add("License Number must be exactly 12 digits.");
+                    } else if (adminUsersDAO.isLicenseNumberExists(licenseNumber)) {
+                        errorMessages.add("License Number already exists.");
+                    }
 
-                int isAdded = adminUsersDAO.addUser(user);
-                if (isAdded > 0) {
-                    request.setAttribute("message", "Account created successfully!");
-                    request.getRequestDispatcher("/WEB-INF/admin/users/users.jsp").forward(request, response);
-                } else {
-                    request.setAttribute("error", "Add failed. Please try again.");
-                    request.getRequestDispatcher("/WEB-INF/admin/users/add-user.jsp").forward(request, response);
-                }
-                redirected = true;
+                    if (licenseClass == null || licenseClass.trim().isEmpty()) {
+                        errorMessages.add("License Class is required for drivers.");
+                    } else if (!InputValidator.isLicenseClassValid(licenseClass)) {
+                        errorMessages.add("License Class must be D or D2.");
+                    }
 
-                // Handle account editing
-            } else if ("edit".equals(action)) {
-                // Get form parameters
-                int userId = Integer.parseInt(request.getParameter("userId"));
-                String name = request.getParameter("name");
-                String email = request.getParameter("email");
-                String phone = request.getParameter("phone");
-                String role = request.getParameter("role");
-                String gender = request.getParameter("gender");
-                String birthdateStr = request.getParameter("birthdate");
-                String address = request.getParameter("address");
-                String status = request.getParameter("status");
+                    if (hireDateStr == null || hireDateStr.trim().isEmpty()) {
+                        errorMessages.add("Hire Date is required for drivers.");
+                    } else if (!InputValidator.isDateValid(hireDateStr)) {
+                        errorMessages.add("Invalid Hire Date format.");
+                    }
 
-                List<String> errorMessages = new ArrayList<>();
-
-                // Basic validation
-                if (name == null || name.isEmpty() || email == null || email.isEmpty()
-                        || role == null || role.isEmpty() || status == null || status.isEmpty()) {
-                    errorMessages.add("Please enter all required fields.");
-                }
-
-                // Parse birthdate (input type="date" returns format yyyy-MM-dd)
-                Timestamp birthdateTimestamp = null;
-                if (birthdateStr != null && !birthdateStr.isEmpty()) {
-                    try {
-                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                        sdf.setLenient(false);
-                        Date parsedDate = sdf.parse(birthdateStr);
-                        birthdateTimestamp = new Timestamp(parsedDate.getTime());
-                    } catch (ParseException e) {
-                        errorMessages.add("Invalid birthdate format! Please use the date picker.");
+                    if (!errorMessages.isEmpty()) {
+                        request.setAttribute("errors", errorMessages);
+                        request.getRequestDispatcher("/WEB-INF/admin/users/add-user.jsp").forward(request, response);
+                        return;
                     }
                 }
 
-                // If errors exist, return to edit form with error messages
-                if (!errorMessages.isEmpty()) {
-                    request.setAttribute("error", String.join("<br>", errorMessages));
-                    request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp?userId=" + userId).forward(request, response);
-                    redirected = true;
+                String gender = request.getParameter("gender");
+                String address = request.getParameter("address");
+                Timestamp birthdate = null;
+                try {
+                    String birthdateStr = request.getParameter("birthdate");
+                    if (birthdateStr != null && !birthdateStr.trim().isEmpty()) {
+                        birthdate = new Timestamp(new SimpleDateFormat("yyyy-MM-dd").parse(birthdateStr).getTime());
+                    }
+                } catch (ParseException ignored) {
+                }
+
+                Timestamp createdAt = Timestamp.from(Instant.now());
+                String hashedPassword = PasswordUtils.hashPassword(password);
+                AdminUsers user = new AdminUsers(0, name, email, hashedPassword, phone, role, status != null ? status : "Active", birthdate, gender, address, createdAt);
+
+                int newUserId = adminUsersDAO.addUser(user);
+
+                if (newUserId > 0) {
+                    if ("Driver".equals(role)) {
+                        AdminDrivers driver = new AdminDrivers();
+                        driver.setUserId(newUserId);
+                        driver.setLicenseNumber(request.getParameter("licenseNumber"));
+                        driver.setLicenseClass(request.getParameter("licenseClass"));
+                        try {
+                            String hireDateStr = request.getParameter("hireDate");
+                            if (hireDateStr != null && !hireDateStr.isEmpty()) {
+                                driver.setHireDate(java.sql.Date.valueOf(hireDateStr));
+                            }
+                        } catch (IllegalArgumentException ignored) {
+                        }
+
+                        driver.setDriverStatus("Active");
+
+                        int driverAdded = adminUsersDAO.addDriver(driver);
+                        if (driverAdded == 0) {
+                            request.setAttribute("error", "User created, but failed to create driver info.");
+                            request.getRequestDispatcher("/WEB-INF/admin/users/add-user.jsp").forward(request, response);
+                            return;
+                        }
+
+                        response.sendRedirect(request.getContextPath() + "/admin/users?message=driver_created");
+                        return;
+                    }
+
+                    response.sendRedirect(request.getContextPath() + "/admin/users?message=created");
                     return;
                 }
 
-                // Construct updated user object
-                AdminUsers user = new AdminUsers(userId, name, email, phone, role, status, birthdateTimestamp, gender, address);
+                request.setAttribute("error", "Failed to create account.");
+                request.getRequestDispatcher("/WEB-INF/admin/users/add-user.jsp").forward(request, response);
+            }
 
-                // Update user in database
-                int result = adminUsersDAO.updateUser(user);
+            if ("edit".equals(action)) {
+                int userId = Integer.parseInt(request.getParameter("userId"));
+                AdminUsers user = adminUsersDAO.getUserById(userId);
 
-                if (result > 0) {
-                    // Redirect to user list with success message
-                    response.sendRedirect(request.getContextPath() + "/admin/users?message=updated");
-                } else {
-                    // Forward back to edit page with failure message
-                    request.setAttribute("error", "Update failed. Please try again.");
-                    request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp?userId=" + userId).forward(request, response);
+                if (user == null) {
+                    response.sendRedirect(request.getContextPath() + "/pages/404.jsp");
+                    return;
                 }
 
-                redirected = true;
+                String originalRole = user.getRole();
+                String name = request.getParameter("name");
+                String email = request.getParameter("email");
+                String phone = request.getParameter("phone");
+                String roleFromForm = request.getParameter("role");
+                String status = request.getParameter("status");
+                String gender = request.getParameter("gender");
+                String address = request.getParameter("address");
+                String newLicenseClass = request.getParameter("newLicenseClass");
+                String reason = request.getParameter("reason");
+
+                Timestamp birthdate = null;
+                try {
+                    String birthdateStr = request.getParameter("birthdate");
+                    if (birthdateStr != null && !birthdateStr.trim().isEmpty()) {
+                        birthdate = new Timestamp(new SimpleDateFormat("yyyy-MM-dd").parse(birthdateStr).getTime());
+                    }
+                } catch (ParseException ignored) {
+                }
+
+                List<String> errorMessages = new ArrayList<>();
+
+                if (name == null || name.trim().isEmpty()) {
+                    errorMessages.add("Full Name is required.");
+                }
+                if (email == null || email.trim().isEmpty()) {
+                    errorMessages.add("Email is required.");
+                } else if (!InputValidator.isEmailValid(email)) {
+                    errorMessages.add("Invalid email format.");
+                } else if (!email.equals(user.getEmail()) && adminUsersDAO.isEmailExists(email)) {
+                    errorMessages.add("Email already exists.");
+                }
+
+                if (phone != null && !phone.trim().isEmpty()) {
+                    if (!InputValidator.isVietnamesePhoneValid(phone)) {
+                        errorMessages.add("Invalid Vietnamese phone number.");
+                    } else if (!phone.equals(user.getPhone()) && adminUsersDAO.isPhoneExists(phone)) {
+                        errorMessages.add("Phone number already exists.");
+                    }
+                }
+
+                List<String> validRoles = Arrays.asList("Admin", "Staff", "Driver", "Customer");
+                if (!validRoles.contains(roleFromForm)) {
+                    errorMessages.add("Invalid role selected.");
+                }
+
+                String finalRole = originalRole;
+                if ("Customer".equalsIgnoreCase(originalRole) && !"Customer".equalsIgnoreCase(roleFromForm)) {
+                    errorMessages.add("Cannot upgrade Customer to higher roles.");
+                } else if (!"Customer".equalsIgnoreCase(originalRole) && "Customer".equalsIgnoreCase(roleFromForm)) {
+                    errorMessages.add("Cannot downgrade Admin/Staff/Driver to Customer.");
+                } else {
+                    finalRole = roleFromForm;
+                }
+
+                if (!errorMessages.isEmpty()) {
+                    request.setAttribute("errors", errorMessages);
+                    request.setAttribute("user", user);
+                    if ("Driver".equals(originalRole)) {
+                        AdminDrivers driverInfo = adminUsersDAO.getDriverByUserId(userId);
+                        request.setAttribute("driverInfo", driverInfo);
+                    }
+                    request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp").forward(request, response);
+                    return;
+                }
+
+                user.setName(name);
+                user.setEmail(email);
+                user.setPhone(phone);
+                user.setRole(finalRole);
+                user.setStatus(status);
+                user.setGender(gender);
+                user.setAddress(address);
+                user.setBirthdate(birthdate);
+                adminUsersDAO.updateUser(user);
+
+                if ("Driver".equals(finalRole)) {
+                    AdminDrivers driver = adminUsersDAO.getDriverByUserId(userId);
+                    if (driver == null) {
+                        driver = new AdminDrivers();
+                        driver.setUserId(userId);
+                    }
+
+                    String licenseNumber = request.getParameter("licenseNumber");
+                    String licenseClass = request.getParameter("licenseClass");
+                    String hireDateStr = request.getParameter("hireDate");
+                    String driverStatus = request.getParameter("driverStatus");
+
+                    boolean valid = true;
+                    if (!InputValidator.isLicenseNumberValid(licenseNumber)) {
+                        errorMessages.add("License Number must be exactly 12 digits.");
+                        valid = false;
+                    }
+                    String currentLicense = adminUsersDAO.getDriverByUserId(userId).getLicenseNumber();
+                    if (!licenseNumber.equals(currentLicense)
+                            && adminUsersDAO.isLicenseNumberExists(licenseNumber)) {
+                        errorMessages.add("License Number already exists.");
+                        valid = false;
+                    }
+
+                    if (!InputValidator.isLicenseClassValid(licenseClass)) {
+                        errorMessages.add("License Class must be D or D2.");
+                        valid = false;
+                    }
+                    if (!InputValidator.isDateValid(hireDateStr)) {
+                        errorMessages.add("Invalid hire date.");
+                        valid = false;
+                    }
+                    if (!InputValidator.isDriverStatusValid(driverStatus)) {
+                        errorMessages.add("Invalid driver status.");
+                        valid = false;
+                    }
+
+                    if (!valid) {
+                        request.setAttribute("errors", errorMessages);
+                        request.setAttribute("user", user);
+                        driver.setLicenseNumber(licenseNumber);
+                        driver.setLicenseClass(licenseClass);
+                        driver.setDriverStatus(driverStatus);
+                        try {
+                            driver.setHireDate(java.sql.Date.valueOf(hireDateStr));
+                        } catch (IllegalArgumentException ignored) {
+                        }
+                        request.setAttribute("driverInfo", driver);
+                        request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp").forward(request, response);
+                        return;
+                    }
+
+                    String oldLicense = adminUsersDAO.getDriverByUserId(userId).getLicenseClass();
+                    if ("D".equals(oldLicense) && "D2".equals(newLicenseClass)) {
+                        driver.setLicenseClass("D2");
+
+                        AdminUserDriverLicenseHistoryDAO historyDAO = new AdminUserDriverLicenseHistoryDAO();
+                        AdminUsers currentAdmin = (AdminUsers) request.getSession().getAttribute("adminUser");
+                        int adminId = currentAdmin != null
+                                ? currentAdmin.getUser_id()
+                                : 1;
+
+                        historyDAO.insertLicenseUpgradeHistory(
+                                userId,
+                                oldLicense,
+                                "D2",
+                                adminId,
+                                reason
+                        );
+                    } else {
+                        driver.setLicenseClass(licenseClass);
+                    }
+
+                    driver.setLicenseNumber(licenseNumber);
+                    driver.setHireDate(java.sql.Date.valueOf(hireDateStr));
+                    driver.setDriverStatus(driverStatus);
+
+                    if (driver.getDriverId() > 0) {
+                        adminUsersDAO.updateDriver(driver);
+                    } else {
+                        adminUsersDAO.addDriver(driver);
+                    }
+
+                } else if ("Driver".equals(originalRole) && !"Driver".equals(finalRole)) {
+                    adminUsersDAO.setDriverStatusInactiveByUserId(userId);
+                }
+
+                response.sendRedirect(request.getContextPath() + "/admin/users?message=updated");
             }
 
         } catch (Exception e) {
-            // Handle unexpected exceptions
-            request.setAttribute("error", "Error occurred during processing!");
-        }
-
-        // Redirect to the main user list if no forward has occurred
-        if (!redirected) {
-            response.sendRedirect(request.getContextPath() + "/admin/users");
+            e.printStackTrace();
+            request.setAttribute("error", "System error occurred.");
+            request.getRequestDispatcher("/WEB-INF/admin/users/edit-user.jsp").forward(request, response);
         }
     }
 
