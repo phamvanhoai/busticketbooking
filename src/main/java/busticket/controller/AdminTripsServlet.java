@@ -4,7 +4,6 @@
  */
 package busticket.controller;
 
-import busticket.DAO.AdminRoutesDAO;
 import busticket.DAO.AdminTripsDAO;
 import busticket.model.AdminBuses;
 import busticket.model.AdminDrivers;
@@ -24,8 +23,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -97,7 +94,6 @@ public class AdminTripsServlet extends HttpServlet {
                 request.setAttribute("stops", stops);
                 request.setAttribute("stopTimes", stopTimes);
                 for (AdminRouteStop s : stops) {
-                    System.out.println(s.toString());
                 }
 
                 request.getRequestDispatcher("/WEB-INF/admin/trips/view-trip-details.jsp")
