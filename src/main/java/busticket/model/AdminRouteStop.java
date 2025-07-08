@@ -110,14 +110,4 @@ public class AdminRouteStop {
     public int hashCode() {
         return Objects.hash(routeId, stopNumber);
     }
-
-    @Override
-    public String toString() {
-        return "AdminRouteStop{" +
-               "routeId=" + routeId +
-               ", stopNumber=" + stopNumber +
-               ", locationId=" + locationId +
-               ", dwellMinutes=" + dwellMinutes +
-               '}';
-    }
 }
