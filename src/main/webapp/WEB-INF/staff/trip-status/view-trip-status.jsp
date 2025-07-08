@@ -5,153 +5,157 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List, java.text.SimpleDateFormat" %>
+<%@ page import="busticket.model.StaffTripStatus, busticket.model.TripDetail, busticket.model.RouteStop, busticket.model.Passenger" %>
 <%@include file="/WEB-INF/include/staff/staff-header.jsp" %>
 
+<div class="p-8">
 
+    <%
+        String action = request.getParameter("action");
+        if (action == null || action.equals("list")) {
+    %>
 
-<body class="bg-[#f9fafb]">
+    <h1 class="text-3xl font-bold text-orange-600 mb-6">View Trip Status</h1>
+    <form method="get" class="flex flex-wrap items-center gap-4 mb-4">
+        <input type="text" name="search"
+               value="<%= request.getParameter("search") != null ? request.getParameter("search") : ""%>"
+               placeholder="Enter Trip ID or Route"
+               class="border p-2 rounded-md w-64"/>
+        <button type="submit" class="bg-orange-500 text-white px-4 py-2 rounded-md">Search</button>
+    </form>
 
-    <div class="p-8">
-        <h1 class="text-3xl font-bold text-orange-600 mb-6">View Trip Status</h1>
+    <table class="w-full border rounded-xl overflow-hidden">
+        <thead class="bg-orange-50 text-gray-800 font-semibold">
+            <tr>
+                <th class="p-2 text-left">#</th>
+                <th class="p-2 text-left">Route</th>
+                <th class="p-2 text-left">Departure</th>
+                <th class="p-2 text-left">Arrival</th>
+                <th class="p-2 text-left">Driver</th>
+                <th class="p-2 text-left">Bus Type</th>
+                <th class="p-2 text-left">Status</th>
+                <th class="p-2 text-left">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <%
+                List<StaffTripStatus> trips = (List<StaffTripStatus>) request.getAttribute("trips");
+                Integer currentPage = (Integer) request.getAttribute("currentPage");
+                Integer recordsPerPage = (Integer) request.getAttribute("recordsPerPage");
+                int stt = (currentPage - 1) * recordsPerPage + 1;
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 
-        <!-- Search and Filters -->
-        <div class="flex flex-wrap items-center gap-4 mb-4">
-            <input
-                type="text"
-                placeholder="Enter Trip ID or Route"
-                class="border p-2 rounded-md w-64"
-                />
-            <button class="bg-orange-500 text-white px-4 py-2 rounded-md inline-flex items-center gap-2">
-                
-                Search Customer
-            </button>
-            <select class="border p-2 rounded-md">
-                <option>All Statuses</option>
-                <option>Scheduled</option>
-                <option>Departed</option>
-                <option>Arrived</option>
-                <option>Cancelled</option>
-            </select>
-            <select class="border p-2 rounded-md">
-                <option>All Bus Types</option>
-                <option>Seat</option>
-                <option>Limousine</option>
-                <option>Bunk</option>
-            </select>
-            <select class="border p-2 rounded-md">
-                <option>All Drivers</option>
-                <option>Driver 1</option>
-                <option>Driver 2</option>
-                <option>Driver 3</option>
-            </select>
+                if (trips != null && !trips.isEmpty()) {
+                    for (StaffTripStatus trip : trips) {
+                        String status = trip.getTripStatus();
+                        String color = "";
+                        if ("Scheduled".equals(status)) {
+                            color = "bg-green-100 text-green-700";
+                        } else if ("Departed".equals(status)) {
+                            color = "bg-blue-100 text-blue-700";
+                        } else if ("Arrived".equals(status)) {
+                            color = "bg-yellow-100 text-yellow-700";
+                        } else if ("Cancelled".equals(status)) {
+                            color = "bg-red-100 text-red-700";
+                        }
+            %>
+            <tr class="border-t">
+                <td class="p-2"><%= stt++%></td>
+                <td class="p-2"><%= trip.getStartLocation()%> → <%= trip.getEndLocation()%></td>
+                <td class="p-2"><%= sdf.format(trip.getDepartureTime())%></td>
+                <td class="p-2"><%= sdf.format(trip.getArrivalTime())%></td>
+                <td class="p-2"><%= trip.getDriverName()%></td>
+                <td class="p-2"><%= trip.getBusType()%></td>
+                <td class="p-2">
+                    <span class="px-2 py-1 text-sm rounded-full <%= color%>"><%= status%></span>
+                </td>
+                <td class="p-2">
+                    <a href="trip-status?action=detail&tripId=<%= trip.getTripId()%>" class="text-blue-600">View</a>
+                </td>
+            </tr>
+            <% }
+        } else { %>
+            <tr><td colspan="8" class="p-4 text-center text-gray-500">No trips found.</td></tr>
+            <% } %>
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <%
+        Integer totalPages = (Integer) request.getAttribute("totalPages");
+        if (totalPages != null && totalPages > 1) {
+    %>
+    <div class="flex justify-center mt-4 gap-1">
+        <% String searchParam = request.getParameter("search") != null ? "&search=" + request.getParameter("search") : "";%>
+        <a href="?page=1<%= searchParam%>" class="px-2 py-1 border rounded">«</a>
+        <a href="?page=<%= currentPage > 1 ? currentPage - 1 : 1%><%= searchParam%>" class="px-2 py-1 border rounded">‹</a>
+        <% for (int i = 1; i <= totalPages; i++) {%>
+        <a href="?page=<%= i%><%= searchParam%>"
+           class="px-3 py-1 rounded-md border
+           <%= i == currentPage ? "bg-orange-500 text-white" : "bg-white text-orange-500 border-orange-300 hover:bg-orange-100"%>">
+            <%= i%>
+        </a>
+        <% }%>
+        <a href="?page=<%= currentPage < totalPages ? currentPage + 1 : totalPages%><%= searchParam%>" class="px-2 py-1 border rounded">›</a>
+        <a href="?page=<%= totalPages%><%= searchParam%>" class="px-2 py-1 border rounded">»</a>
+    </div>
+    <% } %>
+
+    <% } else if (action.equals("detail")) { %>
+    <%-- View Trip Details Section --%>
+    <%
+        TripDetail detail = (TripDetail) request.getAttribute("detail");
+        List<RouteStop> stops = (List<RouteStop>) request.getAttribute("stops");
+        List<Passenger> passengers = (List<Passenger>) request.getAttribute("passengers");
+        SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    %>
+
+    <h1 class="text-3xl font-bold mb-4">Trip Details</h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="border p-4 rounded bg-white">
+            <p class="font-semibold">Route</p>
+            <p><%= detail.getStartLocation()%> → <%= detail.getEndLocation()%></p>
         </div>
-
-        <!-- Table -->
-        <table class="w-full border rounded-xl overflow-hidden">
-            <thead class="bg-orange-50 text-gray-800 font-semibold">
-                <tr>
-                    <th class="p-2 text-left">Trip ID</th>
-                    <th class="p-2 text-left">Route</th>
-                    <th class="p-2 text-left">Departure</th>
-                    <th class="p-2 text-left">Arrival</th>
-                    <th class="p-2 text-left">Driver</th>
-                    <th class="p-2 text-left">Bus Type</th>
-                    <th class="p-2 text-left">Status</th>
-                    <th class="p-2 text-left">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Trip Row 1 -->
-                <tr class="border-t">
-                    <td class="p-2">TRIP1000</td>
-                    <td class="p-2">HCM → Can Tho</td>
-                    <td class="p-2">10/06/2025 08:00</td>
-                    <td class="p-2">10/06/2025 12:30</td>
-                    <td class="p-2">Driver 1</td>
-                    <td class="p-2">Seat</td>
-                    <td class="p-2">
-                        <span class="px-2 py-1 text-sm rounded-full bg-yellow-100 text-yellow-700">Scheduled</span>
-                    </td>
-                    <td class="p-2 text-red-600">
-                        <button class="inline-flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="text-red-600 text-xl" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg> Passengers
-                        </button>
-                    </td>
-                </tr>
-
-                <!-- Trip Row 2 -->
-                <tr class="border-t">
-                    <td class="p-2">TRIP1001</td>
-                    <td class="p-2">Can Tho → Chau Doc</td>
-                    <td class="p-2">11/06/2025 09:00</td>
-                    <td class="p-2">11/06/2025 13:30</td>
-                    <td class="p-2">Driver 2</td>
-                    <td class="p-2">Limousine</td>
-                    <td class="p-2">
-                        <span class="px-2 py-1 text-sm rounded-full bg-blue-100 text-blue-700">Departed</span>
-                    </td>
-                    <td class="p-2 text-red-600">
-                        <button class="inline-flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="text-red-600 text-xl" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg> Passengers
-                        </button>
-                    </td>
-                </tr>
-
-                <!-- Trip Row 3 -->
-                <tr class="border-t">
-                    <td class="p-2">TRIP1002</td>
-                    <td class="p-2">HCM → Vung Tau</td>
-                    <td class="p-2">12/06/2025 10:00</td>
-                    <td class="p-2">12/06/2025 14:30</td>
-                    <td class="p-2">Driver 3</td>
-                    <td class="p-2">Bunk</td>
-                    <td class="p-2">
-                        <span class="px-2 py-1 text-sm rounded-full bg-green-100 text-green-700">Arrived</span>
-                    </td>
-                    <td class="p-2 text-red-600">
-                        <button class="inline-flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="text-red-600 text-xl" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg> Passengers
-                        </button>
-                    </td>
-                </tr>
-
-                <!-- Trip Row 4 -->
-                <tr class="border-t">
-                    <td class="p-2">TRIP1003</td>
-                    <td class="p-2">Da Nang → Hue</td>
-                    <td class="p-2">13/06/2025 11:00</td>
-                    <td class="p-2">13/06/2025 15:30</td>
-                    <td class="p-2">Driver 4</td>
-                    <td class="p-2">Seat</td>
-                    <td class="p-2">
-                        <span class="px-2 py-1 text-sm rounded-full bg-red-100 text-red-700">Cancelled</span>
-                    </td>
-                    <td class="p-2 text-red-600">
-                        <button class="inline-flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="text-red-600 text-xl" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg> Passengers
-                        </button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-
-        <!-- Pagination -->
-        <div class="flex justify-center mt-4 gap-2">
-            <button class="px-3 py-1 rounded-md border bg-orange-500 text-white">1</button>
-            <button class="px-3 py-1 rounded-md border bg-white text-orange-500 border-orange-300 hover:bg-orange-100">2</button>
-            <button class="px-3 py-1 rounded-md border bg-white text-orange-500 border-orange-300 hover:bg-orange-100">3</button>
-            <button class="px-3 py-1 rounded-md border bg-white text-orange-500 border-orange-300 hover:bg-orange-100">4</button>
+        <div class="border p-4 rounded bg-white">
+            <p class="font-semibold">Departure</p>
+            <p><%= sdfDate.format(detail.getDepartureTime())%></p>
+        </div>
+        <div class="border p-4 rounded bg-white">
+            <p class="font-semibold">Arrival</p>
+            <p><%= sdfDate.format(detail.getArrivalTime())%></p>
+        </div>
+        <div class="border p-4 rounded bg-white">
+            <p class="font-semibold">Driver</p>
+            <p><%= detail.getDriverName()%></p>
+        </div>
+        <div class="border p-4 rounded bg-white">
+            <p class="font-semibold">Bus Type</p>
+            <p><%= detail.getBusType()%></p>
+        </div>
+        <div class="border p-4 rounded bg-white">
+            <p class="font-semibold">Status</p>
+            <p><%= detail.getTripStatus()%></p>
         </div>
     </div>
 
-    <%-- CONTENT HERE--%>
+    <h2 class="text-2xl font-semibold mb-2">Route Stops</h2>
+    <ul class="list-disc ml-6 mb-4">
+        <% for (RouteStop stop : stops) {%>
+        <li><%= stop.getTime()%> – <%= stop.getLocation()%> | <%= stop.getAddress()%></li>
+            <% } %>
+    </ul>
 
-    <%@include file="/WEB-INF/include/staff/staff-footer.jsp" %>
+    <h2 class="text-2xl font-semibold mb-2">Passenger List</h2>
+    <ul class="list-disc ml-6 mb-4">
+        <% for (Passenger p : passengers) {%>
+        <li><%= p.getName()%></li>
+            <% } %>
+    </ul>
+
+    <a href="trip-status" class="text-blue-600 underline">← Back to Trip List</a>
+
+    <% }%>
+</div>
+
+<%@include file="/WEB-INF/include/staff/staff-footer.jsp" %>
