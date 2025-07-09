@@ -119,19 +119,19 @@
         </form>
 
         <!-- User list table -->
-        <div class="overflow-x-auto bg-white rounded-2xl shadow">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-orange-50">
+        <div class="bg-white rounded-xl shadow overflow-x-auto">
+            <table class="min-w-full text-left">
+                <thead class="bg-orange-100 text-orange-700">
                     <tr>
                         <!-- Table columns -->
-                        <th class="px-4 py-2 text-left text-orange-600 font-medium">ID</th>
-                        <th class="px-4 py-2 text-left text-orange-600 font-medium">Name</th>
-                        <th class="px-4 py-2 text-left text-orange-600 font-medium">Email</th>
-                        <th class="px-4 py-2 text-left text-orange-600 font-medium">Phone</th>
-                        <th class="px-4 py-2 text-left text-orange-600 font-medium">Role</th>
-                        <th class="px-4 py-2 text-left text-orange-600 font-medium">Status</th>
-                        <th class="px-4 py-2 text-left text-orange-600 font-medium">Created At</th>
-                        <th class="px-4 py-2 text-left text-orange-600 font-medium">Actions</th>
+                        <th class="px-4 py-2">ID</th>
+                        <th class="px-4 py-2">Name</th>
+                        <th class="px-4 py-2">Email</th>
+                        <th class="px-4 py-2">Phone</th>
+                        <th class="px-4 py-2">Role</th>
+                        <th class="px-4 py-2">Status</th>
+                        <th class="px-4 py-2">Created At</th>
+                        <th class="px-4 py-2">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
