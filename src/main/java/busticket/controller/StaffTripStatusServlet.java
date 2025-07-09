@@ -79,6 +79,7 @@ public class StaffTripStatusServlet extends HttpServlet {
                 // Chuyển hướng đến trang view-trip-status-details.jsp
                 request.getRequestDispatcher("/WEB-INF/staff/trip-status/view-trip-status-details.jsp")
                         .forward(request, response);
+                return;
             } catch (Exception ex) {
                 ex.printStackTrace();  // Xem lỗi chi tiết trong log console
                 response.sendRedirect(request.getContextPath() + "/staff/trip-status");
