@@ -59,7 +59,7 @@
                 <select class="border border-gray-300 rounded-lg px-4 py-2" name="driver">
                     <option value="">All Drivers</option>
                     <c:forEach var="driver" items="${drivers}">
-                        <option value="${driver.driverId}" ${driver.driverId == param.driver ? 'selected' : ''}>${driver.userName}</option>
+                        <option value="${driver.userName}" ${driver.userName == param.driver ? 'selected' : ''}>${driver.userName}</option>
                     </c:forEach>
                 </select>
 

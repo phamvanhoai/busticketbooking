@@ -19,7 +19,6 @@ import java.util.List;
 
 public class StaffTripStatusDAO extends DBContext {
 
-    // Method to get all trips with filters and pagination
     public List<AdminTrips> getAllTrips(String route, String status, String driver, int offset, int limit) {
         List<AdminTrips> trips = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
@@ -38,8 +37,10 @@ public class StaffTripStatusDAO extends DBContext {
                 + " JOIN Locations le           ON r.end_location_id   = le.location_id "
                 + " JOIN Buses b                ON t.bus_id   = b.bus_id "
                 + " JOIN Bus_Types bt           ON b.bus_type_id = bt.bus_type_id "
-                + " JOIN Drivers d              ON t.driver_id = d.driver_id "
-                + " JOIN Users u                ON d.user_id    = u.user_id "
+                // Sử dụng LEFT JOIN để lấy dữ liệu chuyến không có tài xế
+                + " LEFT JOIN Trip_Driver td    ON t.trip_id = td.trip_id "
+                + " LEFT JOIN Drivers d         ON td.driver_id = d.driver_id "
+                + " LEFT JOIN Users u           ON d.user_id = u.user_id "
                 + "WHERE 1=1"
         );
 
@@ -78,7 +79,7 @@ public class StaffTripStatusDAO extends DBContext {
                             rs.getDate("trip_date"),
                             rs.getString("trip_time"),
                             rs.getString("bus_type"),
-                            rs.getString("driver"),
+                            rs.getString("driver"), // driver có thể là null
                             rs.getInt("bus_id"),
                             rs.getString("status")
                     ));
@@ -90,18 +91,19 @@ public class StaffTripStatusDAO extends DBContext {
         return trips;
     }
 
-    // Method to get total trips count with filters
     public int getTotalTripsCount(String route, String status, String driver) {
         StringBuilder sql = new StringBuilder(
                 "SELECT COUNT(*) "
                 + "FROM Trips t "
                 + " JOIN Routes r               ON t.route_id = r.route_id "
                 + " JOIN Locations ls           ON r.start_location_id = ls.location_id "
-                + " JOIN Locations le           ON r.end_location_id   = le.location_id "
-                + " JOIN Buses b                ON t.bus_id   = b.bus_id "
+                + " JOIN Locations le           ON r.end_location_id = le.location_id "
+                + " JOIN Buses b                ON t.bus_id = b.bus_id "
                 + " JOIN Bus_Types bt           ON b.bus_type_id = bt.bus_type_id "
-                + " JOIN Drivers d              ON t.driver_id = d.driver_id "
-                + " JOIN Users u                ON d.user_id    = u.user_id "
+                // Sử dụng LEFT JOIN để không bỏ qua các chuyến không có tài xế
+                + " LEFT JOIN Trip_Driver td    ON t.trip_id = td.trip_id "
+                + " LEFT JOIN Drivers d         ON td.driver_id = d.driver_id "
+                + " LEFT JOIN Users u           ON d.user_id = u.user_id "
                 + "WHERE 1=1"
         );
 

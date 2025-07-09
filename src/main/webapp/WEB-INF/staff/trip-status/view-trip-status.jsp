@@ -39,7 +39,7 @@
                 <select name="driver" class="border p-2 rounded-md w-64">
                     <option value="">All Drivers</option>
                     <c:forEach var="driver" items="${drivers}">
-                        <option value="${driver}" ${driver == param.driver ? 'selected' : ''}>${driver}</option>
+                        <option value="${driver.userName}" ${driver.userName == param.driver ? 'selected' : ''}>${driver.userName}</option>
                     </c:forEach>
                 </select>
 

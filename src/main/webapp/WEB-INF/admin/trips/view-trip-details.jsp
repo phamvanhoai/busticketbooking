@@ -63,7 +63,7 @@
 
             <div class="bg-white p-4 rounded-xl shadow">
                 <p class="text-xs text-gray-500">Driver</p>
-                <p class="font-semibold text-gray-800">${trip.driver}</p>
+                <p class="font-semibold text-gray-800">${trip.driver != null ? trip.driver : 'Not Assigned'}</p>
             </div>
             <div class="bg-white p-4 rounded-xl shadow">
                 <p class="text-xs text-gray-500">Bus Type</p>

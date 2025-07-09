@@ -99,7 +99,9 @@ public class AdminTripsServlet extends HttpServlet {
                 request.getRequestDispatcher("/WEB-INF/admin/trips/view-trip-details.jsp")
                         .forward(request, response);
             } catch (Exception ex) {
+                ex.printStackTrace();  // Xem lỗi chi tiết trong log console
                 response.sendRedirect(request.getContextPath() + "/admin/trips");
+                
                 return;
             }
             return;
