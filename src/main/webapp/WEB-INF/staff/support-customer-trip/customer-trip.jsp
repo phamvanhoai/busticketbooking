@@ -58,32 +58,32 @@
         </form>
 
         <!-- Table -->
-        <div class="overflow-x-auto bg-white rounded-2xl shadow">
-            <table class="min-w-full">
-                <thead class="bg-orange-50">
+        <div class="bg-white shadow-md rounded-xl overflow-x-auto">
+            <table class="min-w-full text-left">
+                <thead class="bg-orange-100 text-orange-700">
                     <tr>
-                        <th class="px-6 py-3 text-left font-medium text-orange-600">Request ID</th>
-                        <th class="px-6 py-3 text-left font-medium text-orange-600">Invoice ID</th>
-                        <th class="px-6 py-3 text-left font-medium text-orange-600">Invoice Code</th>
-                        <th class="px-6 py-3 text-left font-medium text-orange-600">Customer</th>
-                        <th class="px-6 py-3 text-left font-medium text-orange-600">Request Date</th>
-                        <th class="px-6 py-3 text-left font-medium text-orange-600">Reason</th>
-                        <th class="px-6 py-3 text-left font-medium text-orange-600">Status</th>
-                        <th class="px-6 py-3 text-left font-medium text-orange-600">Actions</th>
+                        <th class="px-4 py-2">Request ID</th>
+                        <th class="px-4 py-2">Invoice ID</th>
+                        <th class="px-4 py-2">Invoice Code</th>
+                        <th class="px-4 py-2">Customer</th>
+                        <th class="px-4 py-2">Request Date</th>
+                        <th class="px-4 py-2">Reason</th>
+                        <th class="px-4 py-2">Status</th>
+                        <th class="px-4 py-2">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <c:forEach var="r" items="${requests}">
                         <tr class="border-b hover:bg-gray-50">
-                            <td class="px-6 py-4">${r.requestId}</td>
-                            <td class="px-6 py-4">${r.invoiceId}</td>
-                            <td class="px-6 py-4">${r.invoiceCode}</td>
-                            <td class="px-6 py-4">${r.customerName}</td>
-                            <td class="px-6 py-4">
+                            <td class="px-4 py-2">${r.requestId}</td>
+                            <td class="px-4 py-2">${r.invoiceId}</td>
+                            <td class="px-4 py-2">${r.invoiceCode}</td>
+                            <td class="px-4 py-2">${r.customerName}</td>
+                            <td class="px-4 py-2">
                                 <fmt:formatDate value="${r.requestDate}" pattern="dd/MM/yyyy HH:mm"/>
                             </td>
-                            <td class="px-6 py-4">${r.cancelReason}</td>
-                            <td class="px-6 py-4">
+                            <td class="px-4 py-2">${r.cancelReason}</td>
+                            <td class="px-4 py-2">
                                 <c:choose>
                                     <c:when test="${r.requestStatus=='Pending'}">
                                         <span class="inline-block px-3 py-1 rounded-full text-sm bg-yellow-100 text-yellow-700">Pending</span>
@@ -96,7 +96,7 @@
                                     </c:otherwise>
                                 </c:choose>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-4 py-2">
                                 <c:choose>
                                     <c:when test="${r.requestStatus == 'Pending'}">
                                         <div class="flex items-center gap-2">
@@ -107,7 +107,7 @@
                                                 <input type="hidden" name="status"    value="${status}"/>
                                                 <input type="hidden" name="page"      value="${currentPage}"/>
                                                 <button name="action" value="approve"
-                                                        class="text-green-600 hover:underline">Approve</button>
+                                                        class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg mr-2">Approve</button>
                                             </form>
                                             <form action="${pageContext.request.contextPath}/staff/support-customer-trip"
                                                   method="post" class="inline">
@@ -116,7 +116,7 @@
                                                 <input type="hidden" name="status"    value="${status}"/>
                                                 <input type="hidden" name="page"      value="${currentPage}"/>
                                                 <button name="action" value="reject"
-                                                        class="text-red-600 hover:underline">Reject</button>
+                                                        class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg">Reject</button>
                                             </form>
                                         </div>
                                     </c:when>

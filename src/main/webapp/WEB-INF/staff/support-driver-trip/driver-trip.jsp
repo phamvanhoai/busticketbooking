@@ -15,33 +15,33 @@
 
 <body class="bg-[#f9fafb]">
     <div class="p-6 space-y-6">
-        <h2 class="text-2xl font-bold text-orange-600">Driver Cancel Trip Requests</h2>
+        <h2 class="text-3xl font-bold text-orange-600">Driver Cancel Trip Requests</h2>
 
         <!-- Table -->
-        <div class="overflow-x-auto bg-white rounded-2xl shadow">
-            <table class="min-w-full">
-                <thead class="bg-orange-50">
+        <div class="bg-white shadow-md rounded-xl overflow-x-auto">
+            <table class="min-w-full text-left">
+                <thead class="bg-orange-100 text-orange-700">
                     <tr>
-                        <th class="px-6 py-3 text-left font-medium text-orange-600">Request ID</th>
-                        <th class="px-6 py-3 text-left font-medium text-orange-600">Driver</th>
-                        <th class="px-6 py-3 text-left font-medium text-orange-600">Trip</th>
-                        <th class="px-6 py-3 text-left font-medium text-orange-600">Reason</th>
-                        <th class="px-6 py-3 text-left font-medium text-orange-600">Date</th>
-                        <th class="px-6 py-3 text-left font-medium text-orange-600">Status</th>
-                        <th class="px-6 py-3 text-left font-medium text-orange-600">Actions</th>
+                        <th class="px-4 py-2">Request ID</th>
+                        <th class="px-4 py-2">Driver</th>
+                        <th class="px-4 py-2">Trip</th>
+                        <th class="px-4 py-2">Reason</th>
+                        <th class="px-4 py-2">Date</th>
+                        <th class="px-4 py-2">Status</th>
+                        <th class="px-4 py-2">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <c:forEach var="req" items="${driverRequests}">
                         <tr class="border-b hover:bg-gray-50">
-                            <td class="px-6 py-4">DRVREQ${req.requestId}</td>
-                            <td class="px-6 py-4">${req.driverName}</td>
-                            <td class="px-6 py-4">Trip ${req.tripId}</td>
-                            <td class="px-6 py-4">${req.changeReason}</td>
-                            <td class="px-6 py-4">
+                            <td class="px-4 py-2">DRVREQ${req.requestId}</td>
+                            <td class="px-4 py-2">${req.driverName}</td>
+                            <td class="px-4 py-2">Trip ${req.tripId}</td>
+                            <td class="px-4 py-2">${req.changeReason}</td>
+                            <td class="px-4 py-2">
                                 <fmt:formatDate value="${req.requestDate}" pattern="dd/MM/yyyy" />
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-4 py-2">
                                 <c:choose>
                                     <c:when test="${req.requestStatus == 'Pending'}">
                                         <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700">Pending</span>
@@ -54,7 +54,7 @@
                                     </c:when>
                                 </c:choose>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-4 py-2">
                                 <c:if test="${req.requestStatus == 'Pending'}">
                                     <form action="${pageContext.request.contextPath}/staff/support-driver-trip" method="post" style="display:inline;">
                                         <input type="hidden" name="action" value="approve" />
