@@ -179,50 +179,49 @@ public class AdminTripsDAO extends DBContext {
 
 // 2) Lấy thông tin trip cơ bản để edit/view list
     public AdminTrips getTripById(int tripId) throws SQLException {
-    String sql = "SELECT "
-            + " t.trip_id, "
-            + " t.route_id, "
-            + " CONCAT(ls.location_name, N' → ', le.location_name) AS route, "
-            + " CAST(t.departure_time AS DATE) AS tripDate, "
-            + " CONVERT(VARCHAR(5), t.departure_time, 108) AS tripTime, "
-            + " t.bus_id, "
-            + " bt.bus_type_name AS busType, "
-            + " u.user_name AS driver, "
-            + " td.driver_id, "  // Lấy driver_id từ bảng Trip_Driver
-            + " t.trip_status AS status "
-            + "FROM Trips t "
-            + " JOIN Routes r   ON t.route_id = r.route_id "
-            + " JOIN Locations ls ON r.start_location_id = ls.location_id "
-            + " JOIN Locations le ON r.end_location_id   = le.location_id "
-            + " JOIN Buses b    ON t.bus_id   = b.bus_id "
-            + " JOIN Bus_Types bt ON b.bus_type_id = bt.bus_type_id "
-            + " LEFT JOIN Trip_Driver td ON t.trip_id = td.trip_id "
-            + " LEFT JOIN Drivers d ON td.driver_id = d.driver_id "
-            + " LEFT JOIN Users u ON d.user_id = u.user_id "
-            + "WHERE t.trip_id = ?";
+        String sql = "SELECT "
+                + " t.trip_id, "
+                + " t.route_id, "
+                + " CONCAT(ls.location_name, N' → ', le.location_name) AS route, "
+                + " CAST(t.departure_time AS DATE) AS tripDate, "
+                + " CONVERT(VARCHAR(5), t.departure_time, 108) AS tripTime, "
+                + " t.bus_id, "
+                + " bt.bus_type_name AS busType, "
+                + " u.user_name AS driver, "
+                + " td.driver_id, " // Lấy driver_id từ bảng Trip_Driver
+                + " t.trip_status AS status "
+                + "FROM Trips t "
+                + " JOIN Routes r   ON t.route_id = r.route_id "
+                + " JOIN Locations ls ON r.start_location_id = ls.location_id "
+                + " JOIN Locations le ON r.end_location_id   = le.location_id "
+                + " JOIN Buses b    ON t.bus_id   = b.bus_id "
+                + " JOIN Bus_Types bt ON b.bus_type_id = bt.bus_type_id "
+                + " LEFT JOIN Trip_Driver td ON t.trip_id = td.trip_id "
+                + " LEFT JOIN Drivers d ON td.driver_id = d.driver_id "
+                + " LEFT JOIN Users u ON d.user_id = u.user_id "
+                + "WHERE t.trip_id = ?";
 
-    try ( PreparedStatement ps = getConnection().prepareStatement(sql)) {
-        ps.setInt(1, tripId);
-        try ( ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                return new AdminTrips(
-                        rs.getInt("trip_id"),
-                        rs.getInt("route_id"),
-                        rs.getString("route"),
-                        rs.getDate("tripDate"),
-                        rs.getString("tripTime"),
-                        rs.getInt("bus_id"),
-                        rs.getString("busType"),
-                        rs.getInt("driver_id"), // driver_id từ bảng Trip_Driver
-                        rs.getString("driver"), // driver tên tài xế
-                        rs.getString("status")
-                );
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql)) {
+            ps.setInt(1, tripId);
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new AdminTrips(
+                            rs.getInt("trip_id"),
+                            rs.getInt("route_id"),
+                            rs.getString("route"),
+                            rs.getDate("tripDate"),
+                            rs.getString("tripTime"),
+                            rs.getInt("bus_id"),
+                            rs.getString("busType"),
+                            rs.getInt("driver_id"), // driver_id từ bảng Trip_Driver
+                            rs.getString("driver"), // driver tên tài xế
+                            rs.getString("status")
+                    );
+                }
             }
         }
+        return null;
     }
-    return null;
-}
-
 
     public AdminTrips getTripDetailById(int tripId) throws SQLException {
         String sql = "SELECT "
@@ -319,11 +318,12 @@ public class AdminTripsDAO extends DBContext {
 
     // details trip
     public List<AdminUsers> getPassengersByTripId(int tripId) throws SQLException {
-        String sql
-                = "SELECT u.user_id, u.user_name "
+        String sql = "SELECT u.user_id, u.user_name, ts.seat_number " // Thêm seat_number từ Ticket_Seat
                 + "FROM Tickets t "
-                + " JOIN Users u ON t.user_id = u.user_id "
+                + "JOIN Users u ON t.user_id = u.user_id "
+                + "LEFT JOIN Ticket_Seat ts ON t.ticket_id = ts.ticket_id " // Join với Ticket_Seat
                 + "WHERE t.trip_id = ? AND t.ticket_status = 'Booked'";
+
         List<AdminUsers> list = new ArrayList<>();
         try ( PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, tripId);
@@ -331,7 +331,8 @@ public class AdminTripsDAO extends DBContext {
                 while (rs.next()) {
                     list.add(new AdminUsers(
                             rs.getInt("user_id"),
-                            rs.getString("user_name")
+                            rs.getString("user_name"),
+                            rs.getString("seat_number") // Lưu seat_number vào đối tượng AdminUsers
                     ));
                 }
             }

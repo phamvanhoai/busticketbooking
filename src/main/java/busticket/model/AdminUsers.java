@@ -23,6 +23,7 @@ public class AdminUsers {
     private Timestamp birthdate;
     private String gender;
     private String address;
+    private String seatNumber;
     private Timestamp created_at;
 
     public String getFormattedId() {
@@ -97,6 +98,24 @@ public class AdminUsers {
         this.user_id = user_id;
         this.name = name;
     }
+
+    public AdminUsers(int user_id, String name, String seatNumber) {
+        this.user_id = user_id;
+        this.name = name;
+        this.seatNumber = seatNumber;
+    }
+    
+    
+
+    public String getSeatNumber() {
+        return seatNumber;
+    }
+
+    public void setSeatNumber(String seatNumber) {
+        this.seatNumber = seatNumber;
+    }
+    
+    
 
     public int getUser_id() {
         return user_id;
