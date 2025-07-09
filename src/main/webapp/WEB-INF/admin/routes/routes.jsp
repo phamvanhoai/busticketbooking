@@ -13,7 +13,7 @@
 
 <c:set var="baseUrl" value="${pageContext.request.contextPath}/admin/routes" />
 <body class="bg-gray-50">
-    <div class="p-8 bg-white rounded-xl shadow-lg mt-10">
+    <div class="mt-10 px-4">
         <!-- Header + Create Button -->
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-3xl font-bold text-orange-600">Manage Routes</h2>
@@ -23,9 +23,9 @@
                 </button></a>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="bg-white rounded-xl shadow overflow-x-auto">
             <table class="min-w-full border text-left">
-                <thead class="bg-orange-100 text-[#EF5222]">
+                <thead class="bg-orange-100 text-orange-700">
                     <tr>
                         <th class="py-2 px-4">Route ID</th>
                         <th class="py-2 px-4">Origin</th>

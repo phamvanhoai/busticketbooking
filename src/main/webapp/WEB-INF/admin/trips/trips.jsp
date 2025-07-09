@@ -40,7 +40,7 @@
         </div>
 
         <!-- Filters -->
-        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+        <div class="grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
             <form action="${pageContext.servletContext.contextPath}/admin/trips" method="get" class="flex gap-4">
                 <select class="border border-gray-300 rounded-lg px-4 py-2" name="route">
                     <option value="">All Routes</option>
@@ -66,7 +66,15 @@
                 <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg">
                     Filter
                 </button>
+                
+                <!-- Reset button -->
+                <a href="${pageContext.servletContext.contextPath}/admin/trips">
+                    <button type="button" class="text-sm px-4 py-2 border border-orange-400 text-orange-600 rounded-lg hover:bg-orange-100 transition flex items-center gap-2">
+                        <i class="fas fa-sync-alt"></i>
+                        Reset Filters
+                    </button></a>
             </form>
+                
         </div>
 
         <!-- Trip Table -->
@@ -113,15 +121,31 @@
                                 </c:choose>
                             </td>
                             <td class="px-6 py-4 flex items-center gap-3">
-                                <a href="${pageContext.servletContext.contextPath}/admin/trips?detail=${trip.tripId}" class="text-blue-600 hover:underline flex items-center gap-1">
+                                <a href="${pageContext.servletContext.contextPath}/admin/trips?detail=${trip.tripId}" class="text-blue-600 hover:text-indigo-800 flex items-center gap-1">
                                     <i class="fas fa-eye"></i> View</a>
-                                <a href="${pageContext.servletContext.contextPath}/admin/trips?editId=${trip.tripId}" class="text-blue-600 hover:underline flex items-center gap-1">
+                                <a href="${pageContext.servletContext.contextPath}/admin/trips?editId=${trip.tripId}" class="text-amber-600 hover:text-amber-800 flex items-center gap-1">
                                     <i class="fas fa-edit"></i> Edit</a>
-                                <a href="${pageContext.servletContext.contextPath}/admin/trips?delete=${trip.tripId}" class="text-red-600 hover:underline flex items-center gap-1">
+                                <a href="${pageContext.servletContext.contextPath}/admin/trips?delete=${trip.tripId}" class="text-red-600 hover:text-red-800 flex items-center gap-1">
                                     <i class="fas fa-trash-alt"></i> Delete</a>
                             </td>
                         </tr>
                     </c:forEach>
+                    <!-- No data case if list is empty -->
+                    <c:if test="${empty trips}">
+                        <tr>
+                            <td colspan="8" class="py-4 px-4 text-center text-gray-500">
+                                <div class="flex flex-col items-center justify-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M9.75 9.75h.008v.008H9.75V9.75zm4.5 0h.008v.008h-.008V9.75zM9 13.5c.75 1 2.25 1 3 0m9 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <span class="text-sm text-gray-500 font-medium">
+                                        No trips found for your filter.
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    </c:if>
                 </tbody>
             </table>
         </div>

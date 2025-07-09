@@ -78,7 +78,7 @@ public class AdminTripsServlet extends HttpServlet {
                     // Stop đầu lấy giờ xuất phát
                     if (i > 0) {
                         // Cộng travelMinutes, dwell chỉ cộng nếu muốn tính giờ rời
-                        curTime = curTime.plusMinutes(stop.getTravelMinutes());
+                        curTime = curTime.plusMinutes(stop.getTravelMinutes() + stop.getDwellMinutes());
                     }
                     stopTimes.add(curTime.toString());
                 }

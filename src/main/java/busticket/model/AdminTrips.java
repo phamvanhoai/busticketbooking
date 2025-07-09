@@ -46,7 +46,7 @@ public class AdminTrips {
     }
     
     //getTripById
-    public AdminTrips(int tripId, int routeId, String route, Date tripDate, String tripTime, int busId, String busType, String driver, String status) {
+    public AdminTrips(int tripId, int routeId, String route, Date tripDate, String tripTime, int busId, String busType, int driverId, String driver, String status) {
         this.tripId = tripId;
         this.routeId = routeId;
         this.route = route;
@@ -54,7 +54,7 @@ public class AdminTrips {
         this.tripTime = tripTime;
         this.busId = busId;
         this.busType = busType;
-//        this.driverId = driverId;
+        this.driverId = driverId;
         this.driver = driver;
         this.status = status;
     }

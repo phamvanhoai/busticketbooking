@@ -134,6 +134,16 @@
             </ul>
         </section>
 
+                <!-- Actions -->
+            <div class="mt-6 flex justify-end gap-4">
+                <a href="${pageContext.request.contextPath}/admin/trips">
+                    <button type="button"
+                            class="px-6 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition">
+                        Back to trips
+                    </button>
+                </a>
+            </div>
+
     </div>
     <%-- CONTENT HERE--%>
 

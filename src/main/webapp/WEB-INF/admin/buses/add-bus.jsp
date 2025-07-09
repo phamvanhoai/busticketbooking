@@ -9,7 +9,7 @@
 <%@include file="/WEB-INF/include/admin/admin-header.jsp" %>
 
 <body class="bg-gray-50">
-    <div class="mt-10 p-8 bg-white rounded-2xl shadow-lg border border-[#EF5222]">
+    <div class="p-8 bg-white rounded-xl shadow-lg mt-10">
         <h1 class="text-3xl font-bold text-[#EF5222] mb-6">Create New Bus</h1>
 
         <!-- Display error messages if there are any -->

@@ -78,17 +78,17 @@
             <table class="min-w-full text-left">
                 <thead class="bg-orange-100 text-orange-700">
                     <tr>
-                        <th class="px-4 py-3">ID</th>
-                        <th class="px-4 py-3">Name</th>
-                        <th class="px-4 py-3">Address</th>
-                        <th class="px-4 py-3">Location Type</th>
-                        <th class="px-4 py-3">Status</th>
-                        <th class="px-4 py-3">Actions</th>
+                        <th class="px-4 py-2">ID</th>
+                        <th class="px-4 py-2">Name</th>
+                        <th class="px-4 py-2">Address</th>
+                        <th class="px-4 py-2">Location Type</th>
+                        <th class="px-4 py-2">Status</th>
+                        <th class="px-4 py-2">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y">
+                <tbody>
                     <c:forEach var="loc" items="${locations}">
-                        <tr class="hover:bg-gray-50">
+                        <tr class="border-t hover:bg-gray-50">
                             <td class="px-4 py-3">${loc.locationId}</td>
                             <td class="px-4 py-3">${loc.locationName}</td>
                             <td class="px-4 py-3">${loc.address}</td>
@@ -127,10 +127,19 @@
                             </td>
                         </tr>
                     </c:forEach>
+                    <!-- No data case if list is empty -->
                     <c:if test="${empty locations}">
                         <tr>
-                            <td colspan="5" class="px-4 py-3 text-center text-gray-500">
-                                Không tìm thấy kết quả.
+                            <td colspan="8" class="py-4 px-4 text-center text-gray-500">
+                                <div class="flex flex-col items-center justify-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M9.75 9.75h.008v.008H9.75V9.75zm4.5 0h.008v.008h-.008V9.75zM9 13.5c.75 1 2.25 1 3 0m9 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <span class="text-sm text-gray-500 font-medium">
+                                        No locations found for your search.
+                                    </span>
+                                </div>
                             </td>
                         </tr>
                     </c:if>

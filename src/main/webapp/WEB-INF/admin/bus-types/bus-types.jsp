@@ -10,7 +10,7 @@
 <%@ taglib prefix="fbus" uri="/WEB-INF/tags/implicit.tld" %>
 
 <body class="bg-gray-50">
-    <div class="mt-10 p-6 bg-white rounded-2xl shadow-lg">
+    <div class="mt-10 px-4">
         <!-- Header + Create Button -->
         <div class="flex items-center justify-between mb-6">
             <h1 class="text-3xl font-bold text-[#EF5222]">Manage Bus Types</h1>
@@ -36,39 +36,30 @@
         </div>
 
         <!-- Table -->
-        <div class="overflow-x-auto">
-            <table class="min-w-full bg-white rounded-lg overflow-hidden">
-                <thead class="bg-[#FFF3EB]">
+        <div class="bg-white rounded-xl shadow overflow-x-auto">
+            <table class="min-w-full border text-left">
+                <thead class="bg-orange-100 text-orange-700">
                     <tr>
-                        <th class="text-left text-[#EF5222] font-medium px-6 py-3">Bus Type ID</th>
-                        <th class="text-left text-[#EF5222] font-medium px-6 py-3">Name</th>
-                        <th class="text-left text-[#EF5222] font-medium px-6 py-3">Description</th>
-                        <th class="text-left text-[#EF5222] font-medium px-6 py-3">Types</th>
-                        <th class="text-left text-[#EF5222] font-medium px-6 py-3">Actions</th>
+                        <th class="px-4 py-2">Bus Type ID</th>
+                        <th class="px-4 py-2">Name</th>
+                        <th class="px-4 py-2">Description</th>
+                        <th class="px-4 py-2">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <c:forEach var="bt" items="${busTypes}">
                         <tr class="border-b last:border-none">
-                            <td class="px-6 py-4">${bt.busTypeId}</td>
-                            <td class="px-6 py-4">${bt.busTypeName}</td>
-                            <td class="px-6 py-4">${bt.busTypeDescription}</td>
-                            <td class="px-6 py-4">
-                                <!-- Hiển thị danh sách seat templates -->
-                                <small>
-                                    <c:forEach var="st" items="${templatesMap[bt.busTypeId]}" varStatus="s">
-                                        ${st.code}(${st.level})<c:if test="${!s.last}">, </c:if>
-                                    </c:forEach>
-                                </small>
-                            </td>
-                            <td class="px-6 py-4 space-x-4">
+                            <td class="px-4 py-2">${bt.busTypeId}</td>
+                            <td class="px-4 py-2">${bt.busTypeName}</td>
+                            <td class="px-4 py-2">${bt.busTypeDescription}</td>
+                            <td class="px-4 py-2 space-x-4">
                                 <a href="${pageContext.request.contextPath}/admin/bus-types?detail=${bt.busTypeId}">
                                     <button class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm">
                                         <i class="fas fa-eye"></i> View
                                     </button>
                                 </a>
                                 <a href="${pageContext.request.contextPath}/admin/bus-types?editId=${bt.busTypeId}">
-                                    <button class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm">
+                                    <button class="inline-flex items-center gap-1 text-amber-600 hover:text-amber-8000 text-sm">
                                         <i class="fas fa-edit"></i> Edit
                                     </button>
                                 </a>
