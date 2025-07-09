@@ -6,7 +6,7 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List, java.text.SimpleDateFormat" %>
-<%@ page import="busticket.model.StaffTripStatus, busticket.model.TripDetail, busticket.model.RouteStop, busticket.model.Passenger" %>
+<%@ page import="busticket.model.StaffTripStatus, busticket.model.StaffTripDetail, busticket.model.StaffRouteStop, busticket.model.StaffPassenger" %>
 <%@include file="/WEB-INF/include/staff/staff-header.jsp" %>
 
 <div class="p-8">
@@ -75,7 +75,7 @@
                 </td>
             </tr>
             <% }
-        } else { %>
+            } else { %>
             <tr><td colspan="8" class="p-4 text-center text-gray-500">No trips found.</td></tr>
             <% } %>
         </tbody>
@@ -105,9 +105,9 @@
     <% } else if (action.equals("detail")) { %>
     <%-- View Trip Details Section --%>
     <%
-        TripDetail detail = (TripDetail) request.getAttribute("detail");
-        List<RouteStop> stops = (List<RouteStop>) request.getAttribute("stops");
-        List<Passenger> passengers = (List<Passenger>) request.getAttribute("passengers");
+        StaffTripDetail detail = (StaffTripDetail) request.getAttribute("detail");
+        List<StaffRouteStop> stops = (List<StaffRouteStop>) request.getAttribute("stops");
+        List<StaffPassenger> passengers = (List<StaffPassenger>) request.getAttribute("passengers");
         SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm");
     %>
 
@@ -141,14 +141,14 @@
 
     <h2 class="text-2xl font-semibold mb-2">Route Stops</h2>
     <ul class="list-disc ml-6 mb-4">
-        <% for (RouteStop stop : stops) {%>
+        <% for (StaffRouteStop stop : stops) {%>
         <li><%= stop.getTime()%> – <%= stop.getLocation()%> | <%= stop.getAddress()%></li>
             <% } %>
     </ul>
 
     <h2 class="text-2xl font-semibold mb-2">Passenger List</h2>
     <ul class="list-disc ml-6 mb-4">
-        <% for (Passenger p : passengers) {%>
+        <% for (StaffPassenger p : passengers) {%>
         <li><%= p.getName()%></li>
             <% } %>
     </ul>

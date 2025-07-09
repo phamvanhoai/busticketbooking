@@ -5,13 +5,12 @@
 package busticket.controller;
 
 import busticket.DAO.StaffTripStatusDAO;
-import busticket.model.Passenger;
-import busticket.model.RouteStop;
+import busticket.model.StaffPassenger;
+import busticket.model.StaffRouteStop;
 import busticket.model.StaffTripStatus;
-import busticket.model.TripDetail;
+import busticket.model.StaffTripDetail;
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -71,9 +70,9 @@ public class StaffTripStatusServlet extends HttpServlet {
             return;
         }
 
-        TripDetail detail = dao.getTripDetail(tripId);
-        List<RouteStop> stops = dao.getRouteStops(tripId);
-        List<Passenger> passengers = dao.getPassengerList(tripId);
+        StaffTripDetail detail = dao.getTripDetail(tripId);
+        List<StaffRouteStop> stops = dao.getRouteStops(tripId);
+        List<StaffPassenger> passengers = dao.getPassengerList(tripId);
 
         request.setAttribute("detail", detail);
         request.setAttribute("stops", stops);

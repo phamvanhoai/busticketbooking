@@ -9,10 +9,10 @@ package busticket.DAO;
  * @author admin
  */
 import busticket.db.DBContext;
-import busticket.model.Passenger;
-import busticket.model.RouteStop;
+import busticket.model.StaffPassenger;
+import busticket.model.StaffRouteStop;
 import busticket.model.StaffTripStatus;
-import busticket.model.TripDetail;
+import busticket.model.StaffTripDetail;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -108,8 +108,8 @@ public class StaffTripStatusDAO extends DBContext {
         return 0;
     }
 
-    public TripDetail getTripDetail(int tripId) {
-        TripDetail detail = new TripDetail();
+    public StaffTripDetail getTripDetail(int tripId) {
+        StaffTripDetail detail = new StaffTripDetail();
         String sql = "SELECT t.trip_id, ls.location_name AS start_location, le.location_name AS end_location, " +
                      "t.departure_time, DATEADD(MINUTE, 240, t.departure_time) AS arrival_time, " +
                      "u.user_name AS driver_name, bt.bus_type_name, t.trip_status " +
@@ -141,9 +141,9 @@ public class StaffTripStatusDAO extends DBContext {
         return detail;
     }
 
-    public List<RouteStop> getRouteStops(int tripId) {
-        List<RouteStop> list = new ArrayList<>();
-        RouteStop stop = new RouteStop();
+    public List<StaffRouteStop> getRouteStops(int tripId) {
+        List<StaffRouteStop> list = new ArrayList<>();
+        StaffRouteStop stop = new StaffRouteStop();
         stop.setTime("08:00");
         stop.setLocation("Cà Mau");
         stop.setAddress("Phường 6, Tp. Cà Mau, Cà Mau, Việt Nam");
@@ -151,9 +151,9 @@ public class StaffTripStatusDAO extends DBContext {
         return list;
     }
 
-    public List<Passenger> getPassengerList(int tripId) {
-        List<Passenger> list = new ArrayList<>();
-        Passenger p = new Passenger();
+    public List<StaffPassenger> getPassengerList(int tripId) {
+        List<StaffPassenger> list = new ArrayList<>();
+        StaffPassenger p = new StaffPassenger();
         p.setName("Nguyen Thi Lan");
         list.add(p);
         return list;
