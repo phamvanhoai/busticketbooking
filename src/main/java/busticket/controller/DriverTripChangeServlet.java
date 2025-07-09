@@ -2,15 +2,14 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
-
 package busticket.controller;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import busticket.DAO.DriverRequestTripChangeDAO;
+import busticket.model.DriverRequestTripChange;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
 
 /**
  *
@@ -18,41 +17,55 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 public class DriverTripChangeServlet extends HttpServlet {
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /** 
-     * Handles the HTTP <code>GET</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
+            throws ServletException, IOException {
+
+        // Gọi trang request-trip-change.jsp không kèm dữ liệu (vì JSP đã viết cứng option + bảng mẫu)
         request.getRequestDispatcher("/WEB-INF/driver/request-trip-change.jsp")
                 .forward(request, response);
-    } 
-
-    /** 
-     * Handles the HTTP <code>POST</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        
     }
 
-    /** 
-     * Returns a short description of the servlet.
-     * @return a String containing servlet description
-     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        request.setCharacterEncoding("UTF-8");
+
+        // Lấy dữ liệu từ form
+        String tripIdRaw = request.getParameter("tripId");
+        String reason = request.getParameter("reason");
+
+        // Lấy driverId từ session (đã lưu khi đăng nhập)
+        HttpSession session = request.getSession();
+        Integer driverId = (Integer) session.getAttribute("driverId");
+
+        if (tripIdRaw != null && reason != null && driverId != null && !reason.trim().isEmpty()) {
+            try {
+                int tripId = Integer.parseInt(tripIdRaw);
+
+                // Tạo model
+                DriverRequestTripChange req = new DriverRequestTripChange();
+                req.setDriverId(driverId);
+                req.setTripId(tripId);
+                req.setChangeReason(reason);
+
+                // Lưu DB
+                DriverRequestTripChangeDAO dao = new DriverRequestTripChangeDAO();
+                dao.addRequest(req);
+
+            } catch (NumberFormatException e) {
+                // Không làm gì nếu dữ liệu sai — vì bạn không muốn thay đổi JSP để hiện lỗi
+            }
+        }
+
+        // Sau khi xử lý xong, redirect về chính servlet để reload form
+        response.sendRedirect("driver-trip-change");
+    }
+
     @Override
     public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
+        return "Xử lý gửi yêu cầu đổi chuyến mà không cần thay đổi JSP";
+    }
 
 }
