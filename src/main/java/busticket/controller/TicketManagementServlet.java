@@ -194,12 +194,13 @@ public class TicketManagementServlet extends HttpServlet {
 
         if (action == null) {
             // Nếu không có action thì coi như lỗi
-            response.sendRedirect(request.getContextPath() + "/ticket-management?status=invalid_action");
+            request.setAttribute("errorMessage", "Invalid action.");
+            request.getRequestDispatcher("/ticket-management").forward(request, response);
             return;
         }
 
-        // ========================
-        // CANCEL LOGIC
+        // ======================== 
+        // CANCEL LOGIC 
         // ========================
         if (action.equalsIgnoreCase("cancel")) {
             String invoiceIdStr = request.getParameter("invoiceId");
@@ -207,7 +208,8 @@ public class TicketManagementServlet extends HttpServlet {
 
             if (invoiceIdStr == null || invoiceIdStr.isEmpty()) {
                 System.out.println("Cancel Error: invoiceId missing");
-                response.sendRedirect(request.getContextPath() + "/ticket-management?status=cancel_error");
+                request.setAttribute("errorMessage", "Invoice ID is missing.");
+                request.getRequestDispatcher("/ticket-management").forward(request, response);
                 return;
             }
 
@@ -216,16 +218,19 @@ public class TicketManagementServlet extends HttpServlet {
                 boolean success = ticketManagementDAO.cancelInvoice(invoiceIdStr, cancellationReason, user.getUser_id());
 
                 if (success) {
-                    response.sendRedirect(request.getContextPath() + "/ticket-management?status=Pending Cancellation");
+                    request.setAttribute("successMessage", "Cancellation request is pending.");
+                    request.getRequestDispatcher("/ticket-management").forward(request, response);
                 } else {
-                    response.sendRedirect(request.getContextPath() + "/ticket-management?status=error");
+                    request.setAttribute("errorMessage", "Error in cancelling the invoice.");
+                    request.getRequestDispatcher("/ticket-management").forward(request, response);
                 }
             } catch (NumberFormatException e) {
                 System.out.println("Cancel Error: invalid invoiceId format");
-                response.sendRedirect(request.getContextPath() + "/ticket-management?status=cancel_error");
+                request.setAttribute("errorMessage", "Invalid invoice ID format.");
+                request.getRequestDispatcher("/ticket-management").forward(request, response);
             }
-        } // ========================
-        // REVIEW LOGIC
+        } // ======================== 
+        // REVIEW LOGIC 
         // ========================
         else if (action.equalsIgnoreCase("review")) {
             String invoiceIdStr = request.getParameter("invoiceId");
@@ -234,13 +239,15 @@ public class TicketManagementServlet extends HttpServlet {
 
             if (invoiceIdStr == null || invoiceIdStr.isEmpty()) {
                 System.out.println("Review Error: invoiceId is missing");
-                response.sendRedirect(request.getContextPath() + "/ticket-management?status=review_error");
+                request.setAttribute("errorMessage", "Invoice ID is missing.");
+                request.getRequestDispatcher("/ticket-management").forward(request, response);
                 return;
             }
 
             if (ratingStr == null || ratingStr.isEmpty()) {
                 System.out.println("Review Error: rating is missing");
-                response.sendRedirect(request.getContextPath() + "/ticket-management?status=review_error");
+                request.setAttribute("errorMessage", "Rating is missing.");
+                request.getRequestDispatcher("/ticket-management").forward(request, response);
                 return;
             }
 
@@ -261,18 +268,22 @@ public class TicketManagementServlet extends HttpServlet {
                 }
 
                 if (success) {
-                    response.sendRedirect(request.getContextPath() + "/ticket-management?status=review_success");
+                    request.setAttribute("successMessage", "Your review has been submitted successfully.");
+                    request.getRequestDispatcher("/ticket-management").forward(request, response);
                 } else {
-                    response.sendRedirect(request.getContextPath() + "/ticket-management?status=review_error");
+                    request.setAttribute("errorMessage", "Error submitting your review.");
+                    request.getRequestDispatcher("/ticket-management").forward(request, response);
                 }
 
             } catch (NumberFormatException e) {
                 System.out.println("Review Error: Invalid number format");
                 e.printStackTrace();
-                response.sendRedirect(request.getContextPath() + "/ticket-management?status=review_error");
+                request.setAttribute("errorMessage", "Invalid number format.");
+                request.getRequestDispatcher("/ticket-management").forward(request, response);
             }
         } else {
-            response.sendRedirect(request.getContextPath() + "/ticket-management?status=invalid_action");
+            request.setAttribute("errorMessage", "Invalid action.");
+            request.getRequestDispatcher("/ticket-management").forward(request, response);
         }
     }
 
