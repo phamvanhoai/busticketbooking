@@ -38,7 +38,8 @@ public class TicketManagementServlet extends HttpServlet {
         // Get the logged-in user's ID from session
         HttpSession session = request.getSession();
         if (session == null || session.getAttribute("currentUser") == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
+            request.setAttribute("errorMessage", "Vui lòng đăng nhập.");
+            request.getRequestDispatcher("/WEB-INF/pages/login.jsp").forward(request, response);
             return;
         }
 
@@ -58,13 +59,13 @@ public class TicketManagementServlet extends HttpServlet {
                             .forward(request, response);
                     return;
                 } else {
-                    request.setAttribute("errorMessage", "Invoice not found!");
+                    request.setAttribute("errorMessage", "Không tìm thấy hóa đơn!");
                     request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp")
                             .forward(request, response);
                     return;
                 }
             } catch (NumberFormatException e) {
-                request.setAttribute("errorMessage", "Invalid invoice ID format!");
+                request.setAttribute("errorMessage", "Định dạng ID hóa đơn không hợp lệ!");
                 request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp")
                         .forward(request, response);
                 return;
@@ -102,30 +103,21 @@ public class TicketManagementServlet extends HttpServlet {
                         return;
 
                     } else {
-                        response.sendRedirect(request.getContextPath() + "/ticket-management?status=trip_not_completed");
+                        request.setAttribute("errorMessage", "Chuyến đi chưa hoàn thành. Không thể đánh giá!");
+                        request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp")
+                                .forward(request, response);
                         return;
                     }
 
                 } else {
-                    request.setAttribute("errorMessage", "Invoice not found!");
+                    request.setAttribute("errorMessage", "Không tìm thấy hóa đơn!");
                     request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp")
                             .forward(request, response);
                     return;
                 }
 
             } catch (NumberFormatException e) {
-                request.setAttribute("errorMessage", "Invalid invoice ID format!");
-
-                String statusParam = request.getParameter("status");
-                if ("trip_not_completed".equals(statusParam)) {
-                    request.setAttribute("errorMessage", "Trip chưa hoàn thành. Không thể đánh giá!");
-                }
-                if ("review_error".equals(statusParam)) {
-                    request.setAttribute("errorMessage", "Đã xảy ra lỗi khi thực hiện review!");
-                }
-                if ("review_success".equals(statusParam)) {
-                    request.setAttribute("successMessage", "Review thành công!");
-                }
+                request.setAttribute("errorMessage", "Định dạng ID hóa đơn không hợp lệ!");
                 request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp")
                         .forward(request, response);
                 return;
@@ -179,12 +171,12 @@ public class TicketManagementServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         // Lấy thông tin từ session (người dùng đang đăng nhập)
         HttpSession session = request.getSession();
         Users user = (Users) session.getAttribute("currentUser");
         if (user == null) {
-            response.sendRedirect("/login");
+            request.setAttribute("errorMessage", "Vui lòng đăng nhập.");
+            request.getRequestDispatcher("/WEB-INF/pages/login.jsp").forward(request, response);
             return;
         }
 
@@ -193,23 +185,83 @@ public class TicketManagementServlet extends HttpServlet {
         TicketManagementDAO ticketManagementDAO = new TicketManagementDAO();
 
         if (action == null) {
-            // Nếu không có action thì coi như lỗi
-            request.setAttribute("errorMessage", "Invalid action.");
-            request.getRequestDispatcher("/ticket-management").forward(request, response);
+            request.setAttribute("errorMessage", "Hành động không hợp lệ.");
+            request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp").forward(request, response);
             return;
         }
 
-        // ======================== 
-        // CANCEL LOGIC 
         // ========================
-        if (action.equalsIgnoreCase("cancel")) {
+        // CANCEL FORM LOGIC
+        // ========================
+        if (action.equalsIgnoreCase("cancel_form")) {
+            String invoiceIdStr = request.getParameter("invoiceId");
+            if (invoiceIdStr == null || invoiceIdStr.isEmpty()) {
+                request.setAttribute("errorMessage", "Thiếu ID hóa đơn.");
+                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp").forward(request, response);
+                return;
+            }
+            try {
+                int invoiceId = Integer.parseInt(invoiceIdStr);
+                Invoices invoice = ticketManagementDAO.getInvoiceById(invoiceId);
+                if (invoice != null) {
+                    request.setAttribute("invoice", invoice);
+                    request.getRequestDispatcher("/WEB-INF/pages/ticket-management/cancel-ticket.jsp").forward(request, response);
+                } else {
+                    request.setAttribute("errorMessage", "Không tìm thấy hóa đơn!");
+                    request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp").forward(request, response);
+                }
+            } catch (NumberFormatException e) {
+                request.setAttribute("errorMessage", "Định dạng ID hóa đơn không hợp lệ.");
+                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp").forward(request, response);
+            }
+        } // ========================
+        // REVIEW FORM LOGIC
+        // ========================
+        else if (action.equalsIgnoreCase("review_form")) {
+            String invoiceIdStr = request.getParameter("invoiceId");
+            if (invoiceIdStr == null || invoiceIdStr.isEmpty()) {
+                request.setAttribute("errorMessage", "Thiếu ID hóa đơn.");
+                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp").forward(request, response);
+                return;
+            }
+            try {
+                int invoiceId = Integer.parseInt(invoiceIdStr);
+                Invoices invoice = ticketManagementDAO.getInvoiceById(invoiceId);
+                if (invoice != null) {
+                    Date now = new Date();
+                    if ("Paid".equalsIgnoreCase(invoice.getInvoiceStatus())
+                            && invoice.getDepartureTime() != null
+                            && !invoice.getDepartureTime().after(now)) {
+                        Review reviewObj = ticketManagementDAO.getReviewByInvoiceId(invoiceId);
+                        if (reviewObj != null) {
+                            invoice.setReviewRating(reviewObj.getRating());
+                            invoice.setReviewText(reviewObj.getText());
+                        }
+                        request.setAttribute("invoice", invoice);
+                        request.getRequestDispatcher("/WEB-INF/pages/ticket-management/review-booking.jsp").forward(request, response);
+                    } else {
+                        request.setAttribute("errorMessage", "Chuyến đi chưa hoàn thành. Không thể đánh giá!");
+                        request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp").forward(request, response);
+                    }
+                } else {
+                    request.setAttribute("errorMessage", "Không tìm thấy hóa đơn!");
+                    request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp").forward(request, response);
+                }
+            } catch (NumberFormatException e) {
+                request.setAttribute("errorMessage", "Định dạng ID hóa đơn không hợp lệ.");
+                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp").forward(request, response);
+            }
+        } // ========================
+        // CANCEL LOGIC
+        // ========================
+        else if (action.equalsIgnoreCase("cancel")) {
             String invoiceIdStr = request.getParameter("invoiceId");
             String cancellationReason = request.getParameter("reason");
 
             if (invoiceIdStr == null || invoiceIdStr.isEmpty()) {
                 System.out.println("Cancel Error: invoiceId missing");
-                request.setAttribute("errorMessage", "Invoice ID is missing.");
-                request.getRequestDispatcher("/ticket-management").forward(request, response);
+                request.setAttribute("errorMessage", "Thiếu ID hóa đơn.");
+                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp").forward(request, response);
                 return;
             }
 
@@ -218,19 +270,18 @@ public class TicketManagementServlet extends HttpServlet {
                 boolean success = ticketManagementDAO.cancelInvoice(invoiceIdStr, cancellationReason, user.getUser_id());
 
                 if (success) {
-                    request.setAttribute("successMessage", "Cancellation request is pending.");
-                    request.getRequestDispatcher("/ticket-management").forward(request, response);
+                    request.setAttribute("successMessage", "Hủy vé thành công, trạng thái: Pending Cancellation.");
                 } else {
-                    request.setAttribute("errorMessage", "Error in cancelling the invoice.");
-                    request.getRequestDispatcher("/ticket-management").forward(request, response);
+                    request.setAttribute("errorMessage", "Lỗi khi hủy vé.");
                 }
+                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp").forward(request, response);
             } catch (NumberFormatException e) {
                 System.out.println("Cancel Error: invalid invoiceId format");
-                request.setAttribute("errorMessage", "Invalid invoice ID format.");
-                request.getRequestDispatcher("/ticket-management").forward(request, response);
+                request.setAttribute("errorMessage", "ID hóa đơn không hợp lệ.");
+                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp").forward(request, response);
             }
-        } // ======================== 
-        // REVIEW LOGIC 
+        } // ========================
+        // REVIEW LOGIC
         // ========================
         else if (action.equalsIgnoreCase("review")) {
             String invoiceIdStr = request.getParameter("invoiceId");
@@ -239,15 +290,15 @@ public class TicketManagementServlet extends HttpServlet {
 
             if (invoiceIdStr == null || invoiceIdStr.isEmpty()) {
                 System.out.println("Review Error: invoiceId is missing");
-                request.setAttribute("errorMessage", "Invoice ID is missing.");
-                request.getRequestDispatcher("/ticket-management").forward(request, response);
+                request.setAttribute("errorMessage", "Thiếu ID hóa đơn.");
+                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp").forward(request, response);
                 return;
             }
 
             if (ratingStr == null || ratingStr.isEmpty()) {
                 System.out.println("Review Error: rating is missing");
-                request.setAttribute("errorMessage", "Rating is missing.");
-                request.getRequestDispatcher("/ticket-management").forward(request, response);
+                request.setAttribute("errorMessage", "Thiếu điểm đánh giá.");
+                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp").forward(request, response);
                 return;
             }
 
@@ -268,22 +319,20 @@ public class TicketManagementServlet extends HttpServlet {
                 }
 
                 if (success) {
-                    request.setAttribute("successMessage", "Your review has been submitted successfully.");
-                    request.getRequestDispatcher("/ticket-management").forward(request, response);
+                    request.setAttribute("successMessage", "Đánh giá đã được gửi thành công.");
                 } else {
-                    request.setAttribute("errorMessage", "Error submitting your review.");
-                    request.getRequestDispatcher("/ticket-management").forward(request, response);
+                    request.setAttribute("errorMessage", "Lỗi khi gửi đánh giá.");
                 }
-
+                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp").forward(request, response);
             } catch (NumberFormatException e) {
                 System.out.println("Review Error: Invalid number format");
                 e.printStackTrace();
-                request.setAttribute("errorMessage", "Invalid number format.");
-                request.getRequestDispatcher("/ticket-management").forward(request, response);
+                request.setAttribute("errorMessage", "Định dạng số không hợp lệ.");
+                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp").forward(request, response);
             }
         } else {
-            request.setAttribute("errorMessage", "Invalid action.");
-            request.getRequestDispatcher("/ticket-management").forward(request, response);
+            request.setAttribute("errorMessage", "Hành động không hợp lệ.");
+            request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp").forward(request, response);
         }
     }
 

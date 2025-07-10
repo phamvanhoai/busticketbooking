@@ -22,17 +22,17 @@
         </div>
 
         <c:choose>
-    <c:when test="${not empty errorMessage}">
-        <div class="alert alert-danger">
-            <c:out value="${errorMessage}"/>
-        </div>
-    </c:when>
-    <c:when test="${not empty successMessage}">
-        <div class="alert alert-success">
-            <c:out value="${successMessage}"/>
-        </div>
-    </c:when>
-</c:choose>
+            <c:when test="${not empty errorMessage}">
+                <div class="alert alert-danger">
+                    <c:out value="${errorMessage}"/>
+                </div>
+            </c:when>
+            <c:when test="${not empty successMessage}">
+                <div class="alert alert-success">
+                    <c:out value="${successMessage}"/>
+                </div>
+            </c:when>
+        </c:choose>
 
         <!-- Filters Form -->
         <form action="${pageContext.servletContext.contextPath}/ticket-management" method="get" class="bg-white rounded-xl shadow p-6 mb-6 grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
