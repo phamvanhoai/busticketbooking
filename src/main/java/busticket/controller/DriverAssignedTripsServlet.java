@@ -34,24 +34,53 @@ public class DriverAssignedTripsServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // Get driver_id from session or request
-    HttpSession session = request.getSession(false);
-    if (session == null || session.getAttribute("currentUser") == null) {
-        response.sendRedirect(request.getContextPath() + "/login");
-        return;
-    }
+        // Lấy thông tin người dùng từ session
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("currentUser") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
 
-    Users currentUser = (Users) session.getAttribute("currentUser");
-    int driverId = currentUser.getUser_id();  // Assuming driver_id is stored in 'currentUser'
+        Users currentUser = (Users) session.getAttribute("currentUser");
+        int driverId = currentUser.getUser_id();
 
-    // Fetch the assigned trips for the driver
-    DriverAssignedTripsDAO driverAssignedTripsDAO = new DriverAssignedTripsDAO();
-    List<DriverAssignedTrip> assignedTrips = driverAssignedTripsDAO.getAssignedTrips(driverId);
+// Lấy thông tin bộ lọc từ request
+        String route = request.getParameter("route");
+        String status = request.getParameter("status");
+        String date = request.getParameter("date");
 
-    // Set the trips list as a request attribute
-    request.setAttribute("assignedTrips", assignedTrips);
+// Phân trang
+        int currentPage = 1;
+        int tripsPerPage = 10;
+        if (request.getParameter("page") != null) {
+            try {
+                currentPage = Integer.parseInt(request.getParameter("page"));
+            } catch (NumberFormatException e) {
+                currentPage = 1;
+            }
+        }
+        int offset = (currentPage - 1) * tripsPerPage;
 
-    // Forward the request to the JSP page for displaying the trips
-    request.getRequestDispatcher("/WEB-INF/driver/assigned-trips.jsp").forward(request, response);
+// Lấy danh sách chuyến theo bộ lọc và phân trang
+        DriverAssignedTripsDAO driverAssignedTripsDAO = new DriverAssignedTripsDAO();
+        List<DriverAssignedTrip> assignedTrips = driverAssignedTripsDAO.getAssignedTrips(driverId, route, status, date, offset, tripsPerPage);
+        int totalTrips = driverAssignedTripsDAO.getTotalAssignedTripsCount(driverId, route, status, date);
+        int totalPages = (int) Math.ceil((double) totalTrips / tripsPerPage);
+
+// Lấy các địa điểm cho bộ lọc
+        List<String> locations = driverAssignedTripsDAO.getAllLocations();
+
+// Thiết lập các tham số vào request để JSP có thể sử dụng
+        request.setAttribute("assignedTrips", assignedTrips);
+        request.setAttribute("locations", locations);
+        request.setAttribute("route", route);
+        request.setAttribute("status", status);
+        request.setAttribute("date", date);
+        request.setAttribute("currentPage", currentPage);
+        request.setAttribute("totalPages", totalPages);
+
+// Chuyển tiếp tới JSP
+        request.getRequestDispatcher("/WEB-INF/driver/assigned-trips/assigned-trips.jsp").forward(request, response);
     }
 
     /**

@@ -5,20 +5,20 @@
 package busticket.model;
 
 import java.sql.Date;
-import java.sql.Time;
 
 /**
  *
  * @author Pham Van Hoai - CE181744
  */
 public class DriverAssignedTrip {
-    private int tripId;
-    private Date date;
-    private Time time;
-    private String route;
-    private String busType;
-    private int passengers;
-    private String status;
+    private int tripId;         // ID của chuyến đi
+    private String route;       // Tuyến đường (bao gồm điểm bắt đầu và kết thúc)
+    private Date date;          // Ngày chuyến đi
+    private String time;        // Thời gian chuyến đi (định dạng HH:mm)
+    private String busType;     // Loại xe
+    private String driver;      // Tên tài xế
+    private int busId;          // ID của xe
+    private String status;      // Trạng thái chuyến đi (Scheduled, Ongoing, Completed, etc.)
 
     public int getTripId() {
         return tripId;
@@ -26,22 +26,6 @@ public class DriverAssignedTrip {
 
     public void setTripId(int tripId) {
         this.tripId = tripId;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
-    }
-
-    public Time getTime() {
-        return time;
-    }
-
-    public void setTime(Time time) {
-        this.time = time;
     }
 
     public String getRoute() {
@@ -52,6 +36,22 @@ public class DriverAssignedTrip {
         this.route = route;
     }
 
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
     public String getBusType() {
         return busType;
     }
@@ -60,12 +60,20 @@ public class DriverAssignedTrip {
         this.busType = busType;
     }
 
-    public int getPassengers() {
-        return passengers;
+    public String getDriver() {
+        return driver;
     }
 
-    public void setPassengers(int passengers) {
-        this.passengers = passengers;
+    public void setDriver(String driver) {
+        this.driver = driver;
+    }
+
+    public int getBusId() {
+        return busId;
+    }
+
+    public void setBusId(int busId) {
+        this.busId = busId;
     }
 
     public String getStatus() {
@@ -75,6 +83,7 @@ public class DriverAssignedTrip {
     public void setStatus(String status) {
         this.status = status;
     }
+    
     
     
 }

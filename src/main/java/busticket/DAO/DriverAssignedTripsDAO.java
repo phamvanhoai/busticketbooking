@@ -17,36 +17,151 @@ import java.util.List;
  *
  * @author Pham Van Hoai - CE181744
  */
-public class DriverAssignedTripsDAO extends DBContext{
-    
-    
-    // Get the trips assigned to the driver
-    public List<DriverAssignedTrip> getAssignedTrips(int driverId) {
-        List<DriverAssignedTrip> trips = new ArrayList<>();
-        String query = "SELECT t.trip_id, t.date, t.time, t.route, t.bus_type, t.passengers, t.status " +
-                       "FROM trips t " +
-                       "JOIN Trip_Driver td ON t.trip_id = td.trip_id " +
-                       "WHERE td.driver_id = ?";
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
-            ps.setInt(1, driverId);
-            ResultSet rs = ps.executeQuery();
+public class DriverAssignedTripsDAO extends DBContext {
 
+    // Get the trips assigned to the driver
+    public List<DriverAssignedTrip> getAssignedTrips(int driverId, String route, String status, String date, int offset, int limit) {
+    List<DriverAssignedTrip> trips = new ArrayList<>();
+    StringBuilder query = new StringBuilder(
+            "SELECT t.trip_id, "
+            + "CONCAT(ls.location_name, N' → ', le.location_name) AS route, "
+            + "CAST(t.departure_time AS date) AS trip_date, "
+            + "CONVERT(varchar(5), t.departure_time, 108) AS trip_time, "
+            + "bt.bus_type_name AS bus_type, "
+            + "u.user_name AS driver, "
+            + "t.bus_id, "
+            + "t.trip_status AS status "
+            + "FROM Trips t "
+            + "JOIN Routes r ON t.route_id = r.route_id "
+            + "JOIN Locations ls ON r.start_location_id = ls.location_id "
+            + "JOIN Locations le ON r.end_location_id = le.location_id "
+            + "JOIN Buses b ON t.bus_id = b.bus_id "
+            + "JOIN Bus_Types bt ON b.bus_type_id = bt.bus_type_id "
+            + "LEFT JOIN Trip_Driver td ON t.trip_id = td.trip_id "
+            + "LEFT JOIN Drivers d ON td.driver_id = d.driver_id "
+            + "LEFT JOIN Users u ON d.user_id = u.user_id "
+            + "WHERE u.user_id = ? "
+    );
+
+    // Apply filters
+    if (route != null && !route.isEmpty()) {
+        query.append(" AND (ls.location_name + ' → ' + le.location_name) LIKE ?");
+    }
+    if (status != null && !status.isEmpty()) {
+        query.append(" AND t.trip_status LIKE ?");
+    }
+    if (date != null && !date.isEmpty()) {
+        query.append(" AND CAST(t.departure_time AS date) = ?");
+    }
+
+    // Add pagination
+    query.append(" ORDER BY t.trip_id ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
+    try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query.toString())) {
+        int idx = 1;
+        ps.setInt(idx++, driverId); // driverId vào đầu tiên
+
+        // Apply filters to prepared statement
+        if (route != null && !route.isEmpty()) {
+            ps.setString(idx++, "%" + route + "%");
+        }
+        if (status != null && !status.isEmpty()) {
+            ps.setString(idx++, "%" + status + "%");
+        }
+        if (date != null && !date.isEmpty()) {
+            ps.setString(idx++, date);  // Set date filter
+        }
+
+        // Set pagination
+        ps.setInt(idx++, offset);  // Set OFFSET for pagination
+        ps.setInt(idx++, limit);   // Set LIMIT for pagination
+
+        try (ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 DriverAssignedTrip trip = new DriverAssignedTrip();
                 trip.setTripId(rs.getInt("trip_id"));
-                trip.setDate(rs.getDate("date"));
-                trip.setTime(rs.getTime("time"));
                 trip.setRoute(rs.getString("route"));
+                trip.setDate(rs.getDate("trip_date"));
+                trip.setTime(rs.getString("trip_time"));
                 trip.setBusType(rs.getString("bus_type"));
-                trip.setPassengers(rs.getInt("passengers"));
+                trip.setDriver(rs.getString("driver"));
+                trip.setBusId(rs.getInt("bus_id"));
                 trip.setStatus(rs.getString("status"));
                 trips.add(trip);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-        return trips;
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return trips;
+}
+
+public int getTotalAssignedTripsCount(int driverId, String route, String status, String date) {
+    StringBuilder query = new StringBuilder(
+            "SELECT COUNT(*) "
+            + "FROM Trips t "
+            + "JOIN Routes r ON t.route_id = r.route_id "
+            + "JOIN Locations ls ON r.start_location_id = ls.location_id "
+            + "JOIN Locations le ON r.end_location_id = le.location_id "
+            + "JOIN Buses b ON t.bus_id = b.bus_id "
+            + "JOIN Bus_Types bt ON b.bus_type_id = bt.bus_type_id "
+            + "LEFT JOIN Trip_Driver td ON t.trip_id = td.trip_id "
+            + "LEFT JOIN Drivers d ON td.driver_id = d.driver_id "
+            + "LEFT JOIN Users u ON d.user_id = u.user_id "
+            + "WHERE u.user_id = ? "
+    );
+
+    // Apply filters
+    if (route != null && !route.isEmpty()) {
+        query.append(" AND (ls.location_name + ' → ' + le.location_name) LIKE ?");
+    }
+    if (status != null && !status.isEmpty()) {
+        query.append(" AND t.trip_status LIKE ?");
+    }
+    if (date != null && !date.isEmpty()) {
+        query.append(" AND CAST(t.departure_time AS date) = ?");
     }
 
+    try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query.toString())) {
+        int idx = 1;
+        ps.setInt(idx++, driverId); // Set driverId
+
+        // Apply filters to prepared statement
+        if (route != null && !route.isEmpty()) {
+            ps.setString(idx++, "%" + route + "%");
+        }
+        if (status != null && !status.isEmpty()) {
+            ps.setString(idx++, "%" + status + "%");
+        }
+        if (date != null && !date.isEmpty()) {
+            ps.setString(idx++, date);  // Set date filter
+        }
+
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return 0;
+}
+
+
+    //get location name for admin trip filter
+    public List<String> getAllLocations() {
+        List<String> locations = new ArrayList<>();
+        String query = "SELECT DISTINCT location_name FROM Locations";
+
+        try ( PreparedStatement ps = getConnection().prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                locations.add(rs.getString("location_name"));
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+        return locations;
+    }
 }
