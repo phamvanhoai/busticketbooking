@@ -6,13 +6,13 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@include file="/WEB-INF/include/header.jsp" %>
-<%@include file="/WEB-INF/include/banner.jsp" %>
 
-<body class="min-h-screen flex justify-center items-center px-4 bg-white">
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl px-8 py-10 mx-auto">
-        <h2 class="text-2xl font-bold text-center mb-6 text-[#111]">
+<body class="bg-[#f9fafb]">
+
+    <div class="max-w-6xl mx-auto mt-12 p-8 bg-white rounded-3xl shadow-2xl border border-orange-300">
+        <h1 class="text-3xl font-bold text-gray-800 mb-10 text-center">
             Change Password
-        </h2>
+        </h1>
 
         <!-- Display error messages if there are any -->
         <c:choose>

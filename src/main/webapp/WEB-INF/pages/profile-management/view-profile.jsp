@@ -17,11 +17,15 @@
 
         <!-- Display error messages if there are any -->
         <c:choose>
-            <c:when test="${not empty message}">
-                <div style="color: green;">${message}</div>
+            <c:when test="${not empty success}">
+                <div class="bg-green-100 text-green-700 p-4 rounded mb-4">
+                    ${success}
+                </div>
             </c:when>
             <c:when test="${not empty error}">
-                <div style="color: red;">${error}</div>
+                <div class="bg-red-100 text-red-700 p-4 rounded mb-4">
+                    ${error}
+                </div>
             </c:when>
         </c:choose>
 
@@ -47,6 +51,15 @@
                     </div>
                 </div>
 
+                <!-- Email -->
+                <div class="flex flex-col">
+                    <label class="text-sm font-semibold text-gray-700 mb-1">Email</label>
+                    <div class="px-4 py-3 bg-gray-100 rounded-xl shadow-inner text-gray-800 text-base min-h-[44px]">
+                        ${userProfile.email}
+                    </div>
+                </div>
+
+
                 <!-- Phone Number -->
                 <div class="flex flex-col">
                     <label class="text-sm font-semibold text-gray-700 mb-1">Phone Number</label>
@@ -67,18 +80,10 @@
                         <option value="Other"  ${userProfile.gender == 'Other'  ? 'selected' : ''}>Other</option>
                     </select>
                 </div>
-
-                <!-- Email -->
-                <div class="flex flex-col">
-                    <label class="text-sm font-semibold text-gray-700 mb-1">Email</label>
-                    <div class="px-4 py-3 bg-gray-100 rounded-xl shadow-inner text-gray-800 text-base min-h-[44px]">
-                        ${userProfile.email}
-                    </div>
-                </div>
-
+                    
                 <!-- Date of Birth -->
                 <div class="flex flex-col">
-                    <label class="text-sm font-semibold text-gray-700 mb-1">Day of Birth</label>
+                    <label class="text-sm font-semibold text-gray-700 mb-1">Date of Birth</label>
                     <div class="px-4 py-3 bg-gray-100 rounded-xl shadow-inner text-gray-800 text-base min-h-[44px]">
                         <fmt:formatDate value="${userProfile.birthdate}" pattern="dd-MM-yyyy" />
                     </div>

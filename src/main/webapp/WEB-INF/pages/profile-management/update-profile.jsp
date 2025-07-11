@@ -18,10 +18,14 @@
         <!-- Display error messages if there are any -->
         <c:choose>
             <c:when test="${not empty message}">
-                <div style="color: green;">${message}</div>
+                <div class="bg-green-100 text-green-700 p-4 rounded mb-4">
+                    ${message}
+                </div>
             </c:when>
             <c:when test="${not empty error}">
-                <div style="color: red;">${error}</div>
+                <div class="bg-red-100 text-red-700 p-4 rounded mb-4">
+                    ${error}
+                </div>
             </c:when>
         </c:choose>
 
@@ -43,7 +47,7 @@
                     <div class="flex flex-col">
                         <label class="text-sm font-semibold text-gray-700 mb-1">Full Name</label>
                         <input type="text" name="name" 
-                               value="${userProfile.name}" 
+                               value="${not empty requestScope.name ? requestScope.name : userProfile.name}" 
                                class="px-4 py-3 bg-gray-100 rounded-xl shadow-inner text-gray-800 text-base min-h-[44px]" />
                     </div>
 
@@ -51,7 +55,7 @@
                     <div class="flex flex-col">
                         <label class="text-sm font-semibold text-gray-700 mb-1">Email</label>
                         <input type="email" name="email" 
-                               value="${userProfile.email}" 
+                               value="${not empty requestScope.email ? requestScope.email : userProfile.email}" 
                                class="px-4 py-3 bg-gray-100 rounded-xl shadow-inner text-gray-800 text-base min-h-[44px]" />
                     </div>
 
@@ -59,7 +63,7 @@
                     <div class="flex flex-col">
                         <label class="text-sm font-semibold text-gray-700 mb-1">Phone Number</label>
                         <input type="text" name="phone" 
-                               value="${userProfile.phone}" 
+                               value="${not empty requestScope.phone ? requestScope.phone : userProfile.phone}" 
                                class="px-4 py-3 bg-gray-100 rounded-xl shadow-inner text-gray-800 text-base min-h-[44px]" />
                     </div>
 
@@ -67,8 +71,8 @@
                     <div class="flex flex-col">
                         <label class="text-sm font-semibold text-gray-700 mb-1">Gender</label>
                         <select name="gender" class="w-full rounded-xl bg-gray-100 px-4 py-3 text-base shadow-inner text-gray-800 outline-none">
-                            <option value="Male" ${userProfile.gender == "Male" ? "selected" : ""}>Male</option>
-                            <option value="Female" ${userProfile.gender == "Female" ? "selected" : ""}>Female</option>
+                            <option value="Male" ${not empty requestScope.gender ? (requestScope.gender == "Male" ? "selected" : "") : (userProfile.gender == "Male" ? "selected" : "")}>Male</option>
+                            <option value="Female" ${not empty requestScope.gender ? (requestScope.gender == "Female" ? "selected" : "") : (userProfile.gender == "Female" ? "selected" : "")}>Female</option>
                         </select>
                     </div>
 
@@ -76,7 +80,7 @@
                     <div class="flex flex-col">
                         <label class="text-sm font-semibold text-gray-700 mb-1">Date of Birth</label>
                         <input type="date" name="birthdate" 
-                               value="${userProfile.birthdate != null ? userProfile.birthdate.toLocalDateTime().toLocalDate() : ""}" 
+                               value="${not empty requestScope.birthdate ? requestScope.birthdate : (userProfile.birthdate != null ? userProfile.birthdate.toLocalDateTime().toLocalDate() : "")}" 
                                class="px-4 py-3 bg-gray-100 rounded-xl shadow-inner text-gray-800 text-base min-h-[44px]" />
                     </div>
 
@@ -84,7 +88,7 @@
                     <div class="flex flex-col">
                         <label class="text-sm font-semibold text-gray-700 mb-1">Address</label>
                         <input type="text" name="address" 
-                               value="${userProfile.address}" 
+                               value="${not empty requestScope.address ? requestScope.address : userProfile.address}" 
                                class="px-4 py-3 bg-gray-100 rounded-xl shadow-inner text-gray-800 text-base min-h-[44px]" />
                     </div>
                 </div>

@@ -39,6 +39,24 @@ public class ProfileManagementServlet extends HttpServlet {
             return;
         }
 
+        // Kiểm tra thông báo trong session
+        if (session != null) {
+            Object success = session.getAttribute("success");
+            Object error = session.getAttribute("error");
+
+            // Nếu có thông báo thành công
+            if (success != null) {
+                request.setAttribute("success", success);
+                session.removeAttribute("success");
+            }
+
+            // Nếu có thông báo lỗi
+            if (error != null) {
+                request.setAttribute("error", error);
+                session.removeAttribute("error");
+            }
+        }
+
         // Get the path from the URL (excluding base path like "/ticket-management")
         String path = request.getPathInfo();
         ProfileManagementDAO profileManagementDAO = new ProfileManagementDAO();
@@ -59,11 +77,11 @@ public class ProfileManagementServlet extends HttpServlet {
             case "/view":
                 // Pass the user profile to the JSP
                 request.setAttribute("userProfile", profile != null ? profile : currentUser);
+                session.removeAttribute("error");
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/view-profile.jsp")
                         .forward(request, response);
                 break;
             case "/update":
-
                 // Pass the user profile to the JSP
                 request.setAttribute("userProfile", profile != null ? profile : currentUser);
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/update-profile.jsp").forward(request, response);
@@ -107,29 +125,59 @@ public class ProfileManagementServlet extends HttpServlet {
                 try {
                     birthdateTimestamp = Timestamp.valueOf(birthdate + " 00:00:00");
                 } catch (IllegalArgumentException e) {
+                    // Lấy lại dữ liệu từ database nếu có lỗi validation
+                    ProfileManagementDAO profileManagementDAO = new ProfileManagementDAO();
+                    Users profile = profileManagementDAO.getUserById(currentUser.getUser_id());
+
+                    // Chuyển dữ liệu từ database vào request attributes để hiển thị lại form
+                    request.setAttribute("name", profile.getName());
+                    request.setAttribute("email", profile.getEmail());
+                    request.setAttribute("phone", profile.getPhone());
+                    request.setAttribute("gender", profile.getGender());
+                    request.setAttribute("address", profile.getAddress());
+                    request.setAttribute("birthdate", profile.getBirthdate() != null ? profile.getBirthdate().toString() : "");
+
                     request.setAttribute("error", "Invalid birthdate format.");
                     request.getRequestDispatcher("/WEB-INF/pages/profile-management/update-profile.jsp").forward(request, response);
                     return;
                 }
             }
 
-            // Validate data
+            // Validate dữ liệu
             List<String> errorMessages = new ArrayList<>();
             if (name == null || name.isEmpty() || !InputValidator.isUsernameValid(name)) {
                 errorMessages.add("Full Name must be between 3 and 20 characters and contain only letters or underscores.");
             }
-            if (email == null || email.isEmpty()) {
+            if (phone != null && !phone.isEmpty()) {
+                if (!InputValidator.isVietnamesePhoneValid(phone)) {
+                    errorMessages.add("Invalid phone number.");
+                }
+            }
+
+            if (email == null || email.isEmpty() || !InputValidator.isEmailValid(email)) {
                 errorMessages.add("Email is required.");
             }
-            // Add more validation checks here
+            // Thêm các kiểm tra khác nếu cần
 
             if (!errorMessages.isEmpty()) {
-                request.setAttribute("errors", errorMessages);
+                // Lấy lại dữ liệu từ database nếu có lỗi validation
+                ProfileManagementDAO profileManagementDAO = new ProfileManagementDAO();
+                Users profile = profileManagementDAO.getUserById(currentUser.getUser_id());
+
+                // Chuyển dữ liệu từ database vào request attributes để hiển thị lại form
+                request.setAttribute("name", profile.getName());
+                request.setAttribute("email", profile.getEmail());
+                request.setAttribute("phone", profile.getPhone());
+                request.setAttribute("gender", profile.getGender());
+                request.setAttribute("address", profile.getAddress());
+                request.setAttribute("birthdate", profile.getBirthdate() != null ? profile.getBirthdate().toString() : "");
+
+                session.setAttribute("error", String.join(", ", errorMessages));
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/update-profile.jsp").forward(request, response);
                 return;
             }
 
-            // Proceed with updating the user profile
+            // Tiến hành cập nhật thông tin người dùng
             ProfileManagementDAO profileDAO = new ProfileManagementDAO();
             boolean isUpdated = profileDAO.updateUser(new Users(currentUser.getUser_id(), name, email, phone, birthdateTimestamp, gender, address));
 
@@ -137,9 +185,22 @@ public class ProfileManagementServlet extends HttpServlet {
                 currentUser.setName(name);
                 currentUser.setEmail(email);
                 session.setAttribute("currentUser", currentUser);
+                session.removeAttribute("error");
+                session.setAttribute("success", "Profile updated successfully!");
                 response.sendRedirect(request.getContextPath() + "/profile/view");
             } else {
-                request.setAttribute("error", "Error updating profile.");
+                session.setAttribute("error", "Error updating profile.");
+                // Lấy lại dữ liệu từ database nếu có lỗi cập nhật
+                ProfileManagementDAO profileManagementDAO = new ProfileManagementDAO();
+                Users profile = profileManagementDAO.getUserById(currentUser.getUser_id());
+
+                // Chuyển dữ liệu từ database vào request attributes để hiển thị lại form
+                request.setAttribute("name", profile.getName());
+                request.setAttribute("email", profile.getEmail());
+                request.setAttribute("phone", profile.getPhone());
+                request.setAttribute("gender", profile.getGender());
+                request.setAttribute("address", profile.getAddress());
+                request.setAttribute("birthdate", profile.getBirthdate() != null ? profile.getBirthdate().toString() : "");
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/update-profile.jsp").forward(request, response);
             }
         } else if ("change-password".equals(action)) {
@@ -151,7 +212,7 @@ public class ProfileManagementServlet extends HttpServlet {
 
             // Kiểm tra nếu mật khẩu mới và xác nhận mật khẩu trùng khớp
             if (!newPassword.equals(confirmPassword)) {
-                request.setAttribute("error", "New password and confirmation do not match.");
+                session.setAttribute("error", "New password and confirmation do not match.");
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/change-password.jsp").forward(request, response);
                 return;
             }
@@ -164,7 +225,7 @@ public class ProfileManagementServlet extends HttpServlet {
             boolean isOldPasswordValid = PasswordUtils.checkPassword(oldPassword, hashedOldPassword);
 
             if (!isOldPasswordValid) {
-                request.setAttribute("error", "Old password is incorrect.");
+                session.setAttribute("error", "Old password is incorrect.");
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/change-password.jsp").forward(request, response);
                 return;
             }
@@ -178,10 +239,10 @@ public class ProfileManagementServlet extends HttpServlet {
             if (isPasswordUpdated) {
                 currentUser.setPassword(hashedNewPassword);
                 session.setAttribute("currentUser", currentUser);
-                request.setAttribute("message", "Password changed successfully.");
+                session.setAttribute("success", "Password changed successfully.");
                 response.sendRedirect(request.getContextPath() + "/profile/view");
             } else {
-                request.setAttribute("error", "Failed to update password.");
+                session.setAttribute("error", "Failed to update password.");
                 request.getRequestDispatcher("/WEB-INF/pages/profile-management/change-password.jsp").forward(request, response);
             }
         }
