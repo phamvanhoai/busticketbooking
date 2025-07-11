@@ -21,7 +21,7 @@ public class InputValidator {
      * @return true if valid, false otherwise
      */
     public static boolean isUsernameValid(String username) {
-        return username.matches("^[a-zA-Z0-9_]{3,20}$");
+        return username != null && username.matches("^[a-zA-Z_]{3,20}$");
     }
 
     /**

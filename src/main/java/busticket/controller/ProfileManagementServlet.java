@@ -7,6 +7,7 @@ package busticket.controller;
 import busticket.DAO.ProfileManagementDAO;
 
 import busticket.model.Users;
+import busticket.util.InputValidator;
 import busticket.util.PasswordUtils;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -114,8 +115,8 @@ public class ProfileManagementServlet extends HttpServlet {
 
             // Validate data
             List<String> errorMessages = new ArrayList<>();
-            if (name == null || name.isEmpty()) {
-                errorMessages.add("Full Name is required.");
+            if (name == null || name.isEmpty() || !InputValidator.isUsernameValid(name)) {
+                errorMessages.add("Full Name must be between 3 and 20 characters and contain only letters or underscores.");
             }
             if (email == null || email.isEmpty()) {
                 errorMessages.add("Email is required.");
