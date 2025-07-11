@@ -66,10 +66,29 @@ public class TicketManagementServlet extends HttpServlet {
                 Invoices invoice = ticketManagementDAO.getInvoiceById(invoiceId);
 
                 if (invoice != null) {
+                    // Lấy thời gian khởi hành của chuyến đi
+                    Date departureTime = invoice.getDepartureTime();
+
+                    if (departureTime != null) {
+                        // Kiểm tra xem thời gian khởi hành có trong vòng 24 giờ không
+                        long currentTime = System.currentTimeMillis(); // Thời gian hiện tại
+                        long departureTimeMillis = departureTime.getTime();
+                        long differenceInMillis = departureTimeMillis - currentTime;
+
+                        // Kiểm tra nếu thời gian khởi hành trong vòng 24 giờ (24 * 60 * 60 * 1000 = 86400000 ms)
+                        if (differenceInMillis <= 86400000) {
+                            session.setAttribute("errorMessage", "Chỉ hủy được vé trước 24h khi xe khởi hành");
+                            response.sendRedirect(request.getContextPath() + "/ticket-management");
+                            return;
+                        }
+                    }
+
+                    // Nếu không trong vòng 24 giờ, tiếp tục xử lý hủy vé
                     request.setAttribute("invoice", invoice);
                     request.getRequestDispatcher("/WEB-INF/pages/ticket-management/cancel-ticket.jsp")
                             .forward(request, response);
                     return;
+
                 } else {
                     session.setAttribute("errorMessage", "Không tìm thấy hóa đơn!");
                     response.sendRedirect(request.getContextPath() + "/ticket-management");
@@ -144,6 +163,9 @@ public class TicketManagementServlet extends HttpServlet {
         List<Invoices> invoicesList = ticketManagementDAO.getAllInvoices(ticketCode, route, status, offset, recordsPerPage);
         int totalRecords = ticketManagementDAO.getTotalInvoicesCount(ticketCode, route, status);
         int totalPages = (int) Math.ceil((double) totalRecords / recordsPerPage);
+
+        Date now = new Date();
+        request.setAttribute("now", now);
 
         request.setAttribute("invoicesList", invoicesList);
         request.setAttribute("locations", locations);

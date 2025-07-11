@@ -118,15 +118,21 @@
                                 </c:choose>
                             </td>
                             <td class="px-4 py-2">
-                                <a href="${pageContext.request.contextPath}/ticket-management?review=${invoice.invoiceId}"
-                                   class="inline-block px-2 py-1 rounded-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold transition">
-                                    ${invoice.reviewed ? "Edit Review" : "Review"}
-                                </a>
-                                <a href="${pageContext.servletContext.contextPath}/ticket-management?cancel=${invoice.invoiceId}">
-                                    <button class="inline-block px-2 py-1 rounded-full bg-gray-300 hover:bg-gray-400 text-gray-800 text-sm font-semibold transition">
-                                        Cancel
-                                    </button>
-                                </a>
+                                <c:if test="${invoice.invoiceStatus == 'Paid' && invoice.departureTime != null && invoice.departureTime.time <= now.time}">
+                                    <a href="${pageContext.request.contextPath}/ticket-management?review=${invoice.invoiceId}">
+                                        <button class="inline-block px-2 py-1 rounded-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold transition">
+                                            ${invoice.reviewed ? "Edit Review" : "Review"}
+                                        </button>
+                                    </a>
+                                </c:if>
+
+                                <c:if test="${invoice.invoiceStatus == 'Paid' && (invoice.departureTime != null && (invoice.departureTime.time - now.time) > 86400000)}">
+                                    <a href="${pageContext.servletContext.contextPath}/ticket-management?cancel=${invoice.invoiceId}">
+                                        <button class="inline-block px-2 py-1 rounded-full bg-gray-300 hover:bg-gray-400 text-gray-800 text-sm font-semibold transition">
+                                            Cancel
+                                        </button>
+                                    </a>
+                                </c:if>
                             </td>
                         </tr>
                     </c:forEach>
