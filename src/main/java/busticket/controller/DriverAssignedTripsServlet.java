@@ -43,6 +43,12 @@ public class DriverAssignedTripsServlet extends HttpServlet {
 
         Users currentUser = (Users) session.getAttribute("currentUser");
         int driverId = currentUser.getUser_id();
+        
+        if (request.getParameter("roll-call") != null) {
+            request.getRequestDispatcher("/WEB-INF/driver/assigned-trips/passenger-roll-call.jsp")
+                    .forward(request, response);
+            return;
+        }
 
 // Lấy thông tin bộ lọc từ request
         String route = request.getParameter("route");
