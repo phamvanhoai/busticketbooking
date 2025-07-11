@@ -34,14 +34,7 @@
                     alt="Avatar"
                     class="w-48 h-48 rounded-full object-cover border-4 border-orange-400 shadow-md"
                     />
-                <label class="mt-4 text-center">
-                    <button class="bg-orange-500 text-white py-2 px-6 rounded-full font-medium hover:bg-orange-600 transition">
-                        Choose Image
-                    </button>
-                    <p class="text-xs text-gray-500 mt-2">
-                        Maximum file size 1MB<br />Format: .JPEG, .PNG
-                    </p>
-                </label>
+                
             </div>
 
             <!-- Profile Info -->
