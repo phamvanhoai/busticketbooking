@@ -38,16 +38,15 @@ public class TicketManagementServlet extends HttpServlet {
         // Get the logged-in user's ID from session
         HttpSession session = request.getSession();
         if (session == null || session.getAttribute("currentUser") == null) {
-            request.setAttribute("errorMessage", "Vui lòng đăng nhập.");
+            request.setAttribute("errorMessage", "Please log in.");
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
-        // Get user from session
         Users users = (Users) session.getAttribute("currentUser");
         TicketManagementDAO ticketManagementDAO = new TicketManagementDAO();
 
-        // Lấy thông báo từ session (nếu có)
+        // Get messages from session (if any)
         Object success = session.getAttribute("successMessage");
         Object error = session.getAttribute("errorMessage");
         if (success != null) {
@@ -66,36 +65,36 @@ public class TicketManagementServlet extends HttpServlet {
                 Invoices invoice = ticketManagementDAO.getInvoiceById(invoiceId);
 
                 if (invoice != null) {
-                    // Lấy thời gian khởi hành của chuyến đi
+                    // Get departure time of the trip
                     Date departureTime = invoice.getDepartureTime();
 
                     if (departureTime != null) {
-                        // Kiểm tra xem thời gian khởi hành có trong vòng 24 giờ không
-                        long currentTime = System.currentTimeMillis(); // Thời gian hiện tại
+                        // Check if departure time is within 24 hours
+                        long currentTime = System.currentTimeMillis();
                         long departureTimeMillis = departureTime.getTime();
                         long differenceInMillis = departureTimeMillis - currentTime;
 
-                        // Kiểm tra nếu thời gian khởi hành trong vòng 24 giờ (24 * 60 * 60 * 1000 = 86400000 ms)
+                        // Check if the departure time is within 24 hours (24 * 60 * 60 * 1000 = 86400000 ms)
                         if (differenceInMillis <= 86400000) {
-                            session.setAttribute("errorMessage", "Chỉ hủy được vé trước 24h khi xe khởi hành");
+                            session.setAttribute("errorMessage", "Tickets can only be canceled 24 hours before departure.");
                             response.sendRedirect(request.getContextPath() + "/ticket-management");
                             return;
                         }
                     }
 
-                    // Nếu không trong vòng 24 giờ, tiếp tục xử lý hủy vé
+                    // If not within 24 hours, proceed to cancel the ticket
                     request.setAttribute("invoice", invoice);
                     request.getRequestDispatcher("/WEB-INF/pages/ticket-management/cancel-ticket.jsp")
                             .forward(request, response);
                     return;
 
                 } else {
-                    session.setAttribute("errorMessage", "Không tìm thấy hóa đơn!");
+                    session.setAttribute("errorMessage", "Invoice not found!");
                     response.sendRedirect(request.getContextPath() + "/ticket-management");
                     return;
                 }
             } catch (NumberFormatException e) {
-                session.setAttribute("errorMessage", "Định dạng ID hóa đơn không hợp lệ!");
+                session.setAttribute("errorMessage", "Invalid invoice ID format!");
                 response.sendRedirect(request.getContextPath() + "/ticket-management");
                 return;
             }
@@ -125,19 +124,19 @@ public class TicketManagementServlet extends HttpServlet {
                         return;
 
                     } else {
-                        session.setAttribute("errorMessage", "Chuyến đi chưa hoàn thành. Không thể đánh giá!");
+                        session.setAttribute("errorMessage", "The trip is not completed. Cannot review!");
                         response.sendRedirect(request.getContextPath() + "/ticket-management");
                         return;
                     }
 
                 } else {
-                    session.setAttribute("errorMessage", "Không tìm thấy hóa đơn!");
+                    session.setAttribute("errorMessage", "Invoice not found!");
                     response.sendRedirect(request.getContextPath() + "/ticket-management");
                     return;
                 }
 
             } catch (NumberFormatException e) {
-                session.setAttribute("errorMessage", "Định dạng ID hóa đơn không hợp lệ!");
+                session.setAttribute("errorMessage", "Invalid invoice ID format!");
                 response.sendRedirect(request.getContextPath() + "/ticket-management");
                 return;
             }
@@ -190,12 +189,11 @@ public class TicketManagementServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Lấy thông tin từ session (người dùng đang đăng nhập)
         request.setCharacterEncoding("UTF-8");
         HttpSession session = request.getSession();
         Users user = (Users) session.getAttribute("currentUser");
         if (user == null) {
-            session.setAttribute("errorMessage", "Vui lòng đăng nhập.");
+            session.setAttribute("errorMessage", "Please log in.");
             response.sendRedirect(request.getContextPath() + "/ticket-management");
             return;
         }
@@ -204,7 +202,7 @@ public class TicketManagementServlet extends HttpServlet {
         TicketManagementDAO ticketManagementDAO = new TicketManagementDAO();
 
         if (action == null) {
-            session.setAttribute("errorMessage", "Hành động không hợp lệ.");
+            session.setAttribute("errorMessage", "Invalid action.");
             response.sendRedirect(request.getContextPath() + "/ticket-management");
             return;
         }
@@ -215,7 +213,7 @@ public class TicketManagementServlet extends HttpServlet {
         if (action.equalsIgnoreCase("cancel_form")) {
             String invoiceIdStr = request.getParameter("invoiceId");
             if (invoiceIdStr == null || invoiceIdStr.isEmpty()) {
-                session.setAttribute("errorMessage", "Thiếu ID hóa đơn.");
+                session.setAttribute("errorMessage", "Missing invoice ID.");
                 response.sendRedirect(request.getContextPath() + "/ticket-management");
                 return;
             }
@@ -226,11 +224,11 @@ public class TicketManagementServlet extends HttpServlet {
                     request.setAttribute("invoice", invoice);
                     request.getRequestDispatcher("/WEB-INF/pages/ticket-management/cancel-ticket.jsp").forward(request, response);
                 } else {
-                    session.setAttribute("errorMessage", "Không tìm thấy hóa đơn!");
+                    session.setAttribute("errorMessage", "Invoice not found!");
                     response.sendRedirect(request.getContextPath() + "/ticket-management");
                 }
             } catch (NumberFormatException e) {
-                session.setAttribute("errorMessage", "Định dạng ID hóa đơn không hợp lệ.");
+                session.setAttribute("errorMessage", "Invalid invoice ID format.");
                 response.sendRedirect(request.getContextPath() + "/ticket-management");
             }
         } // ========================
@@ -239,7 +237,7 @@ public class TicketManagementServlet extends HttpServlet {
         else if (action.equalsIgnoreCase("review_form")) {
             String invoiceIdStr = request.getParameter("invoiceId");
             if (invoiceIdStr == null || invoiceIdStr.isEmpty()) {
-                session.setAttribute("errorMessage", "Thiếu ID hóa đơn.");
+                session.setAttribute("errorMessage", "Missing invoice ID.");
                 response.sendRedirect(request.getContextPath() + "/ticket-management");
                 return;
             }
@@ -259,15 +257,15 @@ public class TicketManagementServlet extends HttpServlet {
                         request.setAttribute("invoice", invoice);
                         request.getRequestDispatcher("/WEB-INF/pages/ticket-management/review-booking.jsp").forward(request, response);
                     } else {
-                        session.setAttribute("errorMessage", "Chuyến đi chưa hoàn thành. Không thể đánh giá!");
+                        session.setAttribute("errorMessage", "The trip is not completed. Cannot review!");
                         response.sendRedirect(request.getContextPath() + "/ticket-management");
                     }
                 } else {
-                    session.setAttribute("errorMessage", "Không tìm thấy hóa đơn!");
+                    session.setAttribute("errorMessage", "Invoice not found!");
                     response.sendRedirect(request.getContextPath() + "/ticket-management");
                 }
             } catch (NumberFormatException e) {
-                session.setAttribute("errorMessage", "Định dạng ID hóa đơn không hợp lệ.");
+                session.setAttribute("errorMessage", "Invalid invoice ID format.");
                 response.sendRedirect(request.getContextPath() + "/ticket-management");
             }
         } // ========================
@@ -278,8 +276,7 @@ public class TicketManagementServlet extends HttpServlet {
             String cancellationReason = request.getParameter("reason");
 
             if (invoiceIdStr == null || invoiceIdStr.isEmpty()) {
-                System.out.println("Cancel Error: invoiceId missing");
-                session.setAttribute("errorMessage", "Thiếu ID hóa đơn.");
+                session.setAttribute("errorMessage", "Missing invoice ID.");
                 response.sendRedirect(request.getContextPath() + "/ticket-management");
                 return;
             }
@@ -289,14 +286,13 @@ public class TicketManagementServlet extends HttpServlet {
                 boolean success = ticketManagementDAO.cancelInvoice(invoiceIdStr, cancellationReason, user.getUser_id());
 
                 if (success) {
-                    session.setAttribute("successMessage", "Hủy vé thành công, trạng thái: Pending Cancellation.");
+                    session.setAttribute("successMessage", "Ticket successfully canceled, status: Pending Cancellation.");
                 } else {
-                    session.setAttribute("errorMessage", "Lỗi khi hủy vé.");
+                    session.setAttribute("errorMessage", "Error canceling the ticket.");
                 }
                 response.sendRedirect(request.getContextPath() + "/ticket-management");
             } catch (NumberFormatException e) {
-                System.out.println("Cancel Error: invalid invoiceId format");
-                session.setAttribute("errorMessage", "ID hóa đơn không hợp lệ.");
+                session.setAttribute("errorMessage", "Invalid invoice ID format.");
                 response.sendRedirect(request.getContextPath() + "/ticket-management");
             }
         } // ========================
@@ -308,15 +304,13 @@ public class TicketManagementServlet extends HttpServlet {
             String reviewText = request.getParameter("reviewText");
 
             if (invoiceIdStr == null || invoiceIdStr.isEmpty()) {
-                System.out.println("Review Error: invoiceId is missing");
-                session.setAttribute("errorMessage", "Thiếu ID hóa đơn.");
+                session.setAttribute("errorMessage", "Missing invoice ID.");
                 response.sendRedirect(request.getContextPath() + "/ticket-management");
                 return;
             }
 
             if (ratingStr == null || ratingStr.isEmpty()) {
-                System.out.println("Review Error: rating is missing");
-                session.setAttribute("errorMessage", "Thiếu điểm đánh giá.");
+                session.setAttribute("errorMessage", "Missing rating.");
                 response.sendRedirect(request.getContextPath() + "/ticket-management");
                 return;
             }
@@ -330,26 +324,22 @@ public class TicketManagementServlet extends HttpServlet {
 
                 if (hasReviewed) {
                     success = ticketManagementDAO.updateInvoiceReview(invoiceId, rating, reviewText);
-                    System.out.println("Review UPDATE for invoiceId = " + invoiceId);
                 } else {
                     success = ticketManagementDAO.addInvoiceReview(invoiceId, rating, reviewText);
-                    System.out.println("Review INSERT for invoiceId = " + invoiceId);
                 }
 
                 if (success) {
-                    session.setAttribute("successMessage", "Đánh giá đã được gửi thành công.");
+                    session.setAttribute("successMessage", "Your review has been submitted successfully.");
                 } else {
-                    session.setAttribute("errorMessage", "Lỗi khi gửi đánh giá.");
+                    session.setAttribute("errorMessage", "Error submitting review.");
                 }
                 response.sendRedirect(request.getContextPath() + "/ticket-management");
             } catch (NumberFormatException e) {
-                System.out.println("Review Error: Invalid number format");
-                e.printStackTrace();
-                session.setAttribute("errorMessage", "Định dạng số không hợp lệ.");
+                session.setAttribute("errorMessage", "Invalid number format.");
                 response.sendRedirect(request.getContextPath() + "/ticket-management");
             }
         } else {
-            session.setAttribute("errorMessage", "Hành động không hợp lệ.");
+            session.setAttribute("errorMessage", "Invalid action.");
             response.sendRedirect(request.getContextPath() + "/ticket-management");
         }
     }
