@@ -59,57 +59,32 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y">
-                    <!-- Mẫu 1 -->
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4">TRIP1001</td>
-                        <td class="px-6 py-4">17/06/2025</td>
-                        <td class="px-6 py-4">08:00</td>
-                        <td class="px-6 py-4">HCM → Cần Thơ</td>
-                        <td class="px-6 py-4">Limousine</td>
-                        <td class="px-6 py-4">12</td>
-                        <td class="px-6 py-4">
-                            <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs">Scheduled</span>
-                        </td>
-                        <td class="px-6 py-4 space-x-2">
-                            <a href="${pageContext.servletContext.contextPath}/driver/assigned-trips?roll-call">
-                                <button class="text-blue-600 hover:underline text-sm">Roll call</button></a>
-                            <button class="text-gray-600 hover:underline text-sm">Start</button>
-                        </td>
-                    </tr>
-                    <!-- Mẫu 2 -->
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4">TRIP1002</td>
-                        <td class="px-6 py-4">17/06/2025</td>
-                        <td class="px-6 py-4">12:00</td>
-                        <td class="px-6 py-4">Cần Thơ → Châu Đốc</td>
-                        <td class="px-6 py-4">Seat</td>
-                        <td class="px-6 py-4">20</td>
-                        <td class="px-6 py-4">
-                            <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs">Ongoing</span>
-                        </td>
-                        <td class="px-6 py-4 space-x-2">
-                            <a href="${pageContext.servletContext.contextPath}/driver/assigned-trips?roll-call">
-                                <button class="text-blue-600 hover:underline text-sm">Roll call</button></a>
-                            <button class="text-red-600 hover:underline text-sm">End</button>
-                        </td>
-                    </tr>
-                    <!-- Mẫu 3 -->
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4">TRIP1003</td>
-                        <td class="px-6 py-4">16/06/2025</td>
-                        <td class="px-6 py-4">10:00</td>
-                        <td class="px-6 py-4">Huế → Đà Nẵng</td>
-                        <td class="px-6 py-4">Bunk</td>
-                        <td class="px-6 py-4">8</td>
-                        <td class="px-6 py-4">
-                            <span class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-xs">Completed</span>
-                        </td>
-                        <td class="px-6 py-4 space-x-2">
-                            <a href="${pageContext.servletContext.contextPath}/driver/assigned-trips?roll-call">
-                                <button class="text-blue-600 hover:underline text-sm">Roll call</button></a>
-                        </td>
-                    </tr>
-                    <!-- … thêm các bản ghi khác … -->
+                    <c:forEach var="trip" items="${trips}">
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4">${trip.tripId}</td>
+                            <td class="px-6 py-4">${trip.date}</td>
+                            <td class="px-6 py-4">${trip.time}</td>
+                            <td class="px-6 py-4">${trip.route}</td>
+                            <td class="px-6 py-4">${trip.busType}</td>
+                            <td class="px-6 py-4">${trip.passengers}</td>
+                            <td class="px-6 py-4">
+                                <span class="px-3 py-1 <c:choose>
+                                          <c:when test="${trip.status == 'Scheduled'}">bg-green-100 text-green-700</c:when>
+                                          <c:when test="${trip.status == 'Ongoing'}">bg-yellow-100 text-yellow-700</c:when>
+                                          <c:when test="${trip.status == 'Completed'}">bg-gray-200 text-gray-700</c:when>
+                                          <c:otherwise>bg-red-100 text-red-700</c:otherwise>
+                                      </c:choose> rounded-full text-xs">
+                                    ${trip.status}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 space-x-2">
+                                <a href="${pageContext.servletContext.contextPath}/driver/assigned-trips?roll-call">
+                                    <button class="text-blue-600 hover:underline text-sm">Roll call</button>
+                                </a>
+                                <button class="text-gray-600 hover:underline text-sm">Start</button>
+                            </td>
+                        </tr>
+                    </c:forEach>
                 </tbody>
             </table>
         </div>

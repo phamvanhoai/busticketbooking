@@ -38,7 +38,7 @@
                     alt="Avatar"
                     class="w-48 h-48 rounded-full object-cover border-4 border-orange-400 shadow-md"
                     />
-                
+
             </div>
 
             <!-- Profile Info -->
@@ -80,7 +80,7 @@
                         <option value="Other"  ${userProfile.gender == 'Other'  ? 'selected' : ''}>Other</option>
                     </select>
                 </div>
-                    
+
                 <!-- Date of Birth -->
                 <div class="flex flex-col">
                     <label class="text-sm font-semibold text-gray-700 mb-1">Date of Birth</label>
