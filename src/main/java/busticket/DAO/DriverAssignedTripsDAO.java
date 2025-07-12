@@ -212,11 +212,15 @@ public class DriverAssignedTripsDAO extends DBContext {
     }
 
 // Cập nhật trạng thái check-in trong bảng Ticket
-    // Cập nhật trạng thái check-in trong bảng Ticket
-    public void updateCheckInStatus(int ticketId) {
+    public void updateCheckInStatus(int ticketId, Timestamp checkInTime) {
         String query = "UPDATE Tickets SET check_in = ? WHERE ticket_id = ?";
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
-            ps.setTimestamp(1, new Timestamp(System.currentTimeMillis()));  // Gán thời gian hiện tại cho check-in
+            // Nếu checkInTime là null, sẽ set thành NULL trong CSDL
+            if (checkInTime != null) {
+                ps.setTimestamp(1, checkInTime);
+            } else {
+                ps.setNull(1, java.sql.Types.TIMESTAMP);
+            }
             ps.setInt(2, ticketId);  // Truyền ticket_id vào
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -225,14 +229,17 @@ public class DriverAssignedTripsDAO extends DBContext {
     }
 
 // Cập nhật trạng thái check-out trong bảng Ticket
-    public void updateCheckOutStatus(int ticketId) {
+    public void updateCheckOutStatus(int ticketId, Timestamp checkOutTime) {
         String query = "UPDATE Tickets SET check_out = ? WHERE ticket_id = ?";
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
-            ps.setTimestamp(1, new Timestamp(System.currentTimeMillis()));  // Gán thời gian hiện tại cho check-out
+            // Nếu checkOutTime là null, sẽ set thành NULL trong CSDL
+            if (checkOutTime != null) {
+                ps.setTimestamp(1, checkOutTime);
+            } else {
+                ps.setNull(1, java.sql.Types.TIMESTAMP);
+            }
             ps.setInt(2, ticketId);  // Truyền ticket_id vào
-//            ps.executeUpdate();
-            int rowsUpdated = ps.executeUpdate();
-            System.out.println("Rows updated: " + rowsUpdated);
+            ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }

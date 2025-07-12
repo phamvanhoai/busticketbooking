@@ -13,60 +13,59 @@
         <h1 class="text-2xl font-bold text-gray-800 mb-6">Điểm danh hành khách</h1>
 
         <!-- Form để gửi dữ liệu đi -->
-        <%-- Form để gửi dữ liệu đi --%>
         <form action="${pageContext.request.contextPath}/driver/assigned-trips" method="post">
-            <div class="space-y-4 mb-8">
-                <c:forEach var="passenger" items="${passengers}">
-                    <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100">
-                        <div class="w-10 text-center font-medium">${passenger.seat}</div>
-                        <div class="flex-1 text-sm text-gray-700">
-                            ${passenger.name}
-                            <div class="text-xs text-gray-500">SĐT: ${passenger.phone}</div>
-                            <div class="text-xs text-gray-500">Điểm lên: ${passenger.pickupLocation}</div>
-                            <div class="text-xs text-gray-500">Điểm xuống: ${passenger.dropoffLocation}</div>
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <!-- Check-in Checkbox -->
-                            <label class="inline-flex items-center gap-2">
-                                <input type="checkbox" name="checkInStatus-${passenger.ticketId}" class="check-status" 
-                                       data-seat="${passenger.seat}" data-ticket-id="${passenger.ticketId}" 
-                                       <c:if test="${not empty passenger.checkInTime}">
-                                           checked
-                                       </c:if>
-                                       />
-                                <span>Check-in</span>
-                            </label>
+    <div class="space-y-4 mb-8">
+        <c:forEach var="passenger" items="${passengers}">
+            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100">
+                <div class="w-10 text-center font-medium">${passenger.seat}</div>
+                <div class="flex-1 text-sm text-gray-700">
+                    ${passenger.name}
+                    <div class="text-xs text-gray-500">SĐT: ${passenger.phone}</div>
+                    <div class="text-xs text-gray-500">Điểm lên: ${passenger.pickupLocation}</div>
+                    <div class="text-xs text-gray-500">Điểm xuống: ${passenger.dropoffLocation}</div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <!-- Check-in Checkbox -->
+                    <label class="inline-flex items-center gap-2">
+                        <input type="checkbox" name="checkInStatus-${passenger.id}" class="check-status" 
+                               data-seat="${passenger.seat}" data-passenger-id="${passenger.id}" 
+                               <c:if test="${not empty passenger.checkInTime}">
+                                   checked
+                               </c:if>
+                        />
+                        <span>Check-in</span>
+                    </label>
 
-                            <!-- Check-out Checkbox -->
-                            <label class="inline-flex items-center gap-2">
-                                <input type="checkbox" name="checkOutStatus-${passenger.ticketId}" class="check-status" 
-                                       data-seat="${passenger.seat}" data-ticket-id="${passenger.ticketId}" 
-                                       <c:if test="${not empty passenger.checkOutTime}">
-                                           checked
-                                       </c:if>
-                                       />
-                                <span>Check-out</span>
-                            </label>
-                        </div>
-                        <div class="text-sm text-gray-500 mt-2" id="status-${passenger.seat}">
-                            Trạng thái: ${passenger.checkInTime != null ? 'Đã check-in' : 'Chưa check-in'}
-                        </div>
-                    </div>
-                </c:forEach>
-            </div>
-
-            <!-- Nút hành động -->
-            <div class="p-4 bg-white border-t">
-                <div class="flex justify-end gap-4">
-                    <button type="button" onclick="window.history.back()" class="px-6 py-2 border rounded-lg text-gray-700 hover:bg-gray-100">
-                        Hủy
-                    </button>
-                    <button type="submit" class="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
-                        Lưu điểm danh
-                    </button>
+                    <!-- Check-out Checkbox -->
+                    <label class="inline-flex items-center gap-2">
+                        <input type="checkbox" name="checkOutStatus-${passenger.id}" class="check-status" 
+                               data-seat="${passenger.seat}" data-passenger-id="${passenger.id}" 
+                               <c:if test="${not empty passenger.checkOutTime}">
+                                   checked
+                               </c:if>
+                        />
+                        <span>Check-out</span>
+                    </label>
+                </div>
+                <div class="text-sm text-gray-500 mt-2" id="status-${passenger.seat}">
+                    Trạng thái: ${passenger.checkInTime != null ? 'Đã check-in' : 'Chưa check-in'}
                 </div>
             </div>
-        </form>
+        </c:forEach>
+    </div>
+
+    <!-- Nút hành động -->
+    <div class="p-4 bg-white border-t">
+        <div class="flex justify-end gap-4">
+            <button type="button" onclick="window.history.back()" class="px-6 py-2 border rounded-lg text-gray-700 hover:bg-gray-100">
+                Hủy
+            </button>
+            <button type="submit" class="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
+                Lưu điểm danh
+            </button>
+        </div>
+    </div>
+</form>
 
 
     </div>

@@ -14,7 +14,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.List;
 
 /**
@@ -129,26 +131,37 @@ public class DriverAssignedTripsServlet extends HttpServlet {
 
         DriverAssignedTripsDAO driverAssignedTripsDAO = new DriverAssignedTripsDAO();
 
-        // Lấy thông tin từ form
-        String[] checkInIds = request.getParameterValues("checkInStatus");  // Lấy thông tin check-in
-        String[] checkOutIds = request.getParameterValues("checkOutStatus"); // Lấy thông tin check-out
+        // Lấy tất cả các tham số từ request
+        Enumeration<String> parameterNames = request.getParameterNames();
 
-        System.out.println("CheckIn IDs: " + Arrays.toString(checkInIds));
-        System.out.println("CheckOut IDs: " + Arrays.toString(checkOutIds));
+        // Duyệt qua tất cả các tham số và kiểm tra nếu là checkbox check-in hoặc check-out
+        while (parameterNames.hasMoreElements()) {
+            String paramName = parameterNames.nextElement();
 
-        if (checkInIds != null) {
-            for (String checkInId : checkInIds) {
-                int ticketId = Integer.parseInt(checkInId.split("-")[1]);  // Extract ticketId from parameter name
-                // Gọi phương thức DAO để cập nhật trạng thái check-in
-                driverAssignedTripsDAO.updateCheckInStatus(ticketId);
+            // Kiểm tra checkbox check-in
+            if (paramName.startsWith("checkInStatus-")) {
+                int ticketId = Integer.parseInt(paramName.split("-")[1]);
+
+                // Nếu checkbox được chọn, update trạng thái check-in
+                if ("on".equals(request.getParameter(paramName))) {
+                    driverAssignedTripsDAO.updateCheckInStatus(ticketId, new Timestamp(System.currentTimeMillis()));
+                } else {
+                    // Nếu checkbox không được chọn, set check-in thành NULL
+                    driverAssignedTripsDAO.updateCheckInStatus(ticketId, null);
+                }
             }
-        }
 
-        if (checkOutIds != null) {
-            for (String checkOutId : checkOutIds) {
-                int ticketId = Integer.parseInt(checkOutId.split("-")[1]);  // Extract ticketId from parameter name
-                // Gọi phương thức DAO để cập nhật trạng thái check-out
-                driverAssignedTripsDAO.updateCheckOutStatus(ticketId);
+            // Kiểm tra checkbox check-out
+            if (paramName.startsWith("checkOutStatus-")) {
+                int ticketId = Integer.parseInt(paramName.split("-")[1]);
+
+                // Nếu checkbox được chọn, update trạng thái check-out
+                if ("on".equals(request.getParameter(paramName))) {
+                    driverAssignedTripsDAO.updateCheckOutStatus(ticketId, new Timestamp(System.currentTimeMillis()));
+                } else {
+                    // Nếu checkbox không được chọn, set check-out thành NULL
+                    driverAssignedTripsDAO.updateCheckOutStatus(ticketId, null);
+                }
             }
         }
 
