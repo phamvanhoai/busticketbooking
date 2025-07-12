@@ -111,7 +111,7 @@
                             <td class="px-6 py-4">${trip.driver}</td>
                             <td class="px-6 py-4">${trip.status}</td>
                             <td class="px-6 py-4 space-x-2">
-                                <a href="${pageContext.servletContext.contextPath}/driver/assigned-trips?roll-call">
+                                <a href="${pageContext.servletContext.contextPath}/driver/assigned-trips?roll-call=${trip.tripId}">
                                     <button class="text-blue-600 hover:underline text-sm">Roll call</button>
                                 </a>
                                 <button class="text-gray-600 hover:underline text-sm">Start</button>

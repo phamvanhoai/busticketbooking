@@ -6,6 +6,7 @@ package busticket.controller;
 
 import busticket.DAO.DriverAssignedTripsDAO;
 import busticket.model.DriverAssignedTrip;
+import busticket.model.DriverPassenger;
 import busticket.model.Users;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -43,11 +44,29 @@ public class DriverAssignedTripsServlet extends HttpServlet {
 
         Users currentUser = (Users) session.getAttribute("currentUser");
         int driverId = currentUser.getUser_id();
-        
+
+        // Handle roll-call action
         if (request.getParameter("roll-call") != null) {
-            request.getRequestDispatcher("/WEB-INF/driver/assigned-trips/passenger-roll-call.jsp")
-                    .forward(request, response);
-            return;
+            try {
+                int tripId = Integer.parseInt(request.getParameter("roll-call"));  // Lấy tripId từ tham số (hoặc từ url)
+
+                // Truy vấn danh sách hành khách cho chuyến đi này
+                DriverAssignedTripsDAO driverAssignedTripsDAO = new DriverAssignedTripsDAO();
+                List<DriverPassenger> passengers = driverAssignedTripsDAO.getPassengers(tripId);  // Gọi DAO để lấy danh sách hành khách
+
+                // Gửi danh sách hành khách tới JSP để hiển thị
+                request.setAttribute("passengers", passengers);
+                request.setAttribute("tripId", tripId);  // Truyền tripId để sử dụng trong JSP
+
+                // Chuyển hướng tới JSP page để hiển thị điểm danh
+                request.getRequestDispatcher("/WEB-INF/driver/assigned-trips/passenger-roll-call.jsp").forward(request, response);
+                return;
+
+            } catch (NumberFormatException e) {
+                e.printStackTrace();  // Handle invalid tripId
+                response.sendRedirect(request.getContextPath() + "/driver/assigned-trips");
+                return;
+            }
         }
 
 // Lấy thông tin bộ lọc từ request
