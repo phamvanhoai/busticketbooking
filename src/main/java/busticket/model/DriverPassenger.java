@@ -12,6 +12,7 @@ import java.sql.Timestamp;
  */
 public class DriverPassenger {
     private int id;               // ID của hành khách
+    private int ticketId;   
     private String seat;              // Ghế ngồi
     private String name;              // Tên hành khách
     private String phone;             // Số điện thoại hành khách
@@ -37,8 +38,14 @@ public class DriverPassenger {
         this.pickupLocation = pickupLocation;
         this.dropoffLocation = dropoffLocation;
     }
-    
-    
+
+    public int getTicketId() {
+        return ticketId;
+    }
+
+    public void setTicketId(int ticketId) {
+        this.ticketId = ticketId;
+    }
 
     public DriverPassenger() {
     }

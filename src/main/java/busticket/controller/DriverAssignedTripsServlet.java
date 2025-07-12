@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -119,7 +120,40 @@ public class DriverAssignedTripsServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+// Lấy thông tin từ session
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("currentUser") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
 
+        DriverAssignedTripsDAO driverAssignedTripsDAO = new DriverAssignedTripsDAO();
+
+        // Lấy thông tin từ form
+        String[] checkInIds = request.getParameterValues("checkInStatus");  // Lấy thông tin check-in
+        String[] checkOutIds = request.getParameterValues("checkOutStatus"); // Lấy thông tin check-out
+
+        System.out.println("CheckIn IDs: " + Arrays.toString(checkInIds));
+        System.out.println("CheckOut IDs: " + Arrays.toString(checkOutIds));
+
+        if (checkInIds != null) {
+            for (String checkInId : checkInIds) {
+                int ticketId = Integer.parseInt(checkInId.split("-")[1]);  // Extract ticketId from parameter name
+                // Gọi phương thức DAO để cập nhật trạng thái check-in
+                driverAssignedTripsDAO.updateCheckInStatus(ticketId);
+            }
+        }
+
+        if (checkOutIds != null) {
+            for (String checkOutId : checkOutIds) {
+                int ticketId = Integer.parseInt(checkOutId.split("-")[1]);  // Extract ticketId from parameter name
+                // Gọi phương thức DAO để cập nhật trạng thái check-out
+                driverAssignedTripsDAO.updateCheckOutStatus(ticketId);
+            }
+        }
+
+        // Chuyển hướng lại trang danh sách chuyến sau khi lưu
+        response.sendRedirect(request.getContextPath() + "/driver/assigned-trips");
     }
 
     /**

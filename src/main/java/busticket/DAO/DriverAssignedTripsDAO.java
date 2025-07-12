@@ -167,6 +167,7 @@ public class DriverAssignedTripsDAO extends DBContext {
     }
 
     // Get passengers for a specific trip
+    // Get passengers for a specific trip
     public List<DriverPassenger> getPassengers(int tripId) {
         List<DriverPassenger> passengers = new ArrayList<>();
         // Cập nhật truy vấn để kết hợp thông tin từ các bảng Tickets, Invoice_Items, Invoices, Locations
@@ -176,7 +177,8 @@ public class DriverAssignedTripsDAO extends DBContext {
                 + "       ls.location_name AS pickup_location, "
                 + "       le.location_name AS dropoff_location, "
                 + "       t.check_in, "
-                + "       t.check_out "
+                + "       t.check_out, "
+                + "       t.ticket_id " // Lấy ticket_id từ bảng Tickets
                 + "FROM Ticket_Seat ts "
                 + "JOIN Tickets t ON ts.ticket_id = t.ticket_id "
                 + "JOIN Invoice_Items ii ON t.ticket_id = ii.ticket_id "
@@ -199,6 +201,7 @@ public class DriverAssignedTripsDAO extends DBContext {
                     passenger.setDropoffLocation(rs.getString("dropoff_location")); // Lấy tên địa điểm từ bảng Locations
                     passenger.setCheckInTime(rs.getTimestamp("check_in"));
                     passenger.setCheckOutTime(rs.getTimestamp("check_out"));
+                    passenger.setTicketId(rs.getInt("ticket_id")); // Lấy ticket_id từ bảng Tickets
                     passengers.add(passenger);
                 }
             }
@@ -208,33 +211,31 @@ public class DriverAssignedTripsDAO extends DBContext {
         return passengers;
     }
 
-    // Update check-in status for a passenger
-    public boolean updateCheckInStatus(int passengerId, Timestamp checkInTime) {
-        String query = "UPDATE Passengers SET check_in_time = ? WHERE passenger_id = ?";
-
+// Cập nhật trạng thái check-in trong bảng Ticket
+    // Cập nhật trạng thái check-in trong bảng Ticket
+    public void updateCheckInStatus(int ticketId) {
+        String query = "UPDATE Tickets SET check_in = ? WHERE ticket_id = ?";
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
-            ps.setTimestamp(1, checkInTime);
-            ps.setInt(2, passengerId);
-            int rowsUpdated = ps.executeUpdate();
-            return rowsUpdated > 0;
+            ps.setTimestamp(1, new Timestamp(System.currentTimeMillis()));  // Gán thời gian hiện tại cho check-in
+            ps.setInt(2, ticketId);  // Truyền ticket_id vào
+            ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return false;
     }
 
-    // Update check-out status for a passenger
-    public boolean updateCheckOutStatus(int passengerId, Timestamp checkOutTime) {
-        String query = "UPDATE Passengers SET check_out_time = ? WHERE passenger_id = ?";
-
+// Cập nhật trạng thái check-out trong bảng Ticket
+    public void updateCheckOutStatus(int ticketId) {
+        String query = "UPDATE Tickets SET check_out = ? WHERE ticket_id = ?";
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
-            ps.setTimestamp(1, checkOutTime);
-            ps.setInt(2, passengerId);
+            ps.setTimestamp(1, new Timestamp(System.currentTimeMillis()));  // Gán thời gian hiện tại cho check-out
+            ps.setInt(2, ticketId);  // Truyền ticket_id vào
+//            ps.executeUpdate();
             int rowsUpdated = ps.executeUpdate();
-            return rowsUpdated > 0;
+            System.out.println("Rows updated: " + rowsUpdated);
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return false;
     }
+
 }
