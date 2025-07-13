@@ -75,15 +75,26 @@
                             <td class="py-2 px-4">${trip.busType}</td>
                             <td class="py-2 px-4">${trip.driver}</td>
                             <td class="py-2 px-4">
+                                
                                 <c:choose>
                                     <c:when test="${trip.status == 'Cancelled'}">
                                         <span class="px-3 py-1 text-sm rounded-full font-semibold bg-red-100 text-red-600">
                                             Cancelled
                                         </span>
                                     </c:when>
-                                    <c:when test="${trip.status == 'Scheduled'}">
+                                    <c:when test="${trip.status == 'Ongoing'}">
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-blue-100 text-blue-700">
+                                            Ongoing
+                                        </span>
+                                    </c:when>
+                                    <c:when test="${trip.status == 'Completed'}">
                                         <span class="px-3 py-1 text-sm rounded-full font-semibold bg-green-100 text-green-700">
-                                            Scheduled
+                                            Completed
+                                        </span>
+                                    </c:when>
+                                    <c:when test="${trip.status == 'Pending'}">
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-yellow-100 text-yellow-700">
+                                            Pending
                                         </span>
                                     </c:when>
                                     <c:otherwise>
