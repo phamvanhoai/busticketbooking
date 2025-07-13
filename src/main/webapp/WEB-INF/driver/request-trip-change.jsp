@@ -55,9 +55,9 @@
             <!-- Thao tác -->
             <div class="flex justify-end gap-4">
                 <button type="reset" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
-                    Cancel
+                    Reset
                 </button>
-                <button type="submit" class="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition">
+                <button type="submit" onclick="return confirm('Bạn có chắc chắn muốn gửi yêu cầu hủy chuyến?')" class="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition">
                     Submit Request
                 </button>
             </div>
@@ -92,16 +92,22 @@
                             <td class="px-4 py-2">
                                 <c:choose>
                                     <c:when test="${request.status == 'Pending'}">
-                                        <span class="text-yellow-500">Pending</span>
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-yellow-100 text-yellow-700">
+                                            ${request.status}
+                                        </span>
                                     </c:when>
                                     <c:when test="${request.status == 'Approved'}">
-                                        <span class="text-green-500">Approved</span>
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-green-100 text-green-700">
+                                            ${request.status}
+                                        </span>
                                     </c:when>
                                     <c:when test="${request.status == 'Rejected'}">
-                                        <span class="text-red-500">Rejected</span>
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-red-100 text-red-600">
+                                            ${request.status}
+                                        </span>
                                     </c:when>
                                     <c:otherwise>
-                                        <span class="text-gray-500">Unknown</span>
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-gray-100 text-gray-700">Unknown</span>
                                     </c:otherwise>
                                 </c:choose>
                             </td>
@@ -109,6 +115,22 @@
                             <td class="px-4 py-2"><fmt:formatDate value="${request.approvalDate}" pattern="yyyy-MM-dd" /></td>
                         </tr>
                     </c:forEach>
+                    <!-- No data case if list is empty -->
+                    <c:if test="${empty cancelledTrips}">
+                        <tr>
+                            <td colspan="8" class="py-4 px-4 text-center text-gray-500">
+                                <div class="flex flex-col items-center justify-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M9.75 9.75h.008v.008H9.75V9.75zm4.5 0h.008v.008h-.008V9.75zM9 13.5c.75 1 2.25 1 3 0m9 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <span class="text-sm text-gray-500 font-medium">
+                                        No cancelled trips found.
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    </c:if>
                 </tbody>
             </table>
         </div>

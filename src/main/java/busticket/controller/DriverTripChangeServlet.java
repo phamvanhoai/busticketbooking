@@ -127,7 +127,7 @@ public class DriverTripChangeServlet extends HttpServlet {
 
     @Override
     public String getServletInfo() {
-        return "Xử lý gửi yêu cầu đổi chuyến mà không cần thay đổi JSP";
+        return "";
     }
 
 }

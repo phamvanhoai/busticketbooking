@@ -79,8 +79,10 @@ public class StaffSupportDriverTripServlet extends HttpServlet {
 
             if (action.equals("approve")) {
                 dao.updateRequestStatus(requestId, "Approved");
+                dao.updateTripStatusTrip(requestId, "Cancelled");
             } else if (action.equals("reject")) {
                 dao.updateRequestStatus(requestId, "Rejected");
+                dao.updateTripStatusTrip(requestId, "Scheduled");
             }
         }
 

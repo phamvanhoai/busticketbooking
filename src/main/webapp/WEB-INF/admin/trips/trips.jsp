@@ -66,7 +66,7 @@
                 <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg">
                     Filter
                 </button>
-                
+
                 <!-- Reset button -->
                 <a href="${pageContext.servletContext.contextPath}/admin/trips">
                     <button type="button" class="text-sm px-4 py-2 border border-orange-400 text-orange-600 rounded-lg hover:bg-orange-100 transition flex items-center gap-2">
@@ -74,7 +74,7 @@
                         Reset Filters
                     </button></a>
             </form>
-                
+
         </div>
 
         <!-- Trip Table -->
@@ -108,9 +108,19 @@
                                             Cancelled
                                         </span>
                                     </c:when>
-                                    <c:when test="${trip.status == 'Scheduled'}">
+                                    <c:when test="${trip.status == 'Ongoing'}">
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-blue-100 text-blue-700">
+                                            Ongoing
+                                        </span>
+                                    </c:when>
+                                    <c:when test="${trip.status == 'Completed'}">
                                         <span class="px-3 py-1 text-sm rounded-full font-semibold bg-green-100 text-green-700">
-                                            Scheduled
+                                            Completed
+                                        </span>
+                                    </c:when>
+                                    <c:when test="${trip.status == 'Pending'}">
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-yellow-100 text-yellow-700">
+                                            Pending
                                         </span>
                                     </c:when>
                                     <c:otherwise>

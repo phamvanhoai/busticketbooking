@@ -74,8 +74,9 @@
                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-[#EF5222]"
                     >
                     <option value="Scheduled"  <c:if test="${trip.status == 'Scheduled'}">selected</c:if>>Scheduled</option>
-                    <option value="Scheduled"  <c:if test="${trip.status == 'Ongoing'}">selected</c:if>>Ongoing</option>
+                    <option value="Ongoing"  <c:if test="${trip.status == 'Ongoing'}">selected</c:if>>Ongoing</option>
                     <option value="Completed"  <c:if test="${trip.status == 'Completed'}">selected</c:if>>Completed</option>
+                    <option value="Pending"  <c:if test="${trip.status == 'Pending'}">selected</c:if>>Pending</option>
                     <option value="Cancelled"  <c:if test="${trip.status == 'Cancelled'}">selected</c:if>>Cancelled</option>
                     </select>
                 </div>

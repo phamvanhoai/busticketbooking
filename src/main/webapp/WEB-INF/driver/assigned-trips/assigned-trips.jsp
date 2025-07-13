@@ -126,7 +126,35 @@
                             <td class="px-6 py-4">${trip.route}</td>
                             <td class="px-6 py-4">${trip.busType}</td>
                             <td class="px-6 py-4">${trip.driver}</td>
-                            <td class="px-6 py-4">${trip.status}</td>
+                            <td class="px-6 py-4">
+                            <c:choose>
+                                    <c:when test="${trip.status == 'Cancelled'}">
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-red-100 text-red-600">
+                                            Cancelled
+                                        </span>
+                                    </c:when>
+                                    <c:when test="${trip.status == 'Ongoing'}">
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-blue-100 text-blue-700">
+                                            Ongoing
+                                        </span>
+                                    </c:when>
+                                    <c:when test="${trip.status == 'Completed'}">
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-green-100 text-green-700">
+                                            Completed
+                                        </span>
+                                    </c:when>
+                                    <c:when test="${trip.status == 'Pending'}">
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-yellow-100 text-yellow-700">
+                                            Pending
+                                        </span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="px-3 py-1 text-sm rounded-full font-semibold bg-gray-100 text-gray-700">
+                                            ${trip.status}
+                                        </span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
                             <td class="px-6 py-4 space-x-2">
                                 <a href="${pageContext.servletContext.contextPath}/driver/assigned-trips?roll-call=${trip.tripId}">
                                     <button class="text-blue-600 hover:underline text-sm">Roll call</button>

@@ -41,7 +41,7 @@ public class DriverRequestTripChangeDAO extends DBContext {
                 + "LEFT JOIN Trip_Driver td ON t.trip_id = td.trip_id "
                 + "LEFT JOIN Drivers d ON td.driver_id = d.driver_id "
                 + "WHERE d.driver_id = ? "
-                + "AND t.trip_status NOT IN ('Cancelled', 'Completed', 'Ongoing')";  // Lọc trạng thái
+                + "AND t.trip_status NOT IN ('Cancelled', 'Completed', 'Ongoing', 'Pending')";  // Lọc trạng thái
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, driverId); // Đặt driverId vào câu truy vấn

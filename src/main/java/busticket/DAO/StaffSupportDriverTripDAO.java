@@ -6,8 +6,10 @@ package busticket.DAO;
 
 import busticket.db.DBContext;
 import busticket.model.StaffSupportDriverTrip;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,6 +87,20 @@ public class StaffSupportDriverTripDAO extends DBContext {
             ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+    
+    public boolean updateTripStatusTrip(int tripId, String status) {
+        String query = "UPDATE Trips SET trip_status = ? WHERE trip_id = ?";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, status);
+            ps.setInt(2, tripId); // Đặt tripId vào câu truy vấn
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0; // Nếu ít nhất 1 dòng được cập nhật, trả về true
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
