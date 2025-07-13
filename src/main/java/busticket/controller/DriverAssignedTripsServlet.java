@@ -17,7 +17,11 @@ import jakarta.servlet.http.HttpSession;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -130,42 +134,85 @@ public class DriverAssignedTripsServlet extends HttpServlet {
         }
 
         DriverAssignedTripsDAO driverAssignedTripsDAO = new DriverAssignedTripsDAO();
+        Set<String> failedSeats = new HashSet<>();
+        Map<Integer, String> ticketToSeatMap = new HashMap<>();
 
-        // Lấy tất cả các tham số từ request
+        // Lấy tripId từ request để truy vấn danh sách hành khách
+        int tripId = 0;
+        try {
+            tripId = Integer.parseInt(request.getParameter("tripId"));
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            session.setAttribute("error", "ID chuyến đi không hợp lệ");
+            response.sendRedirect(request.getContextPath() + "/driver/assigned-trips");
+            return;
+        }
+
+        // Lấy danh sách hành khách để ánh xạ ticketId với seat_number
+        List<DriverPassenger> passengers = driverAssignedTripsDAO.getPassengers(tripId);
+        for (DriverPassenger passenger : passengers) {
+            ticketToSeatMap.put(passenger.getTicketId(), passenger.getSeat());
+        }
+
+        // Thu thập tất cả ticketId từ request
+        Set<Integer> ticketIds = new HashSet<>();
         Enumeration<String> parameterNames = request.getParameterNames();
-
-        // Duyệt qua tất cả các tham số và kiểm tra nếu là checkbox check-in hoặc check-out
         while (parameterNames.hasMoreElements()) {
             String paramName = parameterNames.nextElement();
-
-            // Kiểm tra checkbox check-in
-            if (paramName.startsWith("checkInStatus-")) {
-                int ticketId = Integer.parseInt(paramName.split("-")[1]);
-
-                // Nếu checkbox được chọn, update trạng thái check-in
-                if ("on".equals(request.getParameter(paramName))) {
-                    driverAssignedTripsDAO.updateCheckInStatus(ticketId, new Timestamp(System.currentTimeMillis()));
-                } else {
-                    // Nếu checkbox không được chọn, set check-in thành NULL
-                    driverAssignedTripsDAO.updateCheckInStatus(ticketId, null);
-                }
-            }
-
-            // Kiểm tra checkbox check-out
-            if (paramName.startsWith("checkOutStatus-")) {
-                int ticketId = Integer.parseInt(paramName.split("-")[1]);
-
-                // Nếu checkbox được chọn, update trạng thái check-out
-                if ("on".equals(request.getParameter(paramName))) {
-                    driverAssignedTripsDAO.updateCheckOutStatus(ticketId, new Timestamp(System.currentTimeMillis()));
-                } else {
-                    // Nếu checkbox không được chọn, set check-out thành NULL
-                    driverAssignedTripsDAO.updateCheckOutStatus(ticketId, null);
+            if (paramName.startsWith("checkInStatus-") || paramName.startsWith("checkOutStatus-")) {
+                try {
+                    int ticketId = Integer.parseInt(paramName.split("-")[1]);
+                    ticketIds.add(ticketId);
+                } catch (NumberFormatException e) {
+                    failedSeats.add("Unknown");
                 }
             }
         }
 
-        // Chuyển hướng lại trang danh sách chuyến sau khi lưu
+        // Xử lý từng ticketId
+        for (int ticketId : ticketIds) {
+            try {
+                String[] checkInValues = request.getParameterValues("checkInStatus-" + ticketId);
+                String[] checkOutValues = request.getParameterValues("checkOutStatus-" + ticketId);
+                boolean isCheckInChecked = checkInValues != null && Arrays.asList(checkInValues).contains("on");
+                boolean isCheckOutChecked = checkOutValues != null && Arrays.asList(checkOutValues).contains("on");
+
+                // Kiểm tra logic: không cho phép check-out nếu chưa check-in
+                if (isCheckOutChecked && !isCheckInChecked) {
+                    String seat = ticketToSeatMap.getOrDefault(ticketId, "Unknown");
+                    failedSeats.add(seat);
+                    continue; // Bỏ qua cập nhật nếu kiểm tra thất bại
+                }
+
+                // Cập nhật check-in
+                if (isCheckInChecked) {
+                    driverAssignedTripsDAO.updateCheckInStatus(ticketId, new Timestamp(System.currentTimeMillis()));
+                } else {
+                    driverAssignedTripsDAO.updateCheckInStatus(ticketId, null);
+                }
+
+                // Cập nhật check-out
+                if (isCheckOutChecked) {
+                    if (!driverAssignedTripsDAO.updateCheckOutStatusWithCheckInValidation(ticketId, new Timestamp(System.currentTimeMillis()))) {
+                        String seat = ticketToSeatMap.getOrDefault(ticketId, "Unknown");
+                        failedSeats.add(seat);
+                    }
+                } else {
+                    driverAssignedTripsDAO.updateCheckOutStatusWithCheckInValidation(ticketId, null);
+                }
+            } catch (Exception e) {
+                String seat = ticketToSeatMap.getOrDefault(ticketId, "Unknown");
+                failedSeats.add(seat);
+            }
+        }
+
+        // Thiết lập thông báo
+        if (!failedSeats.isEmpty()) {
+            session.setAttribute("error", "Không thể cập nhật trạng thái cho ghế: " + failedSeats + " (yêu cầu check-in trước khi check-out)");
+        } else {
+            session.setAttribute("success", "Đã lưu điểm danh thành công!");
+        }
+
         response.sendRedirect(request.getContextPath() + "/driver/assigned-trips");
     }
 

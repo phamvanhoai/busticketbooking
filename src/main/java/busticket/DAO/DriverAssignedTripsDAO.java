@@ -215,34 +215,105 @@ public class DriverAssignedTripsDAO extends DBContext {
     public void updateCheckInStatus(int ticketId, Timestamp checkInTime) {
         String query = "UPDATE Tickets SET check_in = ? WHERE ticket_id = ?";
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
-            // Nếu checkInTime là null, sẽ set thành NULL trong CSDL
             if (checkInTime != null) {
                 ps.setTimestamp(1, checkInTime);
             } else {
                 ps.setNull(1, java.sql.Types.TIMESTAMP);
             }
-            ps.setInt(2, ticketId);  // Truyền ticket_id vào
+            ps.setInt(2, ticketId);
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-// Cập nhật trạng thái check-out trong bảng Ticket
-    public void updateCheckOutStatus(int ticketId, Timestamp checkOutTime) {
+    public boolean updateCheckOutStatusWithCheckInValidation(int ticketId, Timestamp checkOutTime) {
+        if (checkOutTime != null) {
+            String checkQuery = "SELECT check_in FROM Tickets WHERE ticket_id = ?";
+            try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(checkQuery)) {
+                ps.setInt(1, ticketId);
+                try ( ResultSet rs = ps.executeQuery()) {
+                    if (rs.next() && rs.getTimestamp("check_in") == null) {
+                        return false; // Không cập nhật nếu check_in là NULL
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+
         String query = "UPDATE Tickets SET check_out = ? WHERE ticket_id = ?";
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
-            // Nếu checkOutTime là null, sẽ set thành NULL trong CSDL
             if (checkOutTime != null) {
                 ps.setTimestamp(1, checkOutTime);
             } else {
                 ps.setNull(1, java.sql.Types.TIMESTAMP);
             }
-            ps.setInt(2, ticketId);  // Truyền ticket_id vào
+            ps.setInt(2, ticketId);
             ps.executeUpdate();
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
+    public boolean updateCheckStatus(int ticketId, Timestamp checkInTime, Timestamp checkOutTime) {
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            conn.setAutoCommit(false);
+
+            if (checkOutTime != null && checkInTime == null) {
+                String checkQuery = "SELECT check_in FROM Tickets WHERE ticket_id = ?";
+                try ( PreparedStatement ps = conn.prepareStatement(checkQuery)) {
+                    ps.setInt(1, ticketId);
+                    try ( ResultSet rs = ps.executeQuery()) {
+                        if (rs.next() && rs.getTimestamp("check_in") == null) {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            String query = "UPDATE Tickets SET check_in = ?, check_out = ? WHERE ticket_id = ?";
+            try ( PreparedStatement ps = conn.prepareStatement(query)) {
+                if (checkInTime != null) {
+                    ps.setTimestamp(1, checkInTime);
+                } else {
+                    ps.setNull(1, java.sql.Types.TIMESTAMP);
+                }
+                if (checkOutTime != null) {
+                    ps.setTimestamp(2, checkOutTime);
+                } else {
+                    ps.setNull(2, java.sql.Types.TIMESTAMP);
+                }
+                ps.setInt(3, ticketId);
+                ps.executeUpdate();
+            }
+
+            conn.commit();
+            return true;
+        } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 }

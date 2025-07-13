@@ -37,52 +37,67 @@
         <!-- Tiêu đề -->
         <h1 class="text-3xl font-bold text-orange-600">Assigned Trips</h1>
 
-        <!-- Bộ lọc -->
+        <!-- Display error messages if there are any -->
+        <c:choose>
+            <c:when test="${not empty success}">
+                <div class="bg-green-100 text-green-700 p-4 rounded mb-4">
+                    ${success}
+                </div>
+                <c:remove var="success" scope="session"/>
+            </c:when>
+            <c:when test="${not empty error}">
+                <div class="bg-red-100 text-red-700 p-4 rounded mb-4">
+                    ${error}
+                </div>
+                <c:remove var="error" scope="session"/>
+            </c:when>
+        </c:choose>
+
         <!-- Bộ lọc -->
         <div class="flex flex-wrap gap-4">
-    <form action="${pageContext.request.contextPath}/driver/assigned-trips" method="get" class="w-full flex flex-wrap gap-4">
-        <input
-            type="date"
-            name="date"
-            class="w-full md:w-1/4 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-200"
-            placeholder="Select date"
-            value="${param.date}"
-        />
-        <select
-            name="route"
-            class="w-full md:w-1/4 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-200"
-        >
-            <option value="">All Routes</option>
-            <c:forEach var="location" items="${locations}">
-                <option value="${location}" ${location == param.route ? 'selected' : ''}>${location}</option>
-            </c:forEach>
-        </select>
-        <select
-            name="status"
-            class="w-full md:w-1/4 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-200"
-        >
-            <option value="">All Statuses</option>
-            <option value="Scheduled" ${param.status == 'Scheduled' ? 'selected' : ''}>Scheduled</option>
-            <option value="Ongoing" ${param.status == 'Ongoing' ? 'selected' : ''}>Ongoing</option>
-            <option value="Completed" ${param.status == 'Completed' ? 'selected' : ''}>Completed</option>
-            <option value="Cancelled" ${param.status == 'Cancelled' ? 'selected' : ''}>Cancelled</option>
-        </select>
-        <button
-            type="submit"
-            class="w-full md:w-auto bg-orange-500 text-white rounded-lg px-6 py-2 hover:bg-orange-600"
-        >
-            Filter
-        </button>
+            <form action="${pageContext.request.contextPath}/driver/assigned-trips" method="get" class="w-full flex flex-wrap gap-4">
+                <input
+                    type="date"
+                    name="date"
+                    class="w-full md:w-1/4 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-200"
+                    placeholder="Select date"
+                    value="${param.date}"
+                    />
+                <select
+                    name="route"
+                    class="w-full md:w-1/4 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-200"
+                    >
+                    <option value="">All Routes</option>
+                    <c:forEach var="location" items="${locations}">
+                        <option value="${location}" ${location == param.route ? 'selected' : ''}>${location}</option>
+                    </c:forEach>
+                </select>
+                <select
+                    name="status"
+                    class="w-full md:w-1/4 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-200"
+                    >
+                    <option value="">All Statuses</option>
+                    <option value="Scheduled" ${param.status == 'Scheduled' ? 'selected' : ''}>Scheduled</option>
+                    <option value="Ongoing" ${param.status == 'Ongoing' ? 'selected' : ''}>Ongoing</option>
+                    <option value="Completed" ${param.status == 'Completed' ? 'selected' : ''}>Completed</option>
+                    <option value="Cancelled" ${param.status == 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                </select>
+                <button
+                    type="submit"
+                    class="w-full md:w-auto bg-orange-500 text-white rounded-lg px-6 py-2 hover:bg-orange-600"
+                    >
+                    Filter
+                </button>
 
-        <!-- Reset button -->
-        <a href="${pageContext.servletContext.contextPath}/driver/assigned-trips">
-            <button type="button" class="text-sm px-4 py-2 border border-orange-400 text-orange-600 rounded-lg hover:bg-orange-100 transition flex items-center gap-2">
-                <i class="fas fa-sync-alt"></i>
-                Reset Filters
-            </button>
-        </a>
-    </form>
-</div>
+                <!-- Reset button -->
+                <a href="${pageContext.servletContext.contextPath}/driver/assigned-trips">
+                    <button type="button" class="text-sm px-4 py-2 border border-orange-400 text-orange-600 rounded-lg hover:bg-orange-100 transition flex items-center gap-2">
+                        <i class="fas fa-sync-alt"></i>
+                        Reset Filters
+                    </button>
+                </a>
+            </form>
+        </div>
 
 
         <!-- Bảng Assigned Trips -->
