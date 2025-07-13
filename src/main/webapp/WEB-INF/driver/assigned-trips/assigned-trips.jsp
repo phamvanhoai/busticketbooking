@@ -31,6 +31,8 @@
            value="${baseUrl}${(param.route!=null || param.status!=null)?'&':'?'}date=${fn:escapeXml(param.date)}"/>
 </c:if>
 
+<!-- Lấy thời gian hiện tại -->
+<jsp:useBean id="now" class="java.util.Date"/>
 
 <body class="bg-[#fff6f3] p-6">
     <div class="space-y-6">
@@ -129,7 +131,18 @@
                                 <a href="${pageContext.servletContext.contextPath}/driver/assigned-trips?roll-call=${trip.tripId}">
                                     <button class="text-blue-600 hover:underline text-sm">Roll call</button>
                                 </a>
-                                <button class="text-gray-600 hover:underline text-sm">Start</button>
+                                <c:choose>
+                                    <c:when test="${trip.status == 'Scheduled' && trip.departureTime <= now}">
+                                        <a href="${pageContext.servletContext.contextPath}/driver/assigned-trips?start=${trip.tripId}">
+                                            <button onclick="return confirm('Bạn có chắc chắn muốn bắt đầu chuyến đi?')" class="text-gray-600 hover:underline text-sm">Start</button>
+                                        </a>
+                                    </c:when>
+                                    <c:when test="${trip.status == 'Ongoing'}">
+                                        <a href="${pageContext.servletContext.contextPath}/driver/assigned-trips?end=${trip.tripId}">
+                                            <button onclick="return confirm('Bạn có chắc chắn muốn kết thúc chuyến đi?')" class="text-gray-600 hover:underline text-sm">End</button>
+                                        </a>
+                                    </c:when>
+                                </c:choose>
                             </td>
                         </tr>
                     </c:forEach>

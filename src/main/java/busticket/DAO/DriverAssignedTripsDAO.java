@@ -32,7 +32,8 @@ public class DriverAssignedTripsDAO extends DBContext {
                 + "bt.bus_type_name AS bus_type, "
                 + "u.user_name AS driver, "
                 + "t.bus_id, "
-                + "t.trip_status AS status "
+                + "t.trip_status AS status, "
+                + "t.departure_time " // Thêm departure_time
                 + "FROM Trips t "
                 + "JOIN Routes r ON t.route_id = r.route_id "
                 + "JOIN Locations ls ON r.start_location_id = ls.location_id "
@@ -45,7 +46,6 @@ public class DriverAssignedTripsDAO extends DBContext {
                 + "WHERE u.user_id = ? "
         );
 
-        // Apply filters
         if (route != null && !route.isEmpty()) {
             query.append(" AND (ls.location_name + ' → ' + le.location_name) LIKE ?");
         }
@@ -56,14 +56,12 @@ public class DriverAssignedTripsDAO extends DBContext {
             query.append(" AND CAST(t.departure_time AS date) = ?");
         }
 
-        // Add pagination
         query.append(" ORDER BY t.trip_id ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query.toString())) {
             int idx = 1;
-            ps.setInt(idx++, driverId); // driverId vào đầu tiên
+            ps.setInt(idx++, driverId);
 
-            // Apply filters to prepared statement
             if (route != null && !route.isEmpty()) {
                 ps.setString(idx++, "%" + route + "%");
             }
@@ -71,12 +69,11 @@ public class DriverAssignedTripsDAO extends DBContext {
                 ps.setString(idx++, "%" + status + "%");
             }
             if (date != null && !date.isEmpty()) {
-                ps.setString(idx++, date);  // Set date filter
+                ps.setString(idx++, date);
             }
 
-            // Set pagination
-            ps.setInt(idx++, offset);  // Set OFFSET for pagination
-            ps.setInt(idx++, limit);   // Set LIMIT for pagination
+            ps.setInt(idx++, offset);
+            ps.setInt(idx++, limit);
 
             try ( ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -89,6 +86,7 @@ public class DriverAssignedTripsDAO extends DBContext {
                     trip.setDriver(rs.getString("driver"));
                     trip.setBusId(rs.getInt("bus_id"));
                     trip.setStatus(rs.getString("status"));
+                    trip.setDepartureTime(rs.getTimestamp("departure_time")); // Gán departure_time
                     trips.add(trip);
                 }
             }
@@ -316,4 +314,31 @@ public class DriverAssignedTripsDAO extends DBContext {
             }
         }
     }
+
+    public String getTripStatus(int tripId) {
+        String query = "SELECT trip_status FROM Trips WHERE trip_id = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, tripId);
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("trip_status");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void updateTripStatus(int tripId, String status) {
+        String query = "UPDATE Trips SET trip_status = ? WHERE trip_id = ?";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, status);
+            ps.setInt(2, tripId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

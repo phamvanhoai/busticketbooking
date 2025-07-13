@@ -49,30 +49,87 @@ public class DriverAssignedTripsServlet extends HttpServlet {
             return;
         }
 
+        // Kiểm tra thông báo trong session
+        if (session != null) {
+            Object success = session.getAttribute("success");
+            Object error = session.getAttribute("error");
+
+            // Nếu có thông báo thành công
+            if (success != null) {
+                request.setAttribute("success", success);
+                session.removeAttribute("success");
+            }
+
+            // Nếu có thông báo lỗi
+            if (error != null) {
+                request.setAttribute("error", error);
+                session.removeAttribute("error");
+            }
+        }
+
         Users currentUser = (Users) session.getAttribute("currentUser");
         int driverId = currentUser.getUser_id();
 
         // Handle roll-call action
         if (request.getParameter("roll-call") != null) {
             try {
-                int tripId = Integer.parseInt(request.getParameter("roll-call"));  // Lấy tripId từ tham số (hoặc từ url)
-
-                // Truy vấn danh sách hành khách cho chuyến đi này
+                int tripId = Integer.parseInt(request.getParameter("roll-call"));
                 DriverAssignedTripsDAO driverAssignedTripsDAO = new DriverAssignedTripsDAO();
-                List<DriverPassenger> passengers = driverAssignedTripsDAO.getPassengers(tripId);  // Gọi DAO để lấy danh sách hành khách
+                List<DriverPassenger> passengers = driverAssignedTripsDAO.getPassengers(tripId);
 
-                // Gửi danh sách hành khách tới JSP để hiển thị
+                // Lấy trip_status từ cơ sở dữ liệu
+                String tripStatus = driverAssignedTripsDAO.getTripStatus(tripId);
+
                 request.setAttribute("passengers", passengers);
-                request.setAttribute("tripId", tripId);  // Truyền tripId để sử dụng trong JSP
-
-                // Chuyển hướng tới JSP page để hiển thị điểm danh
+                request.setAttribute("tripId", tripId);
+                request.setAttribute("tripStatus", tripStatus);
                 request.getRequestDispatcher("/WEB-INF/driver/assigned-trips/passenger-roll-call.jsp").forward(request, response);
                 return;
-
             } catch (NumberFormatException e) {
-                e.printStackTrace();  // Handle invalid tripId
+                e.printStackTrace();
                 response.sendRedirect(request.getContextPath() + "/driver/assigned-trips");
                 return;
+            }
+        }
+
+        // Process "Start" action
+        String start = request.getParameter("start");
+        if (start != null) {
+            try {
+                int tripId = Integer.parseInt(request.getParameter("start"));
+                DriverAssignedTripsDAO driverAssignedTripsDAO = new DriverAssignedTripsDAO();
+
+                // Update the status of the trip to "Ongoing"
+                driverAssignedTripsDAO.updateTripStatus(tripId, "Ongoing");
+
+                // Set success message and redirect
+                session.setAttribute("success", "Trip status updated to 'Ongoing'.");
+                response.sendRedirect(request.getContextPath() + "/driver/assigned-trips");
+                return;
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                session.setAttribute("error", "Invalid Trip ID.");
+                response.sendRedirect(request.getContextPath() + "/driver/assigned-trips");
+            }
+        }
+
+        // Process "End" action
+        String end = request.getParameter("end");
+        if (end != null) {
+            try {
+                int tripId = Integer.parseInt(request.getParameter("end"));
+                DriverAssignedTripsDAO driverAssignedTripsDAO = new DriverAssignedTripsDAO();
+
+                // Update the status of the trip to "Completed"
+                driverAssignedTripsDAO.updateTripStatus(tripId, "Completed");
+
+                session.setAttribute("success", "Trip status updated to 'Completed'.");
+                response.sendRedirect(request.getContextPath() + "/driver/assigned-trips");
+                return;
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                session.setAttribute("error", "Invalid Trip ID.");
+                response.sendRedirect(request.getContextPath() + "/driver/assigned-trips");
             }
         }
 

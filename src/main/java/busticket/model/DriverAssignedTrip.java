@@ -5,6 +5,7 @@
 package busticket.model;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 
 /**
  *
@@ -19,6 +20,7 @@ public class DriverAssignedTrip {
     private String driver;      // Tên tài xế
     private int busId;          // ID của xe
     private String status;      // Trạng thái chuyến đi (Scheduled, Ongoing, Completed, etc.)
+    private Timestamp departureTime; // Thêm thuộc tính departureTime
 
     public int getTripId() {
         return tripId;
@@ -83,7 +85,14 @@ public class DriverAssignedTrip {
     public void setStatus(String status) {
         this.status = status;
     }
-    
-    
+
+    public Timestamp getDepartureTime() {
+        return departureTime;
+    }
+
+    public void setDepartureTime(Timestamp departureTime) {
+        this.departureTime = departureTime;
+    }
+
     
 }
