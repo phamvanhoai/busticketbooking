@@ -6,6 +6,7 @@ package busticket.controller;
 
 import busticket.DAO.StaffSupportDriverTripDAO;
 import busticket.model.StaffSupportDriverTrip;
+import busticket.util.SessionUtil;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -31,6 +32,11 @@ public class StaffSupportDriverTripServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Check if the user is an Staff; redirect to home if not
+        if (!SessionUtil.isStaff(request)) {
+            response.sendRedirect(request.getContextPath());
+            return;
+        }
         // Pagination setup
         int requestsPerPage = 10;
         int currentPage = 1;

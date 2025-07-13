@@ -13,8 +13,11 @@ import jakarta.servlet.http.HttpSession;
  * @author Pham Van Hoai - CE181744
  */
 public class SessionUtil {
+
     /**
-     * Checks if a user is logged in by verifying the presence of a session and a "currentUser" attribute.
+     * Checks if a user is logged in by verifying the presence of a session and
+     * a "currentUser" attribute.
+     *
      * @param request The HTTP servlet request containing the session
      * @return True if the user is logged in, false otherwise
      */
@@ -25,8 +28,10 @@ public class SessionUtil {
 
     /**
      * Retrieves the username of the logged-in user from the session.
+     *
      * @param request The HTTP servlet request containing the session
-     * @return The username if available, null if no session or username is found
+     * @return The username if available, null if no session or username is
+     * found
      */
     public static String getLoggedInUsername(HttpServletRequest request) {
         HttpSession session = request.getSession(false); // Get session without creating a new one
@@ -38,6 +43,7 @@ public class SessionUtil {
 
     /**
      * Checks if the logged-in user has admin privileges.
+     *
      * @param request The HTTP servlet request containing the session
      * @return True if the user is an admin, false otherwise
      */
@@ -50,11 +56,12 @@ public class SessionUtil {
         Users user = (Users) session.getAttribute("currentUser"); // Retrieve the current user object from session
         return (user != null && "Admin".equalsIgnoreCase(user.getRole())); // Return true if user exists and has "admin" role
     }
-    
+
     /**
      * Checks if the logged-in user has Staff privileges.
+     *
      * @param request The HTTP servlet request containing the session
-     * @return True if the user is an Staff, false otherwise
+     * @return True if the user is an Staff or "Admin", false otherwise
      */
     public static boolean isStaff(HttpServletRequest request) {
         HttpSession session = request.getSession(false); // Get session without creating a new one
@@ -63,6 +70,24 @@ public class SessionUtil {
         }
 
         Users user = (Users) session.getAttribute("currentUser"); // Retrieve the current user object from session
-        return (user != null && "Staff".equalsIgnoreCase(user.getRole())); // Return true if user exists and has "Staff" role
+        return (user != null && ("Staff".equalsIgnoreCase(user.getRole()) || "Admin".equalsIgnoreCase(user.getRole())));
+        // Check if user has "Staff" or "Admin" role
+    }
+    
+    /**
+     * Checks if the logged-in user has Driver privileges.
+     *
+     * @param request The HTTP servlet request containing the session
+     * @return True if the user is an Driver or Staff or "Admin", false otherwise
+     */
+    public static boolean isDriver(HttpServletRequest request) {
+        HttpSession session = request.getSession(false); // Get session without creating a new one
+        if (session == null) {
+            return false; // Return false if no session exists
+        }
+
+        Users user = (Users) session.getAttribute("currentUser"); // Retrieve the current user object from session
+        return (user != null && ("Driver".equalsIgnoreCase(user.getRole()) || "Staff".equalsIgnoreCase(user.getRole()) || "Admin".equalsIgnoreCase(user.getRole())));
+        // Check if user has "Driver" or "Staff" or "Admin" role
     }
 }

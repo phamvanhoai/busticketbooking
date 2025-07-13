@@ -10,6 +10,7 @@ import busticket.model.AdminDrivers;
 import busticket.model.AdminRouteStop;
 import busticket.model.AdminTrips;
 import busticket.model.AdminUsers;
+import busticket.util.SessionUtil;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -37,6 +38,11 @@ public class StaffTripStatusServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Check if the user is an Staff; redirect to home if not
+        if (!SessionUtil.isStaff(request)) {
+            response.sendRedirect(request.getContextPath());
+            return;
+        }
         StaffTripStatusDAO staffTripStatusDAO = new StaffTripStatusDAO();
 
         AdminTripsDAO adminTripsDAO = new AdminTripsDAO();

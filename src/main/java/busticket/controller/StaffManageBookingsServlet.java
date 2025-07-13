@@ -8,9 +8,8 @@ import busticket.DAO.StaffManageBookingDAO;
 import busticket.DAO.StaffRouteDAO;
 import busticket.model.StaffRoute;
 import busticket.model.StaffTicket;
-
+import busticket.util.SessionUtil;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -41,6 +40,12 @@ public class StaffManageBookingsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+        // Check if the user is an Staff; redirect to home if not
+        if (!SessionUtil.isStaff(request)) {
+            response.sendRedirect(request.getContextPath());
+            return;
+        }
         // Retrieve filter parameters from the request
         String q = request.getParameter("q");                 // Search keyword (invoice code or customer name)
         String routeId = request.getParameter("routeId");     // Route filter

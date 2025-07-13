@@ -6,8 +6,8 @@ package busticket.controller;
 
 import busticket.DAO.StaffBookingStatisticsDAO;
 import busticket.model.StaffBookingStatistics;
+import busticket.util.SessionUtil;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServlet;
@@ -18,7 +18,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Cell;
 
 /**
  *
@@ -37,6 +36,11 @@ public class StaffBookingStatisticsExportServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Check if the user is an Staff; redirect to home if not
+        if (!SessionUtil.isStaff(request)) {
+            response.sendRedirect(request.getContextPath());
+            return;
+        }
 
         StaffBookingStatisticsDAO dao = new StaffBookingStatisticsDAO();
         List<StaffBookingStatistics> list = dao.getAllStatsForExport();

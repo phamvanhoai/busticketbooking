@@ -6,16 +6,14 @@ package busticket.controller;
 
 import busticket.DAO.StaffSupportCustomerTripDAO;
 import busticket.model.StaffSupportCustomerTrip;
-import busticket.model.Users;
+import busticket.util.SessionUtil;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -36,6 +34,11 @@ public class StaffSupportCustomerTripServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Check if the user is an Staff; redirect to home if not
+        if (!SessionUtil.isStaff(request)) {
+            response.sendRedirect(request.getContextPath());
+            return;
+        }
         StaffSupportCustomerTripDAO staffSupportCustomerTripDAO = new StaffSupportCustomerTripDAO();
         // *** Read filter & search parameters ***
         String search = request.getParameter("search");

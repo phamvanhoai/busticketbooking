@@ -10,9 +10,8 @@ import busticket.model.StaffBookingStatistics;
 import busticket.model.StaffBookingStatisticsTopDriver;
 import busticket.model.StaffRoute;
 import busticket.model.StaffTopCustomer;
-
+import busticket.util.SessionUtil;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -42,6 +41,11 @@ public class StaffBookingStatisticsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Check if the user is an Staff; redirect to home if not
+        if (!SessionUtil.isStaff(request)) {
+            response.sendRedirect(request.getContextPath());
+            return;
+        }
 
         try {
             // Retrieve query parameters
