@@ -61,7 +61,7 @@
                                         <input type="hidden" name="requestId" value="${req.requestId}" />
                                         <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg mr-2">Approve</button>
                                     </form>
-                                    <form action="StaffSupportDriverTripServlet" method="post" style="display:inline;">
+                                    <form action="${pageContext.request.contextPath}/staff/support-driver-trip" method="post" style="display:inline;">
                                         <input type="hidden" name="action" value="reject" />
                                         <input type="hidden" name="requestId" value="${req.requestId}" />
                                         <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg">Reject</button>

@@ -4,10 +4,15 @@
  */
 package busticket.controller;
 
+import busticket.DAO.DriverRequestTripChangeDAO;
+import busticket.model.DriverAssignedTrip;
+import busticket.model.DriverRequestTripChange;
+import busticket.model.Users;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  *
@@ -19,15 +24,34 @@ public class DriverTripChangeServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Gọi trang request-trip-change.jsp không kèm dữ liệu (vì JSP đã viết cứng option + bảng mẫu)
-        request.getRequestDispatcher("/WEB-INF/driver/trip-change/driver-trip-change.jsp")
+        // Lấy thông tin tài xế từ session
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("currentUser") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        DriverRequestTripChangeDAO driverRequestTripChangeDAO = new DriverRequestTripChangeDAO();
+
+        Users currentUser = (Users) session.getAttribute("currentUser");
+        int userId = currentUser.getUser_id(); // Lấy user_id từ session
+
+        // Lấy danh sách chuyến đi của tài xế
+        List<DriverAssignedTrip> assignedTrips = driverRequestTripChangeDAO.getAssignedTripsForDriver(userId);
+
+        List<DriverRequestTripChange> cancelledTrips = driverRequestTripChangeDAO.getCancelledTripsForDriver(userId);
+        request.setAttribute("cancelledTrips", cancelledTrips);
+
+        // Truyền danh sách chuyến vào JSP
+        request.setAttribute("assignedTrips", assignedTrips);
+        request.getRequestDispatcher("/WEB-INF/driver/request-trip-change.jsp")
                 .forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
     }
 
     @Override

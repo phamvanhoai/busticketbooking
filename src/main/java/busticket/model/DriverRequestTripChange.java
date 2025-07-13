@@ -3,59 +3,29 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package busticket.model;
-import java.util.Date;
+
+import java.sql.Timestamp;
 
 /**
  *
  * @author pc
  */
 public class DriverRequestTripChange {
-
-/**
- * Model đại diện cho bảng Driver_Trip_Change_Request
- * Tương ứng với các cột trong database
- */
-
     private int requestId;
-    private int driverId;
     private int tripId;
-    private Date requestDate;
-    private String changeReason;
-    private String requestStatus;
-    private Integer approvedByDriverId;
-    private Date approvalDate;
+    private String route;
+    private String requestedBy;
+    private String requestReason;
+    private String status;
+    private Timestamp requestDate;
+    private Timestamp approvalDate;
 
-    // Constructor không đối số
-    public DriverRequestTripChange() {
-    }
-
-    // Constructor đầy đủ
-    public DriverRequestTripChange(int requestId, int driverId, int tripId, Date requestDate, String changeReason, String requestStatus, Integer approvedByDriverId, Date approvalDate) {
-        this.requestId = requestId;
-        this.driverId = driverId;
-        this.tripId = tripId;
-        this.requestDate = requestDate;
-        this.changeReason = changeReason;
-        this.requestStatus = requestStatus;
-        this.approvedByDriverId = approvedByDriverId;
-        this.approvalDate = approvalDate;
-    }
-
-    // Getter & Setter
     public int getRequestId() {
         return requestId;
     }
 
     public void setRequestId(int requestId) {
         this.requestId = requestId;
-    }
-
-    public int getDriverId() {
-        return driverId;
-    }
-
-    public void setDriverId(int driverId) {
-        this.driverId = driverId;
     }
 
     public int getTripId() {
@@ -66,61 +36,53 @@ public class DriverRequestTripChange {
         this.tripId = tripId;
     }
 
-    public Date getRequestDate() {
+    public String getRoute() {
+        return route;
+    }
+
+    public void setRoute(String route) {
+        this.route = route;
+    }
+
+    public String getRequestedBy() {
+        return requestedBy;
+    }
+
+    public void setRequestedBy(String requestedBy) {
+        this.requestedBy = requestedBy;
+    }
+
+    public String getRequestReason() {
+        return requestReason;
+    }
+
+    public void setRequestReason(String requestReason) {
+        this.requestReason = requestReason;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Timestamp getRequestDate() {
         return requestDate;
     }
 
-    public void setRequestDate(Date requestDate) {
+    public void setRequestDate(Timestamp requestDate) {
         this.requestDate = requestDate;
     }
 
-    public String getChangeReason() {
-        return changeReason;
-    }
-
-    public void setChangeReason(String changeReason) {
-        this.changeReason = changeReason;
-    }
-
-    public String getRequestStatus() {
-        return requestStatus;
-    }
-
-    public void setRequestStatus(String requestStatus) {
-        this.requestStatus = requestStatus;
-    }
-
-    public Integer getApprovedByDriverId() {
-        return approvedByDriverId;
-    }
-
-    public void setApprovedByDriverId(Integer approvedByDriverId) {
-        this.approvedByDriverId = approvedByDriverId;
-    }
-
-    public Date getApprovalDate() {
+    public Timestamp getApprovalDate() {
         return approvalDate;
     }
 
-    public void setApprovalDate(Date approvalDate) {
+    public void setApprovalDate(Timestamp approvalDate) {
         this.approvalDate = approvalDate;
     }
-
-    @Override
-    public String toString() {
-        return "DriverRequestTripChange{" +
-                "requestId=" + requestId +
-                ", driverId=" + driverId +
-                ", tripId=" + tripId +
-                ", requestDate=" + requestDate +
-                ", changeReason='" + changeReason + '\'' +
-                ", requestStatus='" + requestStatus + '\'' +
-                ", approvedByDriverId=" + approvedByDriverId +
-                ", approvalDate=" + approvalDate +
-                '}';
-    }
+    
+    
 }
-
-
-
-

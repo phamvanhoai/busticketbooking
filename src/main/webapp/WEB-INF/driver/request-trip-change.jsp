@@ -1,0 +1,109 @@
+<%-- 
+    Document   : request-trip-change
+    Created on : Jun 13, 2025, 10:49:13 PM
+    Author     : Pham Van Hoai - CE181744
+--%>
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@include file="/WEB-INF/include/driver/driver-header.jsp" %>
+
+<body class="bg-gray-100 py-10">
+
+    <div class="bg-white p-8 rounded-2xl shadow-lg">
+        <h1 class="text-2xl font-bold text-orange-600 mb-6">Request Cancel Trip</h1>
+
+        <form action="${pageContext.request.contextPath}/driver/request-trip-change" method="post" class="space-y-6">
+            <!-- Chọn chuyến đi -->
+            <div>
+                <label for="tripId" class="block text-sm font-medium text-gray-700 mb-2">Select Trip</label>
+                <select id="tripId" name="tripId" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400">
+                    <option value="">Select a trip</option>
+                    <c:forEach var="trip" items="${assignedTrips}">
+                        <option value="${trip.tripId}">${trip.tripId} - ${trip.route} - ${trip.date} ${trip.time}</option>
+                    </c:forEach>
+                </select>
+            </div>
+
+            <!-- Lý do đổi chuyến -->
+            <div>
+                <label for="reason" class="block text-sm font-medium text-gray-700 mb-2">Reason for change</label>
+                <textarea id="reason" name="reason" rows="4" required
+                          placeholder="Describe the reason for changing the trip..."
+                          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"></textarea>
+            </div>
+
+            <!-- Thao tác -->
+            <div class="flex justify-end gap-4">
+                <button type="reset" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                    Cancel
+                </button>
+                <button type="submit" class="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition">
+                    Submit Request
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="mt-10 px-4">
+        
+        <h1 class="text-3xl font-bold text-orange-600">Cancel Trip Requests</h1><br>
+        <div class="bg-white shadow-md rounded-xl overflow-x-auto">
+
+            <table class="min-w-full text-left">
+                <thead class="bg-orange-100 text-orange-700">
+                    <tr>
+                        <th class="px-4 py-2">Request ID</th>
+                        <th class="px-4 py-2">Trip ID</th>
+                        <th class="px-4 py-2">Route</th>
+                        <th class="px-4 py-2">Requested By</th>
+                        <th class="px-4 py-2">Request Reason</th>
+                        <th class="px-4 py-2">Status</th>
+                        <th class="px-4 py-2">Request Date</th>
+                        <th class="px-4 py-2">Approval Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Duyệt qua danh sách yêu cầu hủy chuyến -->
+                    <c:forEach var="request" items="${cancelledTrips}">
+                        <tr class="border-t hover:bg-gray-50">
+                            <td class="px-4 py-2">${request.requestId}</td>
+                            <td class="px-4 py-2">${request.tripId}</td>
+                            <td class="px-4 py-2">${request.route}</td>
+                            <td class="px-4 py-2">${request.requestedBy}</td>
+                            <td class="px-4 py-2">${request.requestReason}</td>
+                            <td class="px-4 py-2">
+                                <c:choose>
+                                    <c:when test="${request.status == 'Pending'}">
+                                        <span class="text-yellow-500">Pending</span>
+                                    </c:when>
+                                    <c:when test="${request.status == 'Approved'}">
+                                        <span class="text-green-500">Approved</span>
+                                    </c:when>
+                                    <c:when test="${request.status == 'Rejected'}">
+                                        <span class="text-red-500">Rejected</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="text-gray-500">Unknown</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td class="px-4 py-2"><fmt:formatDate value="${request.requestDate}" pattern="yyyy-MM-dd" /></td>
+                            <td class="px-4 py-2"><fmt:formatDate value="${request.approvalDate}" pattern="yyyy-MM-dd" /></td>
+                        </tr>
+                    </c:forEach>
+                </tbody>
+            </table>
+        </div>
+        <!-- Pagination if needed -->
+        <div class="flex justify-center mt-6 space-x-2">
+            <button class="px-4 py-2 bg-white border border-orange-300 rounded hover:bg-orange-50">1</button>
+            <button class="px-4 py-2 bg-orange-500 text-white rounded">2</button>
+            <button class="px-4 py-2 bg-white border border-orange-300 rounded hover:bg-orange-50">3</button>
+        </div>
+    </div>
+    <%-- CONTENT HERE--%>
+
+    <%@include file="/WEB-INF/include/driver/driver-footer.jsp" %>
