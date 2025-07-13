@@ -10,6 +10,7 @@ import busticket.model.AdminLocations;
 import busticket.model.AdminRoutePrice;
 import busticket.model.AdminRouteStop;
 import busticket.model.AdminRoutes;
+import busticket.util.SessionUtil;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -17,15 +18,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.faces.view.Location;
 
 /**
  *
@@ -45,6 +40,13 @@ public class AdminRoutesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+        // Check if the user is an admin; redirect to home if not
+        if (!SessionUtil.isAdmin(request)) {
+            response.sendRedirect(request.getContextPath());
+            return;
+        }
+        
         AdminRoutesDAO adminRoutesDAO = new AdminRoutesDAO();
         HttpSession session = request.getSession(false);
         if (session != null) {

@@ -50,4 +50,19 @@ public class SessionUtil {
         Users user = (Users) session.getAttribute("currentUser"); // Retrieve the current user object from session
         return (user != null && "Admin".equalsIgnoreCase(user.getRole())); // Return true if user exists and has "admin" role
     }
+    
+    /**
+     * Checks if the logged-in user has Staff privileges.
+     * @param request The HTTP servlet request containing the session
+     * @return True if the user is an Staff, false otherwise
+     */
+    public static boolean isStaff(HttpServletRequest request) {
+        HttpSession session = request.getSession(false); // Get session without creating a new one
+        if (session == null) {
+            return false; // Return false if no session exists
+        }
+
+        Users user = (Users) session.getAttribute("currentUser"); // Retrieve the current user object from session
+        return (user != null && "Staff".equalsIgnoreCase(user.getRole())); // Return true if user exists and has "Staff" role
+    }
 }

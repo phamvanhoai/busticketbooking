@@ -11,15 +11,14 @@ import busticket.model.AdminUserDriverLicenseHistory;
 import busticket.model.AdminUsers;
 import busticket.util.InputValidator;
 import busticket.util.PasswordUtils;
+import busticket.util.SessionUtil;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.sql.PreparedStatement;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
-import java.util.Date;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -44,6 +43,11 @@ public class AdminUsersServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        // Check if the user is an admin; redirect to home if not
+        if (!SessionUtil.isAdmin(request)) {
+            response.sendRedirect(request.getContextPath());
+            return;
+        }
         AdminUsersDAO adminUserDAO = new AdminUsersDAO();
 
         String uri = request.getRequestURI();

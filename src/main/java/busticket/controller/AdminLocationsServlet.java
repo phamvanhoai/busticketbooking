@@ -6,6 +6,7 @@ package busticket.controller;
 
 import busticket.DAO.AdminLocationsDAO;
 import busticket.model.AdminLocations;
+import busticket.util.SessionUtil;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -33,6 +34,13 @@ public class AdminLocationsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        // Check if the user is an admin; redirect to home if not
+        if (!SessionUtil.isAdmin(request)) {
+            response.sendRedirect(request.getContextPath());
+            return;
+        }
+
         AdminLocationsDAO adminLocationsDAO = new AdminLocationsDAO();
 
         HttpSession session = request.getSession(false);

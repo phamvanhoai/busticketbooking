@@ -7,8 +7,7 @@ package busticket.controller;
 import busticket.DAO.AdminBusTypesDAO;
 import busticket.model.AdminBusTypes;
 import busticket.model.AdminSeatPosition;
-import busticket.model.AdminSeatTemplate;
-import com.fasterxml.jackson.core.type.TypeReference;
+import busticket.util.SessionUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
@@ -18,15 +17,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -48,6 +42,12 @@ public class AdminBusTypesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+        // Check if the user is an admin; redirect to home if not
+        if (!SessionUtil.isAdmin(request)) {
+            response.sendRedirect(request.getContextPath());
+            return;
+        }
 
         AdminBusTypesDAO adminBusTypesDAO = new AdminBusTypesDAO();
         // Lấy tham số hành động (action)
@@ -139,7 +139,7 @@ public class AdminBusTypesServlet extends HttpServlet {
                 List<AdminSeatPosition> seatsDown = adminBusTypesDAO.getSeatPositionsForBusType(id, "down");
                 List<AdminSeatPosition> seatsUp = adminBusTypesDAO.getSeatPositionsForBusType(id, "up");
 
-// 3. Đưa vào request để JSP dùng JSTL render server-side
+                // 3. Đưa vào request để JSP dùng JSTL render server-side
                 request.setAttribute("busType", busType);
                 request.setAttribute("seatsDown", seatsDown);
                 request.setAttribute("seatsUp", seatsUp);
@@ -147,7 +147,7 @@ public class AdminBusTypesServlet extends HttpServlet {
                 request.setAttribute("seatsDownJson", mapper.writeValueAsString(seatsDown));
                 request.setAttribute("seatsUpJson", mapper.writeValueAsString(seatsUp));
 
-// 4. Đưa cả cấu hình rows/cols/prefix để bảng biết kích thước
+                // 4. Đưa cả cấu hình rows/cols/prefix để bảng biết kích thước
                 request.setAttribute("rowsDown", busType.getRowsDown());
                 request.setAttribute("colsDown", busType.getColsDown());
                 request.setAttribute("prefixDown", busType.getPrefixDown());
@@ -270,7 +270,7 @@ public class AdminBusTypesServlet extends HttpServlet {
                     adminBusTypesDAO.insertSeatPosition(busTypeId, "up", r, c, order++, code);
                 }
 
-                session.setAttribute("success", "Tạo loại xe thành công!");
+                session.setAttribute("success", "Create a successful vehicle!");
 
             } else if ("edit".equals(action)) {
                 // 1. Đọc form
@@ -323,11 +323,11 @@ public class AdminBusTypesServlet extends HttpServlet {
                     adminBusTypesDAO.insertSeatPosition(busTypeId, "up", r, c, order++, code);
                 }
 
-                session.setAttribute("success", "Cập nhật loại xe thành công!");
+                session.setAttribute("success", "Vehicle type updated successfully!");
             } else if ("delete".equals(action)) {
                 int id = Integer.parseInt(request.getParameter("id"));
                 adminBusTypesDAO.deleteBusType(id);
-                session.setAttribute("success", "Xóa loại xe thành công!");
+                session.setAttribute("success", "Vehicle type deleted successfully!");
             }
             // TODO: edit/delete nếu cần
         } catch (Exception ex) {
