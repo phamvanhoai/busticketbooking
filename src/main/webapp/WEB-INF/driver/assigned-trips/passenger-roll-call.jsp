@@ -13,7 +13,6 @@
         <h1 class="text-2xl font-bold text-gray-800 mb-6">Passenger Roll Call</h1>
 
         <!-- Form to submit data -->
-        <!-- Thông báo nếu chuyến đi không phải đang diễn ra -->
         <c:if test="${tripStatus != 'Ongoing'}">
             <div class="bg-yellow-100 text-yellow-800 p-4 rounded-lg mb-4">
                 <c:choose>

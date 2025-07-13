@@ -200,7 +200,7 @@ public class DriverAssignedTripsServlet extends HttpServlet {
             tripId = Integer.parseInt(request.getParameter("tripId"));
         } catch (NumberFormatException e) {
             e.printStackTrace();
-            session.setAttribute("error", "ID chuyến đi không hợp lệ");
+            session.setAttribute("error", "Invalid trip ID");
             response.sendRedirect(request.getContextPath() + "/driver/assigned-trips");
             return;
         }
@@ -265,9 +265,9 @@ public class DriverAssignedTripsServlet extends HttpServlet {
 
         // Thiết lập thông báo
         if (!failedSeats.isEmpty()) {
-            session.setAttribute("error", "Không thể cập nhật trạng thái cho ghế: " + failedSeats + " (yêu cầu check-in trước khi check-out)");
+            session.setAttribute("error", "Unable to update status for seats: " + failedSeats + " (check-in is required before check-out)");
         } else {
-            session.setAttribute("success", "Đã lưu điểm danh thành công!");
+            session.setAttribute("success", "Attendance saved successfully!");
         }
 
         response.sendRedirect(request.getContextPath() + "/driver/assigned-trips");
