@@ -8,9 +8,9 @@ import busticket.DAO.DriverRequestTripChangeDAO;
 import busticket.model.DriverAssignedTrip;
 import busticket.model.DriverRequestTripChange;
 import busticket.model.Users;
+import busticket.util.SessionUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
-
 import java.io.IOException;
 import java.util.List;
 
@@ -26,10 +26,13 @@ public class DriverTripChangeServlet extends HttpServlet {
 
         // Lấy thông tin tài xế từ session
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("currentUser") == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
+        
+        // Check if the user is an Staff; redirect to home if not
+        if (!SessionUtil.isDriver(request)) {
+            response.sendRedirect(request.getContextPath());
             return;
         }
+         
 
         DriverRequestTripChangeDAO driverRequestTripChangeDAO = new DriverRequestTripChangeDAO();
 

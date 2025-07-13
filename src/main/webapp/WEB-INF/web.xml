@@ -136,6 +136,10 @@
         <servlet-name>ScheduleServlet</servlet-name>
         <servlet-class>busticket.controller.ScheduleServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>SearchTicketServlet</servlet-name>
+        <servlet-class>busticket.controller.SearchTicketServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
         <url-pattern>/admin/dashboard</url-pattern>
@@ -272,6 +276,10 @@
     <servlet-mapping>
         <servlet-name>ScheduleServlet</servlet-name>
         <url-pattern>/schedule</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SearchTicketServlet</servlet-name>
+        <url-pattern>/search-ticket</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

@@ -8,6 +8,7 @@ import busticket.DAO.DriverAssignedTripsDAO;
 import busticket.model.DriverAssignedTrip;
 import busticket.model.DriverPassenger;
 import busticket.model.Users;
+import busticket.util.SessionUtil;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -44,8 +45,10 @@ public class DriverAssignedTripsServlet extends HttpServlet {
         // Get driver_id from session or request
         // Lấy thông tin người dùng từ session
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("currentUser") == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
+        
+        // Check if the user is an Staff; redirect to home if not
+        if (!SessionUtil.isDriver(request)) {
+            response.sendRedirect(request.getContextPath());
             return;
         }
 

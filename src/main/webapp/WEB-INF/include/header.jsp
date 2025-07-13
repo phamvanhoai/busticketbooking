@@ -29,7 +29,7 @@
                 <nav class="flex gap-6 text-sm font-medium">
                     <a href="${pageContext.servletContext.contextPath}/" class="hover:underline">Home</a>
                     <a href="${pageContext.servletContext.contextPath}/schedule" class="hover:underline">Schedule</a>
-                    <a href="#" class="hover:underline">Manage Booking</a>
+                    <a href="${pageContext.servletContext.contextPath}/search-ticket" class="hover:underline">Search Ticket</a>
                     <a href="#" class="hover:underline">Invoice</a>
                     <a href="#" class="hover:underline">Contact</a>
 
