@@ -8,6 +8,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fbus" uri="/WEB-INF/tags/implicit.tld" %>
 <%@include file="/WEB-INF/include/driver/driver-header.jsp" %>
 
 <body class="bg-gray-100 py-10">
@@ -15,7 +16,23 @@
     <div class="bg-white p-8 rounded-2xl shadow-lg">
         <h1 class="text-2xl font-bold text-orange-600 mb-6">Request Cancel Trip</h1>
 
-        <form action="${pageContext.request.contextPath}/driver/request-trip-change" method="post" class="space-y-6">
+        <!-- Display error messages if there are any -->
+        <c:choose>
+            <c:when test="${not empty success}">
+                <div class="bg-green-100 text-green-700 p-4 rounded mb-4">
+                    ${success}
+                </div>
+                <c:remove var="success" scope="session"/>
+            </c:when>
+            <c:when test="${not empty error}">
+                <div class="bg-red-100 text-red-700 p-4 rounded mb-4">
+                    ${error}
+                </div>
+                <c:remove var="error" scope="session"/>
+            </c:when>
+        </c:choose>
+
+        <form action="${pageContext.request.contextPath}/driver/trip-change" method="post" class="space-y-6">
             <!-- Chọn chuyến đi -->
             <div>
                 <label for="tripId" class="block text-sm font-medium text-gray-700 mb-2">Select Trip</label>
@@ -48,7 +65,7 @@
     </div>
 
     <div class="mt-10 px-4">
-        
+
         <h1 class="text-3xl font-bold text-orange-600">Cancel Trip Requests</h1><br>
         <div class="bg-white shadow-md rounded-xl overflow-x-auto">
 
@@ -58,7 +75,6 @@
                         <th class="px-4 py-2">Request ID</th>
                         <th class="px-4 py-2">Trip ID</th>
                         <th class="px-4 py-2">Route</th>
-                        <th class="px-4 py-2">Requested By</th>
                         <th class="px-4 py-2">Request Reason</th>
                         <th class="px-4 py-2">Status</th>
                         <th class="px-4 py-2">Request Date</th>
@@ -72,7 +88,6 @@
                             <td class="px-4 py-2">${request.requestId}</td>
                             <td class="px-4 py-2">${request.tripId}</td>
                             <td class="px-4 py-2">${request.route}</td>
-                            <td class="px-4 py-2">${request.requestedBy}</td>
                             <td class="px-4 py-2">${request.requestReason}</td>
                             <td class="px-4 py-2">
                                 <c:choose>
@@ -99,10 +114,12 @@
         </div>
         <!-- Pagination if needed -->
         <div class="flex justify-center mt-6 space-x-2">
-            <button class="px-4 py-2 bg-white border border-orange-300 rounded hover:bg-orange-50">1</button>
-            <button class="px-4 py-2 bg-orange-500 text-white rounded">2</button>
-            <button class="px-4 py-2 bg-white border border-orange-300 rounded hover:bg-orange-50">3</button>
+            <fbus:adminpagination 
+                currentPage="${currentPage}" 
+                totalPages="${totalPages}" 
+                url="${baseUrl}" />
         </div>
+
     </div>
     <%-- CONTENT HERE--%>
 
