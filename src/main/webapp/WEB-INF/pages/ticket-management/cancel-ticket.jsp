@@ -35,6 +35,8 @@
 
             <!-- Cancellation Reason -->
             <form action="${pageContext.request.contextPath}/ticket-management" method="post">
+                
+                <input type="hidden" name="action" value="cancel" />
                 <div class="my-6">
                     <label for="reason" class="block text-gray-800 font-medium mb-2">Reason for Cancellation</label>
                     <textarea id="reason" name="reason" rows="4" class="w-full border rounded-xl p-4 text-gray-800" placeholder="Provide a reason for cancellation..."></textarea>
