@@ -13,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import busticket.model.Tickets;
 
 /**
  *
@@ -223,7 +224,7 @@ public class TicketManagementDAO extends DBContext {
     public Invoices getInvoiceById(int invoiceId) {
         Invoices invoice = null;
         String sql = "SELECT i.invoice_id, i.invoice_code, i.invoice_total_amount, "
-                + "i.payment_method, i.invoice_full_name, i.invoice_status, i.paid_at, "
+                + "i.payment_method, i.invoice_full_name, i.invoice_phone, i.invoice_status, i.paid_at, "
                 + "CONCAT(ls.location_name, N' → ', le.location_name) AS route, "
                 + "tr.departure_time "
                 + "FROM Invoices i "
@@ -250,6 +251,7 @@ public class TicketManagementDAO extends DBContext {
                     invoice.setPaidAt(rs.getTimestamp("paid_at"));
                     invoice.setRoute(rs.getString("route"));
                     invoice.setCustomerName(rs.getString("invoice_full_name"));
+                    invoice.setCustomerPhone(rs.getString("invoice_phone"));
                     invoice.setDepartureTime(rs.getTimestamp("departure_time"));
                 }
             }
@@ -346,5 +348,33 @@ public class TicketManagementDAO extends DBContext {
             return false;
         }
     }
+
+    public List<Tickets> getTicketsByInvoice(int invoiceId) throws SQLException {
+    List<Tickets> ticketList = new ArrayList<>();
+    String sql = "SELECT t.ticket_id, t.ticket_code, t.ticket_status, ts.seat_number, tr.departure_time "
+               + "FROM Tickets t "
+               + "JOIN Ticket_Seat ts ON t.ticket_id = ts.ticket_id "
+               + "JOIN Trips tr ON t.trip_id = tr.trip_id "
+               + "JOIN Invoice_Items ii ON t.ticket_id = ii.ticket_id "
+               + "WHERE ii.invoice_id = ?";  // Sử dụng Invoice_Items để liên kết vé và hóa đơn
+
+    try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, invoiceId); // Set invoiceId thay vì tìm theo ticket_id
+
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Tickets ticket = new Tickets();
+                ticket.setTicketId(rs.getInt("ticket_id"));
+                ticket.setTicketCode(rs.getString("ticket_code"));
+                ticket.setTicketStatus(rs.getString("ticket_status"));
+                ticket.setSeatNumber(rs.getString("seat_number"));
+                ticket.setDepartureTime(rs.getTimestamp("departure_time"));
+                ticketList.add(ticket);
+            }
+        }
+    }
+    return ticketList;
+}
+
 
 }

@@ -203,12 +203,6 @@ public class BookTicketServlet extends HttpServlet {
                 return;
             }
 
-            if (SessionUtil.isAdmin(request)) {
-                request.getSession().setAttribute("error", "Only customer accounts can book tickets.");
-                response.sendRedirect(request.getContextPath() + "/view-trips");
-                return;
-            }
-
             Users users = (Users) session.getAttribute("currentUser");
             int userId = users.getUser_id();
 
@@ -332,7 +326,7 @@ public class BookTicketServlet extends HttpServlet {
                     BigDecimal totalAmount = trip.getPrice().multiply(new BigDecimal(seatArray.length));
 
                     // Insert invoice
-                    int invoiceId = dao.insertInvoice(userId, totalAmount, paymentMethod != null ? paymentMethod : "FPTUPay", fullName, phone, email);
+                    int invoiceId = dao.insertInvoice(userId, totalAmount, paymentMethod != null ? paymentMethod : "FPTUPay", fullName, email, phone);
 
                     // Insert each invoice item for each ticket with the correct price
                     dao.insertInvoiceItem(invoiceId, ticketIds, trip, ticketPrices);
@@ -343,8 +337,8 @@ public class BookTicketServlet extends HttpServlet {
                     // Prepare booking request for display
                     BookingRequest booking = new BookingRequest();
                     booking.setFullName(fullName);
-                    booking.setPhoneNumber(phone);
                     booking.setEmail(email);
+                    booking.setPhoneNumber(phone);
                     booking.setSeatCodes(Arrays.asList(seatArray));
 
                     long now = System.currentTimeMillis();

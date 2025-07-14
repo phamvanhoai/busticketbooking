@@ -95,7 +95,7 @@
 
                     <c:forEach var="invoice" items="${invoicesList}">
                         <tr class="border-t hover:bg-gray-50">
-                            <td class="px-4 py-2">${invoice.invoiceCode}</td>
+                            <td class="px-4 py-2"><a href="${pageContext.servletContext.contextPath}/ticket-management?detail=${invoice.invoiceId}">${invoice.invoiceCode}</a></td>
                             <td class="px-4 py-2">${invoice.ticketCount}</td>
                             <td class="px-4 py-2">${invoice.route}</td>
                             <td class="px-4 py-2">${invoice.departureTime}</td> 

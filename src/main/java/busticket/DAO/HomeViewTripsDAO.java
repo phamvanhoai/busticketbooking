@@ -69,10 +69,11 @@ public class HomeViewTripsDAO extends DBContext {
                 + "FROM Trips t "
                 + "  JOIN Routes r ON t.route_id = r.route_id "
                 + "  JOIN Locations ls ON r.start_location_id = ls.location_id "
-                + "  JOIN Locations le ON r.end_location_id   = le.location_id "
+                + "  JOIN Locations le ON r.end_location_id = le.location_id "
                 + "  JOIN Buses b    ON t.bus_id   = b.bus_id "
                 + "  JOIN Bus_Types bt ON b.bus_type_id = bt.bus_type_id "
-                + "WHERE t.departure_time > GETDATE()"
+                + "WHERE t.departure_time > GETDATE() "
+                + "  AND t.trip_status = 'Scheduled'" // Thêm điều kiện lọc trạng thái
         );
         if (origin != null) {
             sql.append(" AND ls.location_name = ?");
@@ -158,7 +159,8 @@ public class HomeViewTripsDAO extends DBContext {
                 + "JOIN Locations le ON r.end_location_id = le.location_id "
                 + "JOIN Buses b ON t.bus_id = b.bus_id "
                 + "JOIN Bus_Types bt ON b.bus_type_id = bt.bus_type_id "
-                + "WHERE t.departure_time > GETDATE()"
+                + "WHERE t.departure_time > GETDATE() "
+                + "  AND t.trip_status = 'Scheduled'" // Thêm điều kiện lọc trạng thái
         );
         if (origin != null) {
             sql.append(" AND ls.location_name = ?");

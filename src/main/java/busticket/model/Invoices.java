@@ -23,6 +23,7 @@ public class Invoices {
     private String route;
     private Timestamp departureTime;
     private String customerName; // Thông tin khách hàng
+    private String customerPhone;
     private Integer reviewRating;
     private String reviewText;
     private boolean reviewed; // ✅ Đánh giá: đã review hay chưa
@@ -53,6 +54,16 @@ public class Invoices {
     }
 
     // Getter/Setter
+
+    public String getCustomerPhone() {
+        return customerPhone;
+    }
+
+    public void setCustomerPhone(String customerPhone) {
+        this.customerPhone = customerPhone;
+    }
+    
+    
     public Integer getReviewRating() {
         return reviewRating;
     }

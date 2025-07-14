@@ -19,6 +19,8 @@ public class Tickets {
     private Timestamp checkIn;
     private Timestamp checkOut;
     private String ticketCode;
+    private String seatNumber;
+    private Timestamp departureTime;
     private int pickupLocationId;
     private int dropoffLocationId;
 
@@ -35,6 +37,22 @@ public class Tickets {
         this.ticketCode = ticketCode;
         this.pickupLocationId = pickupLocationId;
         this.dropoffLocationId = dropoffLocationId;
+    }
+
+    public String getSeatNumber() {
+        return seatNumber;
+    }
+
+    public void setSeatNumber(String seatNumber) {
+        this.seatNumber = seatNumber;
+    }
+
+    public Timestamp getDepartureTime() {
+        return departureTime;
+    }
+
+    public void setDepartureTime(Timestamp departureTime) {
+        this.departureTime = departureTime;
     }
 
     public int getTicketId() {

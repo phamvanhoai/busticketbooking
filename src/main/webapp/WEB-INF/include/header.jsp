@@ -58,14 +58,14 @@
                     <c:when test="${not empty user}">
                         <!-- Admin Panel Link -->
                         <c:if test="${user.role eq 'Admin'}">
-                            <a href="${pageContext.servletContext.contextPath}/admin/dashboard" class="nav-link">
+                            <a href="${pageContext.servletContext.contextPath}/admin/users" class="nav-link">
                                 <span>Admin Panel</span>
                             </a>
                         </c:if>
 
                         <!-- Staff Panel Link -->
                         <c:if test="${user.role eq 'Staff'}">
-                            <a href="${pageContext.servletContext.contextPath}/staff/dashboard" class="nav-link">
+                            <a href="${pageContext.servletContext.contextPath}/staff/booking-statistics" class="nav-link">
                                 <span>Staff Dashboard</span>
                             </a>
                         </c:if>

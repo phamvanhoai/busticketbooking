@@ -7,6 +7,7 @@ package busticket.controller;
 import busticket.DAO.TicketManagementDAO;
 import busticket.model.Invoices;
 import busticket.model.Review;
+import busticket.model.Tickets;
 import busticket.model.Users;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -19,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sun.security.krb5.internal.Ticket;
 
 /**
  *
@@ -46,11 +48,11 @@ public class TicketManagementServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/login");
                 return;
             }
-            
+
             Users users = (Users) session.getAttribute("currentUser");
             int userId = users.getUser_id();
             TicketManagementDAO ticketManagementDAO = new TicketManagementDAO();
-            
+
             // Get messages from session (if any)
             Object success = session.getAttribute("successMessage");
             Object error = session.getAttribute("errorMessage");
@@ -62,23 +64,23 @@ public class TicketManagementServlet extends HttpServlet {
                 request.setAttribute("errorMessage", error);
                 session.removeAttribute("errorMessage");
             }
-            
+
             String cancel = request.getParameter("cancel");
             if (cancel != null) {
                 try {
                     int invoiceId = Integer.parseInt(cancel);
                     Invoices invoice = ticketManagementDAO.getInvoiceById(invoiceId);
-                    
+
                     if (invoice != null) {
                         // Get departure time of the trip
                         Date departureTime = invoice.getDepartureTime();
-                        
+
                         if (departureTime != null) {
                             // Check if departure time is within 24 hours
                             long currentTime = System.currentTimeMillis();
                             long departureTimeMillis = departureTime.getTime();
                             long differenceInMillis = departureTimeMillis - currentTime;
-                            
+
                             // Check if the departure time is within 24 hours (24 * 60 * 60 * 1000 = 86400000 ms)
                             if (differenceInMillis <= 86400000) {
                                 session.setAttribute("errorMessage", "Tickets can only be canceled 24 hours before departure.");
@@ -86,13 +88,13 @@ public class TicketManagementServlet extends HttpServlet {
                                 return;
                             }
                         }
-                        
+
                         // If not within 24 hours, proceed to cancel the ticket
                         request.setAttribute("invoice", invoice);
                         request.getRequestDispatcher("/WEB-INF/pages/ticket-management/cancel-ticket.jsp")
                                 .forward(request, response);
                         return;
-                        
+
                     } else {
                         session.setAttribute("errorMessage", "Invoice not found!");
                         response.sendRedirect(request.getContextPath() + "/ticket-management");
@@ -104,20 +106,20 @@ public class TicketManagementServlet extends HttpServlet {
                     return;
                 }
             }
-            
+
             String review = request.getParameter("review");
             if (review != null) {
                 try {
                     int invoiceId = Integer.parseInt(review);
                     Invoices invoice = ticketManagementDAO.getInvoiceById(invoiceId);
-                    
+
                     if (invoice != null) {
                         Date now = new Date();
-                        
+
                         if ("Paid".equalsIgnoreCase(invoice.getInvoiceStatus())
                                 && invoice.getDepartureTime() != null
                                 && !invoice.getDepartureTime().after(now)) {
-                            
+
                             Review reviewObj = ticketManagementDAO.getReviewByInvoiceId(invoiceId);
                             if (reviewObj != null) {
                                 invoice.setReviewRating(reviewObj.getRating());
@@ -127,7 +129,7 @@ public class TicketManagementServlet extends HttpServlet {
                             request.getRequestDispatcher("/WEB-INF/pages/ticket-management/review-booking.jsp")
                                     .forward(request, response);
                             return;
-                            
+
                         } else {
                             session.setAttribute("errorMessage", "The trip is not completed. Cannot review!");
                             response.sendRedirect(request.getContextPath() + "/ticket-management");
@@ -139,21 +141,45 @@ public class TicketManagementServlet extends HttpServlet {
                         response.sendRedirect(request.getContextPath() + "/ticket-management");
                         return;
                     }
-                    
+
                 } catch (NumberFormatException e) {
                     session.setAttribute("errorMessage", "Invalid invoice ID format!");
                     response.sendRedirect(request.getContextPath() + "/ticket-management");
                     return;
                 }
             }
-            
+
+            String detail = request.getParameter("detail");
+            if (detail != null) {
+                try {
+                    int invoiceId = Integer.parseInt(detail);
+                    Invoices invoice = ticketManagementDAO.getInvoiceById(invoiceId);
+
+                    if (invoice != null) {
+                        // Fetch tickets related to the invoice
+                        List<Tickets> tickets = ticketManagementDAO.getTicketsByInvoice(invoiceId);
+                        request.setAttribute("invoice", invoice);
+                        request.setAttribute("tickets", tickets);
+                        request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-booking-details.jsp")
+                                .forward(request, response);
+                        return;
+                    } else {
+                        session.setAttribute("errorMessage", "Invoice not found!");
+                        response.sendRedirect(request.getContextPath() + "/ticket-management");
+                    }
+                } catch (NumberFormatException e) {
+                    session.setAttribute("errorMessage", "Invalid invoice ID format!");
+                    response.sendRedirect(request.getContextPath() + "/ticket-management");
+                }
+            }
+
             // Default logic: list bookings with filters & pagination
             String ticketCode = request.getParameter("ticketCode");
             String route = request.getParameter("route");
             String status = request.getParameter("status");
             int currentPage = 1;
             int recordsPerPage = 10;
-            
+
             if (request.getParameter("page") != null) {
                 try {
                     currentPage = Integer.parseInt(request.getParameter("page"));
@@ -162,15 +188,15 @@ public class TicketManagementServlet extends HttpServlet {
                 }
             }
             int offset = (currentPage - 1) * recordsPerPage;
-            
+
             List<String> locations = ticketManagementDAO.getAllLocations();
             List<Invoices> invoicesList = ticketManagementDAO.getAllInvoices(userId, ticketCode, route, status, offset, recordsPerPage);
             int totalRecords = ticketManagementDAO.getTotalInvoicesCount(userId, ticketCode, route, status);
             int totalPages = (int) Math.ceil((double) totalRecords / recordsPerPage);
-            
+
             Date now = new Date();
             request.setAttribute("now", now);
-            
+
             request.setAttribute("invoicesList", invoicesList);
             request.setAttribute("locations", locations);
             request.setAttribute("ticketCode", ticketCode);
@@ -178,7 +204,7 @@ public class TicketManagementServlet extends HttpServlet {
             request.setAttribute("status", status);
             request.setAttribute("currentPage", currentPage);
             request.setAttribute("totalPages", totalPages);
-            
+
             request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp")
                     .forward(request, response);
         } catch (SQLException ex) {
