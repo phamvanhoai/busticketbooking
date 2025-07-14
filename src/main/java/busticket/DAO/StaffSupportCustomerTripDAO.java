@@ -9,6 +9,7 @@ import busticket.model.StaffSupportCustomerTrip;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -133,13 +134,84 @@ public class StaffSupportCustomerTripDAO extends DBContext {
      * Approved thì đánh dấu hoá đơn là Cancelled, nếu Rejected thì đánh dấu hoá
      * đơn về Paid.
      */
+//    public void updateStatus(int requestId, String newStatus, int staffId) {
+//        Connection conn = null;
+//        try {
+//            conn = getConnection();
+//            conn.setAutoCommit(false);
+//
+//            // 1) Cập nhật request
+//            String sql1 = "UPDATE Invoice_Cancel_Requests "
+//                    + "SET request_status = ?, approved_by_staff_id = ?, approval_date = GETDATE() "
+//                    + "WHERE request_id = ?";
+//            try ( PreparedStatement ps1 = conn.prepareStatement(sql1)) {
+//                ps1.setString(1, newStatus);
+//                ps1.setInt(2, staffId);
+//                ps1.setInt(3, requestId);
+//                ps1.executeUpdate();
+//            }
+//
+//            // 2) Cập nhật status của Invoice
+//            if ("Approved".equalsIgnoreCase(newStatus)) {
+//                String sql2 = "UPDATE Invoices "
+//                        + "SET invoice_status = 'Cancelled' "
+//                        + "WHERE invoice_id = ("
+//                        + "  SELECT invoice_id FROM Invoice_Cancel_Requests WHERE request_id = ?"
+//                        + ")";
+//                try ( PreparedStatement ps2 = conn.prepareStatement(sql2)) {
+//                    ps2.setInt(1, requestId);
+//                    ps2.executeUpdate();
+//                }
+//
+//            } else if ("Rejected".equalsIgnoreCase(newStatus)) {
+//                String sql3 = "UPDATE Invoices "
+//                        + "SET invoice_status = 'Paid' "
+//                        + "WHERE invoice_id = ("
+//                        + "  SELECT invoice_id FROM Invoice_Cancel_Requests WHERE request_id = ?"
+//                        + ")";
+//                try ( PreparedStatement ps3 = conn.prepareStatement(sql3)) {
+//                    ps3.setInt(1, requestId);
+//                    ps3.executeUpdate();
+//                }
+//            }
+//
+//            conn.commit();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            if (conn != null) {
+//                try {
+//                    conn.rollback();
+//                } catch (Exception ex) {
+//                    ex.printStackTrace();
+//                }
+//            }
+//        } finally {
+//            if (conn != null) {
+//                try {
+//                    conn.setAutoCommit(true);
+//                    conn.close();
+//                } catch (Exception ex) {
+//                    ex.printStackTrace();
+//                }
+//            }
+//        }
+//    }
+    /**
+     * Updates the status (Approved/Rejected) of an invoice cancellation
+     * request. If Approved, marks the invoice as Cancelled and logs seat
+     * cancellations in Seat_History. If Rejected, marks the invoice as Paid.
+     *
+     * @param requestId the ID of the cancellation request
+     * @param newStatus the new status ("Approved" or "Rejected")
+     * @param staffId the ID of the staff processing the request
+     */
     public void updateStatus(int requestId, String newStatus, int staffId) {
         Connection conn = null;
         try {
             conn = getConnection();
-            conn.setAutoCommit(false);
+            conn.setAutoCommit(false); // Start transaction
 
-            // 1) Cập nhật request
+            // 1) Update the request status
             String sql1 = "UPDATE Invoice_Cancel_Requests "
                     + "SET request_status = ?, approved_by_staff_id = ?, approval_date = GETDATE() "
                     + "WHERE request_id = ?";
@@ -150,8 +222,9 @@ public class StaffSupportCustomerTripDAO extends DBContext {
                 ps1.executeUpdate();
             }
 
-            // 2) Cập nhật status của Invoice
+            // 2) Update the invoice status
             if ("Approved".equalsIgnoreCase(newStatus)) {
+                // Change invoice status to 'Cancelled'
                 String sql2 = "UPDATE Invoices "
                         + "SET invoice_status = 'Cancelled' "
                         + "WHERE invoice_id = ("
@@ -162,34 +235,52 @@ public class StaffSupportCustomerTripDAO extends DBContext {
                     ps2.executeUpdate();
                 }
 
+                // 3) Insert into Seat_History from Ticket_Seat via Invoice_Items
+                String sql3 = "INSERT INTO Seat_History (ticket_id, history_seat_number, trip_id, "
+                        + "history_previous_status, history_current_status, history_changed_at, history_change_reason, invoice_id) "
+                        + "SELECT ts.ticket_id, ts.seat_number, t.trip_id, 'Booked', 'Cancelled', GETDATE(), 'Invoice Cancelled', ii.invoice_id "
+                        + "FROM Ticket_Seat ts "
+                        + "JOIN Tickets t ON ts.ticket_id = t.ticket_id "
+                        + "JOIN Invoice_Items ii ON t.ticket_id = ii.ticket_id "
+                        + "WHERE ii.invoice_id = (SELECT invoice_id FROM Invoice_Cancel_Requests WHERE request_id = ?)";
+                try ( PreparedStatement ps3 = conn.prepareStatement(sql3)) {
+                    ps3.setInt(1, requestId);
+                    int rowsAffected = ps3.executeUpdate();
+                    if (rowsAffected == 0) {
+                        throw new SQLException("No seats found for the invoice to log in Seat_History.");
+                    }
+                }
+
             } else if ("Rejected".equalsIgnoreCase(newStatus)) {
-                String sql3 = "UPDATE Invoices "
+                // Change invoice status to 'Paid'
+                String sql4 = "UPDATE Invoices "
                         + "SET invoice_status = 'Paid' "
                         + "WHERE invoice_id = ("
                         + "  SELECT invoice_id FROM Invoice_Cancel_Requests WHERE request_id = ?"
                         + ")";
-                try ( PreparedStatement ps3 = conn.prepareStatement(sql3)) {
-                    ps3.setInt(1, requestId);
-                    ps3.executeUpdate();
+                try ( PreparedStatement ps4 = conn.prepareStatement(sql4)) {
+                    ps4.setInt(1, requestId);
+                    ps4.executeUpdate();
                 }
             }
 
-            conn.commit();
-        } catch (Exception e) {
+            conn.commit(); // Commit transaction
+        } catch (SQLException e) {
             e.printStackTrace();
             if (conn != null) {
                 try {
-                    conn.rollback();
-                } catch (Exception ex) {
+                    conn.rollback(); // Rollback in case of error
+                } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
             }
+            throw new RuntimeException("Failed to update cancellation request status: " + e.getMessage(), e);
         } finally {
             if (conn != null) {
                 try {
-                    conn.setAutoCommit(true);
+                    conn.setAutoCommit(true); // Restore auto-commit
                     conn.close();
-                } catch (Exception ex) {
+                } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
             }
