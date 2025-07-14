@@ -62,12 +62,12 @@
                     <div class="w-full space-y-6">
                         <div class="text-xs text-gray-200 px-2 uppercase">Main</div>
                         <div class="flex flex-col gap-4">
-                            <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("dashboard.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
+<!--                            <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("dashboard.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
                                 <a href="${pageContext.servletContext.contextPath}/admin/dashboard">
                                     <span class="text-base"><i class="fas fa-tachometer-alt"></i></span>
                                     <span>Dashboard</span>
                                 </a>
-                            </div>
+                            </div>-->
                             <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("users.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
                                 <a href="${pageContext.servletContext.contextPath}/admin/users">
                                     <span class="text-base"><i class="fas fa-trophy"></i></span>
@@ -104,12 +104,12 @@
                                     <span>Manage Bus Types</span>
                                 </a>
                             </div>
-                            <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("view-statistics.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
+<!--                            <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("view-statistics.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
                                 <a href="${pageContext.servletContext.contextPath}/admin/statistics">
                                     <span class="text-base"><i class="fas fa-table"></i></span>
                                     <span>Statistic</span>
                                 </a>
-                            </div>
+                            </div>-->
                         </div>
 
 
@@ -139,8 +139,8 @@
                             <select id="panelSelector" class="bg-[#F7F6F3] text-sm text-gray-600 placeholder:text-gray-400 px-4 py-3 rounded-xl shadow-sm border border-gray-300 focus:outline-none">
                                 <option value="">Select Panel</option>
                                 <option value="${pageContext.servletContext.contextPath}/">Home Panel</option>
-                                <option value="${pageContext.servletContext.contextPath}/admin/dashboard">Admin Panel</option>
-                                <option value="${pageContext.servletContext.contextPath}/staff/dashboard">Staff Panel</option>
+                                <option value="${pageContext.servletContext.contextPath}/admin/users">Admin Panel</option>
+                                <option value="${pageContext.servletContext.contextPath}/staff/booking-statistics">Staff Panel</option>
                                 <option value="${pageContext.servletContext.contextPath}/driver/dashboard">Driver Panel</option>
                             </select>
 

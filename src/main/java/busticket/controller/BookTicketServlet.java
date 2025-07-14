@@ -5,15 +5,14 @@
 package busticket.controller;
 
 import busticket.DAO.BookingDAO;
-import busticket.DAO.HomeViewTripsDAO;
 import busticket.model.AdminRouteStop;
 import busticket.model.AdminSeatPosition;
 import busticket.model.BookingRequest;
 import busticket.model.HomeTrip;
 import busticket.model.Tickets;
 import busticket.model.Users;
+import busticket.util.SessionUtil;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,8 +24,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -51,6 +48,12 @@ public class BookTicketServlet extends HttpServlet {
         if (session == null || session.getAttribute("currentUser") == null) {
             request.setAttribute("errorMessage", "Please log in.");
             response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        if (SessionUtil.isDriver(request)) {
+            request.getSession().setAttribute("error", "Only customer accounts can book tickets.");
+            response.sendRedirect(request.getContextPath() + "/view-trips");
             return;
         }
 
@@ -197,6 +200,12 @@ public class BookTicketServlet extends HttpServlet {
             if (session == null || session.getAttribute("currentUser") == null) {
                 request.setAttribute("errorMessage", "Please log in.");
                 response.sendRedirect(request.getContextPath() + "/login");
+                return;
+            }
+
+            if (SessionUtil.isAdmin(request)) {
+                request.getSession().setAttribute("error", "Only customer accounts can book tickets.");
+                response.sendRedirect(request.getContextPath() + "/view-trips");
                 return;
             }
 

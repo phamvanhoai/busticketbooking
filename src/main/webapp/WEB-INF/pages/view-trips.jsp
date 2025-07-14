@@ -254,7 +254,8 @@
                                     <button data-tab="schedule" class="px-3 py-1 hover:text-orange-500">Schedule</button>
                                     <button data-tab="trans"    class="px-3 py-1 hover:text-orange-500">Transshipment</button>
                                     <button data-tab="policy"   class="px-3 py-1 hover:text-orange-500">Policy</button>
-                                    <button class="ml-auto px-4 py-1 bg-orange-100 text-orange-600 rounded-full text-sm">Select trip</button>
+                                    <a href="${pageContext.servletContext.contextPath}/book-ticket?tripId=${trip.tripId}">
+                                        <button class="ml-auto px-4 py-1 bg-orange-100 text-orange-600 rounded-full text-sm">Select trip</button></a>
     
 
                                 </div>
@@ -286,9 +287,9 @@
                                     </div>
 
                                     <!-- Choose button -->
-                                    <button class="choose-btn mt-4 bg-orange-500 text-white px-8 py-2 rounded-full disabled:opacity-50" disabled>
+                                    <a href="${pageContext.servletContext.contextPath}/book-ticket?tripId=${trip.tripId}"><button class="choose-btn mt-4 bg-orange-500 text-white px-8 py-2 rounded-full disabled:opacity-50" disabled>
                                         Choose
-                                    </button>
+                                        </button></a>
                                 </div>
 
                                 <div class="tab-content hidden p-4 border-t" data-content="schedule">
