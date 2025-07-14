@@ -20,7 +20,7 @@ import java.util.List;
  */
 public class TicketManagementDAO extends DBContext {
 
-    public List<Invoices> getAllInvoices(String ticketCode, String route, String status, int offset, int limit) {
+    public List<Invoices> getAllInvoices(int userId, String ticketCode, String route, String status, int offset, int limit) throws SQLException {
         List<Invoices> invoicesList = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
                 "SELECT i.invoice_id, i.invoice_code, i.invoice_total_amount, "
@@ -40,17 +40,16 @@ public class TicketManagementDAO extends DBContext {
                 + "JOIN Locations le ON r.end_location_id = le.location_id "
                 + "JOIN Users u ON i.user_id = u.user_id "
                 + "LEFT JOIN Invoice_Reviews ir ON i.invoice_id = ir.invoice_id "
-                + "WHERE 1=1 "
+                + "WHERE i.user_id = ?"
         );
 
-        // Lọc dữ liệu theo các tham số
-        if (ticketCode != null && !ticketCode.isEmpty()) {
+        if (ticketCode != null && !ticketCode.trim().isEmpty()) {
             sql.append(" AND i.invoice_code LIKE ?");
         }
-        if (route != null && !route.isEmpty()) {
-            sql.append(" AND (ls.location_name + ' → ' + le.location_name) LIKE ?");
+        if (route != null && !route.trim().isEmpty()) {
+            sql.append(" AND (ls.location_name + N' → ' + le.location_name) LIKE ?");
         }
-        if (status != null && !status.isEmpty()) {
+        if (status != null && !status.trim().isEmpty()) {
             sql.append(" AND i.invoice_status = ?");
         }
 
@@ -62,13 +61,14 @@ public class TicketManagementDAO extends DBContext {
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             int idx = 1;
-            if (ticketCode != null && !ticketCode.isEmpty()) {
+            ps.setInt(idx++, userId);
+            if (ticketCode != null && !ticketCode.trim().isEmpty()) {
                 ps.setString(idx++, "%" + ticketCode + "%");
             }
-            if (route != null && !route.isEmpty()) {
+            if (route != null && !route.trim().isEmpty()) {
                 ps.setString(idx++, "%" + route + "%");
             }
-            if (status != null && !status.isEmpty()) {
+            if (status != null && !status.trim().isEmpty()) {
                 ps.setString(idx++, status);
             }
             ps.setInt(idx++, offset);
@@ -85,26 +85,21 @@ public class TicketManagementDAO extends DBContext {
                     invoice.setTicketCount(rs.getInt("ticket_count"));
                     invoice.setRoute(rs.getString("route"));
                     invoice.setDepartureTime(rs.getTimestamp("departure_time"));
-                    invoice.setCustomerName(rs.getString("customer_name"));// Gán departureTime cho invoice
-                    invoicesList.add(invoice);
-                    invoice.setReviewRating(
-                            rs.getObject("review_rating") != null
-                            ? rs.getInt("review_rating")
-                            : null
-                    );
+                    invoice.setCustomerName(rs.getString("customer_name"));
+                    invoice.setReviewRating(rs.getObject("review_rating") != null ? rs.getInt("review_rating") : null);
                     invoice.setReviewText(rs.getString("review_text"));
                     invoice.setReviewed(rs.getObject("review_rating") != null);
+                    invoice.setUserId(userId); // Gán userId
+                    invoicesList.add(invoice);
                 }
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
         }
         return invoicesList;
     }
 
-    public int getTotalInvoicesCount(String ticketCode, String route, String status) {
+    public int getTotalInvoicesCount(int userId, String ticketCode, String route, String status) throws SQLException {
         StringBuilder sql = new StringBuilder(
-                "SELECT COUNT(*) "
+                "SELECT COUNT(DISTINCT i.invoice_id) "
                 + "FROM Invoices i "
                 + "JOIN Invoice_Items ii ON i.invoice_id = ii.invoice_id "
                 + "JOIN Tickets t ON ii.ticket_id = t.ticket_id "
@@ -112,28 +107,29 @@ public class TicketManagementDAO extends DBContext {
                 + "JOIN Routes r ON trip.route_id = r.route_id "
                 + "JOIN Locations ls ON r.start_location_id = ls.location_id "
                 + "JOIN Locations le ON r.end_location_id = le.location_id "
-                + "WHERE 1=1"
+                + "WHERE i.user_id = ?"
         );
 
-        if (ticketCode != null && !ticketCode.isEmpty()) {
+        if (ticketCode != null && !ticketCode.trim().isEmpty()) {
             sql.append(" AND i.invoice_code LIKE ?");
         }
-        if (route != null && !route.isEmpty()) {
-            sql.append(" AND (ls.location_name + ' → ' + le.location_name) LIKE ?");
+        if (route != null && !route.trim().isEmpty()) {
+            sql.append(" AND (ls.location_name + N' → ' + le.location_name) LIKE ?");
         }
-        if (status != null && !status.isEmpty()) {
+        if (status != null && !status.trim().isEmpty()) {
             sql.append(" AND i.invoice_status = ?");
         }
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             int idx = 1;
-            if (ticketCode != null && !ticketCode.isEmpty()) {
+            ps.setInt(idx++, userId);
+            if (ticketCode != null && !ticketCode.trim().isEmpty()) {
                 ps.setString(idx++, "%" + ticketCode + "%");
             }
-            if (route != null && !route.isEmpty()) {
+            if (route != null && !route.trim().isEmpty()) {
                 ps.setString(idx++, "%" + route + "%");
             }
-            if (status != null && !status.isEmpty()) {
+            if (status != null && !status.trim().isEmpty()) {
                 ps.setString(idx++, status);
             }
 
@@ -142,8 +138,6 @@ public class TicketManagementDAO extends DBContext {
                     return rs.getInt(1);
                 }
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
         }
         return 0;
     }

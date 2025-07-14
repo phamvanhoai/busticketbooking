@@ -74,6 +74,7 @@ public class ScheduleServlet extends HttpServlet {
         // 5) Forward to JSP
         request.getRequestDispatcher("/WEB-INF/pages/schedule.jsp")
                 .forward(request, response);
+        return;
     }
 
     /**

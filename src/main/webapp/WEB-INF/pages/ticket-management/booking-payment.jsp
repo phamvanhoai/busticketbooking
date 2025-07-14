@@ -454,14 +454,13 @@
                             },
                             stopOnFocus: true
                         }).showToast();
-
-                        document.querySelector("input[name='paymentMethod'][value='FUTAPay']").checked = true;
+                        document.querySelector("input[name='paymentMethod'][value='FPTUPay']").checked = true;
                     }
                 });
             });
 
             // Countdown Logic
-            let hasClickedPayment = false; // Flag to detect manual payment
+            let hasClickedPayment = false;
             const expiryTimeMillis = ${expiryTime};
             const expiryTime = new Date(expiryTimeMillis);
             const paymentCountdown = document.getElementById("payment-countdown");
@@ -484,11 +483,21 @@
                 if (distance <= 0) {
                     paymentCountdown.textContent = "Expired";
                     clearInterval(countdownInterval);
-
                     if (!hasClickedPayment) {
+                        Toastify({
+                            text: "Payment session has expired. Redirecting...",
+                            duration: 3000,
+                            gravity: "top",
+                            position: "center",
+                            style: {
+                                background: "#EF5222",
+                                color: "#fff",
+                                borderRadius: "8px",
+                            }
+                        }).showToast();
                         setTimeout(() => {
                             window.location.href = "${pageContext.request.contextPath}/view-trips";
-                        }, 2000);
+                        }, 3000);
                     }
                     return;
                 }
@@ -503,21 +512,19 @@
             updateCountdown();
             const countdownInterval = setInterval(updateCountdown, 1000);
 
-            // Payment Button Logic (replaced popup by toast)
+            // Payment Button Logic
             const paymentButton = document.getElementById("payment-button");
             if (paymentButton) {
-                paymentButton.addEventListener("click", function (e) {
-                    e.preventDefault();
+                paymentButton.addEventListener("click", function () {
                     hasClickedPayment = true;
-
                     Toastify({
-                        text: "Your payment was successful! Thank you for choosing our service.",
-                        duration: 5000,
+                        text: "Processing your payment...",
+                        duration: 3000,
                         close: false,
                         gravity: "top",
                         position: "right",
                         style: {
-                            background: "#16a34a",
+                            background: "#EF5222",
                             color: "#fff",
                             fontWeight: "500",
                             borderRadius: "8px",
@@ -525,15 +532,12 @@
                         },
                         stopOnFocus: false
                     }).showToast();
-
-                    setTimeout(() => {
-                        window.location.href = "${pageContext.request.contextPath}/view-trips";
-                    }, 1000);
+                    // Không dùng e.preventDefault(), để form submit
                 });
             }
 
             // Update seat info and total
-            const selectedSeats = "${fn:join(selectedSeats, ', ')}".split(",").filter(s => s.trim());
+            const selectedSeats = "${selectedSeatsString}".split(",").filter(s => s.trim());
             const seatCount = selectedSeats.length > 0 ? selectedSeats.length : 0;
             let totalAmount = "${totalAmount != null ? totalAmount : '0'}".replace(/[^0-9.]/g, "");
             totalAmount = parseFloat(totalAmount) || 0;

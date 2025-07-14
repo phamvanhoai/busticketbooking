@@ -11,13 +11,16 @@ import busticket.model.AdminSeatPosition;
 import busticket.model.BookingRequest;
 import busticket.model.HomeTrip;
 import busticket.model.Tickets;
+import busticket.model.Users;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.math.BigDecimal;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +45,17 @@ public class BookTicketServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+        // Get the logged-in user's ID from session
+            HttpSession session = request.getSession();
+            if (session == null || session.getAttribute("currentUser") == null) {
+                request.setAttribute("errorMessage", "Please log in.");
+                response.sendRedirect(request.getContextPath() + "/login");
+                return;
+            }
+            
+            Users users = (Users) session.getAttribute("currentUser");
+            int userId = users.getUser_id();
 // Handling AJAX request: returning seat map data in JSON format
         String ajax = request.getParameter("ajax");
         if ("seats".equals(ajax)) {
@@ -178,6 +192,17 @@ public class BookTicketServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
+            // Get the logged-in user's ID from session
+            HttpSession session = request.getSession();
+            if (session == null || session.getAttribute("currentUser") == null) {
+                request.setAttribute("errorMessage", "Please log in.");
+                response.sendRedirect(request.getContextPath() + "/login");
+                return;
+            }
+            
+            Users users = (Users) session.getAttribute("currentUser");
+            int userId = users.getUser_id();
+            
             String action = request.getParameter("action");
 
             if ("prepare-payment".equals(action)) {
@@ -233,60 +258,131 @@ public class BookTicketServlet extends HttpServlet {
             }
 
             if ("confirm-payment".equals(action)) {
+                Connection conn = null;
+                try {
+                    int tripId = Integer.parseInt(request.getParameter("tripId"));
+                    String selectedSeatsStr = request.getParameter("selectedSeats");
 
-                int tripId = Integer.parseInt(request.getParameter("tripId"));
-                String selectedSeatsStr = request.getParameter("selectedSeats");
+                    if (selectedSeatsStr == null || selectedSeatsStr.trim().isEmpty()) {
+                        request.getSession().setAttribute("toast", "Seat selection missing.");
+                        response.sendRedirect(request.getContextPath() + "/view-trips");
+                        return;
+                    }
 
-                if (selectedSeatsStr == null || selectedSeatsStr.trim().isEmpty()) {
-                    request.getSession().setAttribute("toast", "Seat selection missing.");
-                    response.sendRedirect(request.getContextPath() + "/view-trips");
-                    return;
+                    String[] seatArray = selectedSeatsStr.split(",");
+                    String fullName = request.getParameter("fullName");
+                    String phone = request.getParameter("phoneNumber");
+                    String email = request.getParameter("email");
+                    int pickupLocationId = Integer.parseInt(request.getParameter("pickupLocationId"));
+                    int dropoffLocationId = Integer.parseInt(request.getParameter("dropoffLocationId"));
+                    String paymentMethod = request.getParameter("paymentMethod");
+
+                    BookingDAO dao = new BookingDAO();
+                    HomeTrip trip = dao.getTripById(tripId);
+                    String pickupLocationName = dao.getLocationNameById(pickupLocationId);
+                    String dropoffLocationName = dao.getLocationNameById(dropoffLocationId);
+
+                    if (trip == null) {
+                        request.getSession().setAttribute("toast", "Invalid trip ID.");
+                        response.sendRedirect(request.getContextPath() + "/view-trips");
+                        return;
+                    }
+
+                    // Validate seat availability
+                    for (String seat : seatArray) {
+                        if (dao.isSeatBooked(tripId, seat.trim())) {
+                            request.getSession().setAttribute("toast", "One or more selected seats are already booked.");
+                            response.sendRedirect(request.getContextPath() + "/book-ticket?tripId=" + tripId);
+                            return;
+                        }
+                    }
+
+                    // Start a transaction
+                    conn = dao.getConnection();
+                    conn.setAutoCommit(false); // Disable auto-commit
+
+                    // Create ticket
+                    Tickets ticket = new Tickets();
+                    ticket.setTripId(tripId);
+                    ticket.setUserId(19); // Use Guest user_id (replace 19 with the actual user_id from Users table)
+                    ticket.setTicketStatus("Booked");
+                    ticket.setPickupLocationId(pickupLocationId);
+                    ticket.setDropoffLocationId(dropoffLocationId);
+                    ticket.setCheckIn(null);
+                    ticket.setCheckOut(null);
+                    ticket.setTicketCode(dao.generateTicketCode());
+
+                    // Insert ticket
+                    int ticketId = dao.insertTicket(ticket);
+
+                    // Insert ticket seats
+                    dao.insertTicketSeats(ticketId, Arrays.asList(seatArray));
+
+                    // Calculate total amount
+                    BigDecimal ticketPrice = trip.getPrice();
+                    BigDecimal totalAmount = ticketPrice.multiply(new BigDecimal(seatArray.length));
+
+                    // Insert invoice
+                    int invoiceId = dao.insertInvoice(userId, totalAmount, paymentMethod != null ? paymentMethod : "FPTUPay"); // Use Guest user_id
+
+                    // Insert invoice item
+                    dao.insertInvoiceItem(invoiceId, ticketId, totalAmount);
+
+                    // Commit transaction
+                    conn.commit();
+
+                    // Prepare booking request for display
+                    BookingRequest booking = new BookingRequest();
+                    booking.setTicket(ticket);
+                    booking.setFullName(fullName);
+                    booking.setPhoneNumber(phone);
+                    booking.setEmail(email);
+                    booking.setSeatCodes(Arrays.asList(seatArray));
+
+                    long now = System.currentTimeMillis();
+                    long expiryTime = now + (20 * 60 * 1000);
+
+                    request.setAttribute("booking", booking);
+                    request.setAttribute("trip", trip);
+                    request.setAttribute("pickupLocationName", pickupLocationName);
+                    request.setAttribute("dropoffLocationName", dropoffLocationName);
+                    request.setAttribute("totalAmount", totalAmount);
+                    request.setAttribute("now", now);
+                    request.setAttribute("expiryTime", expiryTime);
+
+                    request.getRequestDispatcher("/WEB-INF/pages/ticket-management/booking-payment.jsp").forward(request, response);
+                } catch (SQLException e) {
+                    if (conn != null) {
+                        try {
+                            conn.rollback(); // Roll back transaction on error
+                        } catch (SQLException rollbackEx) {
+                            rollbackEx.printStackTrace();
+                        }
+                    }
+                    e.printStackTrace();
+                    request.setAttribute("toast", "Database error: " + e.getMessage());
+                    request.getRequestDispatcher("/WEB-INF/pages/ticket-management/book-ticket.jsp").forward(request, response);
+                } catch (Exception e) {
+                    if (conn != null) {
+                        try {
+                            conn.rollback(); // Roll back transaction on error
+                        } catch (SQLException rollbackEx) {
+                            rollbackEx.printStackTrace();
+                        }
+                    }
+                    e.printStackTrace();
+                    request.setAttribute("toast", "An error occurred: " + e.getMessage());
+                    request.getRequestDispatcher("/WEB-INF/pages/ticket-management/book-ticket.jsp").forward(request, response);
+                } finally {
+                    if (conn != null) {
+                        try {
+                            conn.setAutoCommit(true); // Restore auto-commit
+                            conn.close();
+                        } catch (SQLException closeEx) {
+                            closeEx.printStackTrace();
+                        }
+                    }
                 }
-
-                String[] seatArray = selectedSeatsStr.split(",");
-                String fullName = request.getParameter("fullName");
-                String phone = request.getParameter("phoneNumber");
-                String email = request.getParameter("email");
-                int pickupLocationId = Integer.parseInt(request.getParameter("pickupLocationId"));
-                int dropoffLocationId = Integer.parseInt(request.getParameter("dropoffLocationId"));
-
-                BookingDAO dao = new BookingDAO();
-                HomeTrip trip = dao.getTripById(tripId);
-                String pickupLocationName = dao.getLocationNameById(pickupLocationId);
-                String dropoffLocationName = dao.getLocationNameById(dropoffLocationId);
-
-                Tickets ticket = new Tickets();
-                ticket.setTripId(tripId);
-                ticket.setUserId(0); // Chưa login
-                ticket.setTicketStatus("Booked");
-                ticket.setPickupLocationId(pickupLocationId);
-                ticket.setDropoffLocationId(dropoffLocationId);
-                ticket.setCheckIn(null);
-                ticket.setCheckOut(null);
-                ticket.setTicketCode(dao.generateTicketCode());
-
-                BookingRequest booking = new BookingRequest();
-                booking.setTicket(ticket);
-                booking.setFullName(fullName);
-                booking.setPhoneNumber(phone);
-                booking.setEmail(email);
-                booking.setSeatCodes(Arrays.asList(seatArray));
-
-                int ticketId = dao.insertTicket(ticket);
-                dao.insertTicketSeats(ticketId, booking.getSeatCodes());
-
-                long now = System.currentTimeMillis();
-                long expiryTime = now + (20 * 60 * 1000);
-
-                request.setAttribute("booking", booking);
-                request.setAttribute("trip", trip);
-                request.setAttribute("pickupLocationName", pickupLocationName);
-                request.setAttribute("dropoffLocationName", dropoffLocationName);
-                request.setAttribute("totalAmount", trip.getPrice().multiply(new BigDecimal(seatArray.length)));
-                request.setAttribute("now", now);
-                request.setAttribute("expiryTime", expiryTime);
-
-                request.getRequestDispatcher("/WEB-INF/pages/ticket-management/booking-payment.jsp").forward(request, response);
                 return;
             }
 

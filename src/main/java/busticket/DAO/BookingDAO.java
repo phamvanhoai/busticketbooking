@@ -27,6 +27,87 @@ import java.util.UUID;
 public class BookingDAO extends DBContext {
 
     /**
+     * Generates a random invoice code using UUID. The generated code is a
+     * unique identifier for the invoice, in the format: "INV-XXXXXXX".
+     *
+     * @return a randomly generated invoice code.
+     */
+    public String generateInvoiceCode() {
+        return "INV-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    /**
+     * Inserts a new invoice record into the Invoices table.
+     *
+     * @param userId the ID of the user associated with the invoice (0 for
+     * guest).
+     * @param totalAmount the total amount of the invoice.
+     * @param paymentMethod the payment method used (e.g., "FPTUPay").
+     * @return the generated invoice ID.
+     * @throws SQLException if an error occurs during the SQL operation.
+     */
+    public int insertInvoice(int userId, BigDecimal totalAmount, String paymentMethod) throws SQLException {
+        String sql = "INSERT INTO Invoices (user_id, invoice_total_amount, payment_method, paid_at, invoice_code, invoice_status) "
+                + "VALUES (?, ?, ?, GETDATE(), ?, 'Paid')";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setInt(1, userId);
+            ps.setBigDecimal(2, totalAmount);
+            ps.setString(3, paymentMethod);
+            ps.setString(4, generateInvoiceCode());
+            ps.executeUpdate();
+
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getInt(1); // Return the invoice ID
+            } else {
+                throw new SQLException("Could not generate a new invoice.");
+            }
+        }
+    }
+
+    public int insertInvoice(Integer userId, BigDecimal totalAmount, String paymentMethod) throws SQLException {
+        String sql = "INSERT INTO Invoices (user_id, invoice_total_amount, payment_method, paid_at, invoice_code, invoice_status) "
+                + "VALUES (?, ?, ?, GETDATE(), ?, 'Paid')";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            if (userId == null) {
+                ps.setNull(1, java.sql.Types.INTEGER); // Set user_id to NULL for guest bookings
+            } else {
+                ps.setInt(1, userId);
+            }
+            ps.setBigDecimal(2, totalAmount);
+            ps.setString(3, paymentMethod);
+            ps.setString(4, generateInvoiceCode());
+            ps.executeUpdate();
+
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getInt(1); // Return the invoice ID
+            } else {
+                throw new SQLException("Could not generate a new invoice.");
+            }
+        }
+    }
+
+    /**
+     * Inserts an invoice item into the Invoice_Items table, linking a ticket to
+     * an invoice.
+     *
+     * @param invoiceId the ID of the invoice.
+     * @param ticketId the ID of the ticket.
+     * @param amount the amount for this ticket.
+     * @throws SQLException if an error occurs during the SQL operation.
+     */
+    public void insertInvoiceItem(int invoiceId, int ticketId, BigDecimal amount) throws SQLException {
+        String sql = "INSERT INTO Invoice_Items (invoice_id, ticket_id, invoice_amount) VALUES (?, ?, ?)";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, invoiceId);
+            ps.setInt(2, ticketId);
+            ps.setBigDecimal(3, amount);
+            ps.executeUpdate();
+        }
+    }
+
+    /**
      * Generates a random ticket code using UUID. The generated code is a unique
      * identifier for the ticket, in the format: "TKT-XXXXXXX".
      *
