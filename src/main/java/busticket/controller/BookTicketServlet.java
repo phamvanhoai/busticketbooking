@@ -45,17 +45,17 @@ public class BookTicketServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         // Get the logged-in user's ID from session
-            HttpSession session = request.getSession();
-            if (session == null || session.getAttribute("currentUser") == null) {
-                request.setAttribute("errorMessage", "Please log in.");
-                response.sendRedirect(request.getContextPath() + "/login");
-                return;
-            }
-            
-            Users users = (Users) session.getAttribute("currentUser");
-            int userId = users.getUser_id();
+        HttpSession session = request.getSession();
+        if (session == null || session.getAttribute("currentUser") == null) {
+            request.setAttribute("errorMessage", "Please log in.");
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        Users users = (Users) session.getAttribute("currentUser");
+        int userId = users.getUser_id();
 // Handling AJAX request: returning seat map data in JSON format
         String ajax = request.getParameter("ajax");
         if ("seats".equals(ajax)) {
@@ -199,10 +199,10 @@ public class BookTicketServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/login");
                 return;
             }
-            
+
             Users users = (Users) session.getAttribute("currentUser");
             int userId = users.getUser_id();
-            
+
             String action = request.getParameter("action");
 
             if ("prepare-payment".equals(action)) {
@@ -260,6 +260,7 @@ public class BookTicketServlet extends HttpServlet {
             if ("confirm-payment".equals(action)) {
                 Connection conn = null;
                 try {
+                    // Lấy thông tin từ request
                     int tripId = Integer.parseInt(request.getParameter("tripId"));
                     String selectedSeatsStr = request.getParameter("selectedSeats");
 
@@ -282,12 +283,6 @@ public class BookTicketServlet extends HttpServlet {
                     String pickupLocationName = dao.getLocationNameById(pickupLocationId);
                     String dropoffLocationName = dao.getLocationNameById(dropoffLocationId);
 
-                    if (trip == null) {
-                        request.getSession().setAttribute("toast", "Invalid trip ID.");
-                        response.sendRedirect(request.getContextPath() + "/view-trips");
-                        return;
-                    }
-
                     // Validate seat availability
                     for (String seat : seatArray) {
                         if (dao.isSeatBooked(tripId, seat.trim())) {
@@ -301,39 +296,43 @@ public class BookTicketServlet extends HttpServlet {
                     conn = dao.getConnection();
                     conn.setAutoCommit(false); // Disable auto-commit
 
-                    // Create ticket
-                    Tickets ticket = new Tickets();
-                    ticket.setTripId(tripId);
-                    ticket.setUserId(19); // Use Guest user_id (replace 19 with the actual user_id from Users table)
-                    ticket.setTicketStatus("Booked");
-                    ticket.setPickupLocationId(pickupLocationId);
-                    ticket.setDropoffLocationId(dropoffLocationId);
-                    ticket.setCheckIn(null);
-                    ticket.setCheckOut(null);
-                    ticket.setTicketCode(dao.generateTicketCode());
+                    // Create tickets and insert them into the database
+                    List<Integer> ticketIds = new ArrayList<>();
+                    List<BigDecimal> ticketPrices = new ArrayList<>();  // Store the price of each ticket
+                    for (String seat : seatArray) {
+                        Tickets ticket = new Tickets();
+                        ticket.setTripId(tripId);
+                        ticket.setUserId(userId); // Use the actual user ID
+                        ticket.setTicketStatus("Booked");
+                        ticket.setPickupLocationId(pickupLocationId);
+                        ticket.setDropoffLocationId(dropoffLocationId);
+                        ticket.setTicketCode(dao.generateTicketCode());
 
-                    // Insert ticket
-                    int ticketId = dao.insertTicket(ticket);
+                        // Insert each ticket and retrieve its ID
+                        int ticketId = dao.insertTicket(ticket);
+                        ticketIds.add(ticketId);
 
-                    // Insert ticket seats
-                    dao.insertTicketSeats(ticketId, Arrays.asList(seatArray));
+                        // Get the price of each ticket (using price from HomeTrip)
+                        ticketPrices.add(trip.getPrice());  // Assuming each ticket has the same price for simplicity
 
-                    // Calculate total amount
-                    BigDecimal ticketPrice = trip.getPrice();
-                    BigDecimal totalAmount = ticketPrice.multiply(new BigDecimal(seatArray.length));
+                        // Insert each seat for the ticket
+                        dao.insertTicketSeats(ticketId, Arrays.asList(seat));
+                    }
+
+                    // Calculate the total amount
+                    BigDecimal totalAmount = trip.getPrice().multiply(new BigDecimal(seatArray.length));
 
                     // Insert invoice
-                    int invoiceId = dao.insertInvoice(userId, totalAmount, paymentMethod != null ? paymentMethod : "FPTUPay", fullName, phone, email); // Use Guest user_id
+                    int invoiceId = dao.insertInvoice(userId, totalAmount, paymentMethod != null ? paymentMethod : "FPTUPay", fullName, phone, email);
 
-                    // Insert invoice item
-                    dao.insertInvoiceItem(invoiceId, ticketId, totalAmount);
+                    // Insert each invoice item for each ticket with the correct price
+                    dao.insertInvoiceItem(invoiceId, ticketIds, trip, ticketPrices);
 
                     // Commit transaction
                     conn.commit();
 
                     // Prepare booking request for display
                     BookingRequest booking = new BookingRequest();
-                    booking.setTicket(ticket);
                     booking.setFullName(fullName);
                     booking.setPhoneNumber(phone);
                     booking.setEmail(email);
@@ -351,6 +350,7 @@ public class BookTicketServlet extends HttpServlet {
                     request.setAttribute("expiryTime", expiryTime);
 
                     request.getRequestDispatcher("/WEB-INF/pages/ticket-management/booking-payment.jsp").forward(request, response);
+                    return;
                 } catch (SQLException e) {
                     if (conn != null) {
                         try {
@@ -362,6 +362,7 @@ public class BookTicketServlet extends HttpServlet {
                     e.printStackTrace();
                     request.setAttribute("toast", "Database error: " + e.getMessage());
                     request.getRequestDispatcher("/WEB-INF/pages/ticket-management/book-ticket.jsp").forward(request, response);
+                    return;
                 } catch (Exception e) {
                     if (conn != null) {
                         try {
@@ -373,6 +374,7 @@ public class BookTicketServlet extends HttpServlet {
                     e.printStackTrace();
                     request.setAttribute("toast", "An error occurred: " + e.getMessage());
                     request.getRequestDispatcher("/WEB-INF/pages/ticket-management/book-ticket.jsp").forward(request, response);
+                    return;
                 } finally {
                     if (conn != null) {
                         try {
@@ -383,7 +385,6 @@ public class BookTicketServlet extends HttpServlet {
                         }
                     }
                 }
-                return;
             }
 
             response.sendRedirect(request.getContextPath() + "/view-trips");
@@ -392,6 +393,7 @@ public class BookTicketServlet extends HttpServlet {
             e.printStackTrace();
             request.setAttribute("toast", "An error occurred: " + e.getMessage());
             request.getRequestDispatcher("/WEB-INF/pages/ticket-management/book-ticket.jsp").forward(request, response);
+            return;
         }
     }
 

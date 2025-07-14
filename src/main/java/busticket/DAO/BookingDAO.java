@@ -81,13 +81,19 @@ public class BookingDAO extends DBContext {
      * @param amount the amount for this ticket.
      * @throws SQLException if an error occurs during the SQL operation.
      */
-    public void insertInvoiceItem(int invoiceId, int ticketId, BigDecimal amount) throws SQLException {
+    public void insertInvoiceItem(int invoiceId, List<Integer> ticketIds, HomeTrip trip, List<BigDecimal> ticketPrices) throws SQLException {
         String sql = "INSERT INTO Invoice_Items (invoice_id, ticket_id, invoice_amount) VALUES (?, ?, ?)";
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, invoiceId);
-            ps.setInt(2, ticketId);
-            ps.setBigDecimal(3, amount);
-            ps.executeUpdate();
+            for (int i = 0; i < ticketIds.size(); i++) {
+                Integer ticketId = ticketIds.get(i);
+                BigDecimal ticketPrice = ticketPrices.get(i);  // Lấy giá của từng vé
+
+                ps.setInt(1, invoiceId);  // Add invoice ID for each ticket
+                ps.setInt(2, ticketId);   // Add each individual ticket ID
+                ps.setBigDecimal(3, ticketPrice);  // Set the price for each ticket
+                ps.addBatch(); // Add the ticket to the batch
+            }
+            ps.executeBatch(); // Execute all insertions at once
         }
     }
 
