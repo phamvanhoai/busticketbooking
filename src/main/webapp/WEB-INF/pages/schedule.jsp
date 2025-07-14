@@ -18,7 +18,7 @@
         <!-- Header -->
         <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
             <div>
-                <h1 class="text-3xl font-bold">Schedule</h1>
+                <h2 class="text-2xl font-bold  text-orange-600 ">Schedule</h2>
             </div>
         </div>
 
@@ -44,7 +44,7 @@
                 </c:forEach>
             </select>
 
-            <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-full">
+            <button type="submit" class="bg-orange-500 text-white px-4 py-2 rounded-full">
                 Search Trip
             </button>
         </form>
@@ -88,7 +88,7 @@
                     </div>
                     <div class="flex justify-end">
                         <a href="${pageContext.request.contextPath}/view-trips?origin=${s.origin}&destination=${s.destination}">
-                            <button class="bg-red-200 text-red-600 py-2 px-4 rounded-full">Search Trip</button>
+                            <button class="bg-orange-200 text-orange-600 py-2 px-4 rounded-full">Search Trip</button>
                         </a>
                     </div>
                 </div>

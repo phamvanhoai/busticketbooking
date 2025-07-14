@@ -13,22 +13,22 @@
 <body class="bg-gray-100 py-10">
 
     <div class="max-w-6xl mx-auto mt-12 p-8 bg-white rounded-3xl shadow-2xl border border-orange-300">
-        <h1 class="text-2xl font-bold text-orange-600 mb-6">Search Ticket</h1>
+        <h2 class="text-2xl font-bold text-orange-600 mb-6">Search Ticket</h2>
 
         <!-- Search Form -->
         <form action="${pageContext.request.contextPath}/search-ticket" method="get" class="space-y-6">
             <div>
                 <label for="ticketCode" class="block text-sm font-medium text-gray-700 mb-2">Ticket Code</label>
-                <input type="text" id="ticketCode" name="ticketCode" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400" placeholder="Enter Ticket Code">
+                <input type="text" id="ticketCode" name="ticketCode" value="<c:out value='${ticketCode}'/>" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400" placeholder="Enter Ticket Code">
             </div>
 
             <div>
                 <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Passenger Phone</label>
-                <input type="text" id="phone" name="phone" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400" placeholder="Enter Passenger Phone">
+                <input type="text" id="phone" name="phone" value="<c:out value='${phone}'/>" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400" placeholder="Enter Passenger Phone">
             </div>
 
             <div class="flex justify-end gap-4">
-                <button type="reset" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                <button type="button" onclick="window.location.href = '${pageContext.request.contextPath}/search-ticket'" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
                     Reset
                 </button>
                 <button type="submit" class="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition">
@@ -65,7 +65,7 @@
                                     <td class="px-4 py-2">${ticket.tripId}</td>
                                     <td class="px-4 py-2">${ticket.route}</td>
                                     <td class="px-4 py-2">${ticket.seat}</td>
-                                    <td class="px-4 py-2"><fmt:formatDate value="${ticket.date}" pattern="yyyy-MM-dd" /></td>
+                                    <td class="px-4 py-2"><fmt:formatDate value="${ticket.date}" pattern="dd/MM/yyyy HH:mm" /></td>
                                     <td class="px-4 py-2">${ticket.status}</td>
                                 </tr>
                             </c:forEach>
@@ -75,7 +75,7 @@
             </div>
         </c:if>
 
-        <c:if test="${empty tickets}">
+        <c:if test="${empty tickets && (not empty ticketCode || not empty phone)}">
             <div class="mt-10 px-4">
                 <h2 class="text-3xl font-bold text-orange-600">No tickets found</h2>
                 <p class="text-gray-500">No tickets match your search criteria.</p>

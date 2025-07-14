@@ -11,6 +11,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,13 +32,20 @@ public class SearchTicketServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         String ticketCode = request.getParameter("ticketCode");
         String phone = request.getParameter("phone");
 
-        // Gọi DAO để tìm vé
-        SearchTicketDAO dao = new SearchTicketDAO();
-        List<SearchTicket> tickets = dao.searchTickets(ticketCode, phone);
+        // Lưu giá trị ticketCode và phone vào request attributes
+        request.setAttribute("ticketCode", ticketCode);
+        request.setAttribute("phone", phone);
+
+        // Chỉ tìm kiếm nếu ít nhất một trong hai trường có giá trị
+        List<SearchTicket> tickets = new ArrayList<>();
+        if ((ticketCode != null && !ticketCode.trim().isEmpty()) || (phone != null && !phone.trim().isEmpty())) {
+            SearchTicketDAO dao = new SearchTicketDAO();
+            tickets = dao.searchTickets(ticketCode, phone);
+        }
 
         // Truyền danh sách vé vào request
         request.setAttribute("tickets", tickets);
@@ -57,7 +65,7 @@ public class SearchTicketServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
     }
 
     /**
