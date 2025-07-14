@@ -46,28 +46,9 @@ public class BookingDAO extends DBContext {
      * @return the generated invoice ID.
      * @throws SQLException if an error occurs during the SQL operation.
      */
-    public int insertInvoice(int userId, BigDecimal totalAmount, String paymentMethod) throws SQLException {
-        String sql = "INSERT INTO Invoices (user_id, invoice_total_amount, payment_method, paid_at, invoice_code, invoice_status) "
-                + "VALUES (?, ?, ?, GETDATE(), ?, 'Paid')";
-        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setInt(1, userId);
-            ps.setBigDecimal(2, totalAmount);
-            ps.setString(3, paymentMethod);
-            ps.setString(4, generateInvoiceCode());
-            ps.executeUpdate();
-
-            ResultSet rs = ps.getGeneratedKeys();
-            if (rs.next()) {
-                return rs.getInt(1); // Return the invoice ID
-            } else {
-                throw new SQLException("Could not generate a new invoice.");
-            }
-        }
-    }
-
-    public int insertInvoice(Integer userId, BigDecimal totalAmount, String paymentMethod) throws SQLException {
-        String sql = "INSERT INTO Invoices (user_id, invoice_total_amount, payment_method, paid_at, invoice_code, invoice_status) "
-                + "VALUES (?, ?, ?, GETDATE(), ?, 'Paid')";
+    public int insertInvoice(Integer userId, BigDecimal totalAmount, String paymentMethod, String fullName, String email, String phone) throws SQLException {
+        String sql = "INSERT INTO Invoices (user_id, invoice_total_amount, payment_method, paid_at, invoice_code, invoice_status, invoice_full_name, invoice_email, invoice_phone) "
+                + "VALUES (?, ?, ?, GETDATE(), ?, 'Paid', ?, ?, ?)";
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             if (userId == null) {
                 ps.setNull(1, java.sql.Types.INTEGER); // Set user_id to NULL for guest bookings
@@ -77,6 +58,9 @@ public class BookingDAO extends DBContext {
             ps.setBigDecimal(2, totalAmount);
             ps.setString(3, paymentMethod);
             ps.setString(4, generateInvoiceCode());
+            ps.setString(5, fullName);  // Add fullName
+            ps.setString(6, email);     // Add email
+            ps.setString(7, phone);     // Add phone
             ps.executeUpdate();
 
             ResultSet rs = ps.getGeneratedKeys();

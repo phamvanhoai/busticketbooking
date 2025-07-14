@@ -323,7 +323,7 @@ public class BookTicketServlet extends HttpServlet {
                     BigDecimal totalAmount = ticketPrice.multiply(new BigDecimal(seatArray.length));
 
                     // Insert invoice
-                    int invoiceId = dao.insertInvoice(userId, totalAmount, paymentMethod != null ? paymentMethod : "FPTUPay"); // Use Guest user_id
+                    int invoiceId = dao.insertInvoice(userId, totalAmount, paymentMethod != null ? paymentMethod : "FPTUPay", fullName, phone, email); // Use Guest user_id
 
                     // Insert invoice item
                     dao.insertInvoiceItem(invoiceId, ticketId, totalAmount);
