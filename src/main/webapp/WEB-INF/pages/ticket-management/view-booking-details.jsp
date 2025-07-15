@@ -30,12 +30,14 @@
         <div class="mt-4 text-gray-600">
             <p><span class="font-semibold">Customer:</span> ${invoice.customerName}</p>
             <p><span class="font-semibold">Customer Phone</span>  ${invoice.customerPhone}</p>
-            <p><span class="font-semibold">Date:</span> 
+            <p><span class="font-semibold">Booking Date:</span> 
                 <fmt:formatDate value="${invoice.paidAt}" pattern="yyyy-MM-dd HH:mm" />
             </p>
-            <p><span class="font-semibold">Total Amount:</span> ${invoice.invoiceTotalAmount} ₫</p>
+            <p><span class="font-semibold">Total Amount:</span> <fmt:formatNumber value="${invoice.invoiceTotalAmount}" pattern="#,##0 ₫"/></p>
             <p><span class="font-semibold">Payment Status:</span> ${invoice.invoiceStatus}</p>
             <p><span class="font-semibold">Route:</span> ${invoice.route}</p>
+            <p><span class="font-semibold">Pickup Location:</span> ${invoice.pickupLocationName}</p>
+            <p><span class="font-semibold">Drop off Location:</span> ${invoice.dropoffLocationName}</p>
             <p><span class="font-semibold">Departure Time:</span> 
                 <fmt:formatDate value="${invoice.departureTime}" pattern="yyyy-MM-dd HH:mm" />
             </p>

@@ -27,6 +27,9 @@ public class Invoices {
     private Integer reviewRating;
     private String reviewText;
     private boolean reviewed; // ✅ Đánh giá: đã review hay chưa
+    
+    private String pickupLocationName;
+    private String dropoffLocationName;
 
     // Constructor mặc định
     public Invoices() {
@@ -54,6 +57,24 @@ public class Invoices {
     }
 
     // Getter/Setter
+
+    public String getPickupLocationName() {
+        return pickupLocationName;
+    }
+
+    public void setPickupLocationName(String pickupLocationName) {
+        this.pickupLocationName = pickupLocationName;
+    }
+
+    public String getDropoffLocationName() {
+        return dropoffLocationName;
+    }
+
+    public void setDropoffLocationName(String dropoffLocationName) {
+        this.dropoffLocationName = dropoffLocationName;
+    }
+    
+    
 
     public String getCustomerPhone() {
         return customerPhone;
