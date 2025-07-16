@@ -191,13 +191,13 @@
                     <div>
                         <label class="block text-lg font-medium mb-2" for="licenseClass">License Class</label>
                         <p class="w-full border rounded-md p-3 bg-white">
-                            ${driverInfo != null ? driverInfo.licenseClass : 'D'}
+                            ${driverInfo != null ? driverInfo.licenseClass : 'D2'}
                         </p>
                         <input 
                             type="hidden" 
                             id="licenseClass" 
                             name="licenseClass" 
-                            value="${driverInfo != null ? driverInfo.licenseClass : 'D'}"
+                            value="${driverInfo != null ? driverInfo.licenseClass : 'D2'}"
                             />
                     </div>
                     <div>
@@ -241,7 +241,7 @@
                         name="newLicenseClass"
                         class="w-full border rounded-md p-3 mb-6 focus:outline-none focus:ring-2 focus:ring-orange-400">
                         <option value="">Select new license class</option>
-                        <option value="D2">D2</option>
+                        <option value="D">D</option>
                     </select>
 
                     <label class="block text-lg font-medium mb-2" for="reason">Reason (optional)</label>

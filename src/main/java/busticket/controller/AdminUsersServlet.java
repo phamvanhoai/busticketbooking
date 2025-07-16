@@ -101,6 +101,7 @@ public class AdminUsersServlet extends HttpServlet {
                     AdminUserDriverLicenseHistoryDAO historyDAO = new AdminUserDriverLicenseHistoryDAO();
                     List<AdminUserDriverLicenseHistory> licenseHistory = historyDAO.getLicenseHistoryByUserId(userId);
                     request.setAttribute("licenseHistory", licenseHistory);
+
                 }
 
                 request.getRequestDispatcher("/WEB-INF/admin/users/view-user.jsp").forward(request, response);
@@ -187,8 +188,9 @@ public class AdminUsersServlet extends HttpServlet {
                     String newLicenseClass = request.getParameter("newLicenseClass");
                     String reason = request.getParameter("reason");
 
-                    if (!"D".equals(oldLicenseClass) || !"D2".equals(newLicenseClass)) {
-                        request.setAttribute("error", "Only upgrades from D to D2 are allowed.");
+                    // Sửa điều kiện: chỉ cho phép nâng cấp từ D2 lên D
+                    if (!"D2".equals(oldLicenseClass) || !"D".equals(newLicenseClass)) {
+                        request.setAttribute("error", "Only upgrades from D2 to D are allowed.");
                         AdminUsers user = adminUsersDAO.getUserById(userId);
                         AdminDrivers driverInfo = adminUsersDAO.getDriverByUserId(userId);
                         request.setAttribute("user", user);
@@ -499,19 +501,20 @@ public class AdminUsersServlet extends HttpServlet {
                     }
 
                     String oldLicense = adminUsersDAO.getDriverByUserId(userId).getLicenseClass();
-                    if ("D".equals(oldLicense) && "D2".equals(newLicenseClass)) {
-                        driver.setLicenseClass("D2");
+                    if ("D2".equals(oldLicense) && "D".equals(newLicenseClass)) {  // Sửa điều kiện ở đây
+                        driver.setLicenseClass("D");  // Cập nhật lại license class thành D
 
                         AdminUserDriverLicenseHistoryDAO historyDAO = new AdminUserDriverLicenseHistoryDAO();
                         AdminUsers currentAdmin = (AdminUsers) request.getSession().getAttribute("adminUser");
                         int adminId = currentAdmin != null
                                 ? currentAdmin.getUser_id()
-                                : 1;
+                                : 1;  // Nếu không tìm thấy admin, lấy ID mặc định là 1
 
+                        // Lưu lịch sử nâng cấp giấy phép
                         historyDAO.insertLicenseUpgradeHistory(
                                 userId,
                                 oldLicense,
-                                "D2",
+                                "D", // Cập nhật giấy phép mới là D
                                 adminId,
                                 reason
                         );

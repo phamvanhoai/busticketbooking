@@ -59,6 +59,8 @@ public class AdminUserDriverLicenseHistoryDAO extends DBContext {
      */
     public List<AdminUserDriverLicenseHistory> getLicenseHistoryByUserId(int userId) {
         List<AdminUserDriverLicenseHistory> historyList = new ArrayList<>();
+
+        // Sửa lại câu truy vấn SQL
         String sql = "SELECT "
                 + "h.id, "
                 + "h.user_id, "
@@ -70,26 +72,34 @@ public class AdminUserDriverLicenseHistoryDAO extends DBContext {
                 + "a.user_name AS admin_name, "
                 + "a.role AS admin_role "
                 + "FROM Driver_License_History h "
-                + "JOIN Users a ON h.changed_by = a.user_id AND a.role = 'Admin' "
+                + "LEFT JOIN Users a ON h.changed_by = a.user_id "
                 + "WHERE h.user_id = ? "
-                + "ORDER BY h.changed_at DESC;";
+                + "ORDER BY h.changed_at DESC";
 
         DBContext db = new DBContext();
 
-        try ( Connection conn = db.getConnection();  PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try ( Connection conn = db.getConnection(); // Đặt loại ResultSet là scrollable
+                  PreparedStatement stmt = conn.prepareStatement(sql,
+                        ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
 
-            stmt.setInt(1, userId);
+            stmt.setInt(1, userId);  // Thêm giá trị userId vào câu truy vấn
             ResultSet rs = stmt.executeQuery();
 
+            // Kiểm tra kết quả trả về
+            if (!rs.next()) {
+                System.out.println("No data found for userId: " + userId);  // Kiểm tra xem có dữ liệu hay không
+            }
+
+            rs.beforeFirst();  // Đặt con trỏ về trước khi duyệt qua kết quả
             while (rs.next()) {
                 AdminUserDriverLicenseHistory history = new AdminUserDriverLicenseHistory();
                 history.setId(rs.getInt("id"));
                 history.setUserId(rs.getInt("user_id"));
                 history.setOldLicenseClass(rs.getString("old_license_class"));
                 history.setNewLicenseClass(rs.getString("new_license_class"));
-                history.setAdminId(rs.getInt("changed_by")); // sửa lại cột
+                history.setAdminId(rs.getInt("changed_by"));
                 history.setReason(rs.getString("reason"));
-                history.setCreatedAt(rs.getTimestamp("changed_at")); // sửa lại cột
+                history.setCreatedAt(rs.getTimestamp("changed_at"));
                 history.setAdminName(rs.getString("admin_name"));
                 historyList.add(history);
             }

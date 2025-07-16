@@ -65,9 +65,9 @@
                     <h2 class="font-medium">Up Floor Setup</h2>
                     <div class="flex gap-2 items-center">
                         <label>Rows×Cols:</label>
-                        <input id="rowsUp" name="rowsUp" type="number" value="${rowsUp}" min="1" max="10" class="w-16 border rounded px-2 py-1" />
+                        <input id="rowsUp" name="rowsUp" type="number" value="${rowsUp}" min="0" max="10" class="w-16 border rounded px-2 py-1" />
                         <span>×</span>
-                        <input id="colsUp" name="colsUp" type="number" value="${colsUp}" min="1" max="10" class="w-16 border rounded px-2 py-1" />
+                        <input id="colsUp" name="colsUp" type="number" value="${colsUp}" min="0" max="10" class="w-16 border rounded px-2 py-1" />
                     </div>
                     <div class="flex gap-2 items-center">
                         <label>Prefix:</label>
