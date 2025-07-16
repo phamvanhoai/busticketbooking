@@ -41,6 +41,15 @@
                           class="w-full border border-gray-300 rounded-xl px-5 py-4 focus:outline-none focus:ring resize-none">${busType.busTypeDescription}</textarea>
             </div>
 
+            <div>
+                <label class="block text-gray-800 font-medium mb-2">Seat Type</label>
+                <select name="seatType" class="w-full border border-gray-300 rounded-xl px-5 py-4 focus:outline-none focus:ring">
+                    <option value="Seat" ${'Seat' == busType.seatType ? 'selected' : ''}>Seat</option>
+                    <option value="Bunk" ${'Bunk' == busType.seatType ? 'selected' : ''}>Bunk</option>
+                    <option value="Limousine" ${'Limousine' == busType.seatType ? 'selected' : ''}>Limousine</option>
+                </select>
+            </div>
+
             <!-- Config for each floor -->
             <div class="grid md:grid-cols-2 gap-6">
                 <!-- Downstairs -->

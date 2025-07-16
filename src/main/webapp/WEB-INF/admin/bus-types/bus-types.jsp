@@ -43,6 +43,8 @@
                         <th class="px-4 py-2">Bus Type ID</th>
                         <th class="px-4 py-2">Name</th>
                         <th class="px-4 py-2">Description</th>
+                        <th class="px-4 py-2">Seat</th>
+                        <th class="px-4 py-2">Seat Type</th>
                         <th class="px-4 py-2">Actions</th>
                     </tr>
                 </thead>
@@ -52,6 +54,8 @@
                             <td class="px-4 py-2">${bt.busTypeId}</td>
                             <td class="px-4 py-2">${bt.busTypeName}</td>
                             <td class="px-4 py-2">${bt.busTypeDescription}</td>
+                            <td class="px-4 py-2">${bt.seatCount}</td>
+                            <td class="px-4 py-2">${bt.seatType}</td>
                             <td class="px-4 py-2 space-x-4">
                                 <a href="${pageContext.request.contextPath}/admin/bus-types?detail=${bt.busTypeId}">
                                     <button class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm">

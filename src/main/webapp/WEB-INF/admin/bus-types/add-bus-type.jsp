@@ -47,6 +47,16 @@
                           placeholder="Optional description..."></textarea>
             </div>
 
+            <div>
+                <label class="block text-gray-800 font-medium mb-2">Seat Type</label>
+                <select name="seatType" class="w-full border border-gray-300 rounded-xl px-5 py-4 focus:outline-none focus:ring">
+                    <option value="Seat">Seat</option>
+                    <option value="Bunk">Bunk</option>
+                    <option value="Limousine">Limousine</option>
+                </select>
+            </div>
+
+
             <!-- config for each floor -->
             <div class="grid md:grid-cols-2 gap-6">
                 <!-- Downstairs -->
@@ -72,9 +82,9 @@
                     <h2 class="font-medium">Up floor Setup</h2>
                     <div class="flex gap-2 items-center">
                         <label>Rows×Cols:</label>
-                        <input id="rowsUp"   name="rowsUp"   type="number" value="6" min="1" max="10" class="w-16 border rounded px-2 py-1"/>
+                        <input id="rowsUp"   name="rowsUp"   type="number" value="6" min="0" max="10" class="w-16 border rounded px-2 py-1"/>
                         <span>×</span>
-                        <input id="colsUp"   name="colsUp"   type="number" value="3" min="1" max="10" class="w-16 border rounded px-2 py-1"/>
+                        <input id="colsUp"   name="colsUp"   type="number" value="3" min="0" max="10" class="w-16 border rounded px-2 py-1"/>
                     </div>
                     <div class="flex gap-2 items-center">
                         <label>Row Prefix:</label>

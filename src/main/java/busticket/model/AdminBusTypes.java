@@ -25,6 +25,9 @@ public class AdminBusTypes {
     private int rowsUp;                 // Số hàng ghế tầng trên
     private int colsUp;                 // Số cột ghế tầng trên
     private String prefixUp;            // Tiền tố hàng ghế tầng trên
+    
+    private int seatCount;
+    private String seatType;
 
     public AdminBusTypes() {
     }
@@ -56,6 +59,15 @@ public class AdminBusTypes {
         this.busTypeDescription = busTypeDescription;
     }
 
+    public AdminBusTypes(int busTypeId, String busTypeName, String busTypeDescription, int seatCount) {
+        this.busTypeId = busTypeId;
+        this.busTypeName = busTypeName;
+        this.busTypeDescription = busTypeDescription;
+        this.seatCount = seatCount;
+    }
+    
+    
+
     public AdminBusTypes(int busTypeId, String busTypeName, String busTypeDescription, String layoutDown, String layoutUp) {
         this.busTypeId = busTypeId;
         this.busTypeName = busTypeName;
@@ -70,6 +82,22 @@ public class AdminBusTypes {
         this.busTypeDescription = busTypeDescription;
         this.layoutDown = layoutDown;
         this.layoutUp = layoutUp;
+    }
+
+    public String getSeatType() {
+        return seatType;
+    }
+
+    public void setSeatType(String seatType) {
+        this.seatType = seatType;
+    }
+    
+    public int getSeatCount() {
+        return seatCount;
+    }
+
+    public void setSeatCount(int seatCount) {
+        this.seatCount = seatCount;
     }
 
     public int getBusTypeId() {

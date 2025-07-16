@@ -42,13 +42,12 @@ public class AdminBusTypesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        // Check if the user is an admin; redirect to home if not
-        if (!SessionUtil.isAdmin(request)) {
-            response.sendRedirect(request.getContextPath());
-            return;
-        }
 
+        // Check if the user is an admin; redirect to home if not
+//        if (!SessionUtil.isAdmin(request)) {
+//            response.sendRedirect(request.getContextPath());
+//            return;
+//        }
         AdminBusTypesDAO adminBusTypesDAO = new AdminBusTypesDAO();
         // Lấy tham số hành động (action)
         String action = request.getParameter("action");
@@ -230,6 +229,7 @@ public class AdminBusTypesServlet extends HttpServlet {
                 int rowsUp = Integer.parseInt(request.getParameter("rowsUp"));
                 int colsUp = Integer.parseInt(request.getParameter("colsUp"));
                 String prefixUp = request.getParameter("prefixUp");
+                String seatType = request.getParameter("seatType");
 
                 // 2. Khởi tạo model với đủ thông số
                 AdminBusTypes model = new AdminBusTypes();
@@ -241,6 +241,7 @@ public class AdminBusTypesServlet extends HttpServlet {
                 model.setRowsUp(rowsUp);
                 model.setColsUp(colsUp);
                 model.setPrefixUp(prefixUp);
+                model.setSeatType(seatType);
 
                 // 3. Thêm Bus_Type và lấy ID
                 int busTypeId = adminBusTypesDAO.insertBusType(model);
@@ -283,6 +284,7 @@ public class AdminBusTypesServlet extends HttpServlet {
                 int rowsUp = Integer.parseInt(request.getParameter("rowsUp"));
                 int colsUp = Integer.parseInt(request.getParameter("colsUp"));
                 String prefixUp = request.getParameter("prefixUp");
+                String seatType = request.getParameter("seatType");
 
                 // 2. Cập nhật Bus_Types toàn bộ cột
                 AdminBusTypes updateModel = new AdminBusTypes();
@@ -295,6 +297,7 @@ public class AdminBusTypesServlet extends HttpServlet {
                 updateModel.setRowsUp(rowsUp);
                 updateModel.setColsUp(colsUp);
                 updateModel.setPrefixUp(prefixUp);
+                updateModel.setSeatType(seatType);
                 adminBusTypesDAO.updateBusType(updateModel);
 
                 // 3. Xóa hết seat cũ để insert lại

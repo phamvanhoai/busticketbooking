@@ -18,6 +18,7 @@
             <p><span class="font-semibold">ID:</span> ${busType.busTypeId}</p>
             <p><span class="font-semibold">Name:</span> ${busType.busTypeName}</p>
             <p><span class="font-semibold">Description:</span> ${busType.busTypeDescription}</p>
+            <p><span class="font-semibold">Description:</span> ${busType.seatType}</p>
         </div>
 
         <hr class="my-6"/>
