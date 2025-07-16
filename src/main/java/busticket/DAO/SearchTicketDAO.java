@@ -28,15 +28,7 @@ public class SearchTicketDAO extends DBContext {
             return tickets;
         }
 
-        // Gán giá trị mặc định cho tìm kiếm
-        if (ticketCode == null || ticketCode.trim().isEmpty()) {
-            ticketCode = "%";
-        }
-        if (phone == null || phone.trim().isEmpty()) {
-            phone = "%";
-        }
-
-        // Câu truy vấn
+        // Câu truy vấn sửa để tìm chính xác cả ticket_code và phone
         String query = "SELECT t.ticket_id, t.ticket_code, i.invoice_full_name, ts.seat_number, t.trip_id, "
                 + "CONCAT(ls.location_name, N' → ', le.location_name) AS route, "
                 + "t.ticket_status, tr.departure_time AS ticket_date "
@@ -48,11 +40,12 @@ public class SearchTicketDAO extends DBContext {
                 + "JOIN Routes r ON tr.route_id = r.route_id "
                 + "JOIN Locations ls ON r.start_location_id = ls.location_id "
                 + "JOIN Locations le ON r.end_location_id = le.location_id "
-                + "WHERE (t.ticket_code LIKE ? OR i.invoice_phone LIKE ?)";
+                + "WHERE t.ticket_code = ? AND i.invoice_phone = ?"; // Tìm chính xác theo ticket_code và phone
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
-            ps.setString(1, "%" + ticketCode + "%");  // Tìm theo ticket_code
-            ps.setString(2, "%" + phone + "%");       // Tìm theo invoice_phone
+            // Gán tham số vào câu truy vấn
+            ps.setString(1, ticketCode);  // Tìm chính xác ticket_code
+            ps.setString(2, phone);       // Tìm chính xác phone
 
             try ( ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -73,4 +66,5 @@ public class SearchTicketDAO extends DBContext {
         }
         return tickets;
     }
+
 }

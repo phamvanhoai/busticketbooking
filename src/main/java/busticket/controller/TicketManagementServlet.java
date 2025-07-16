@@ -96,7 +96,7 @@ public class TicketManagementServlet extends HttpServlet {
 
                     } else {
                         session.setAttribute("errorMessage", "Invoice not found!");
-                        response.sendRedirect(request.getContextPath() + "/ticket-management");
+                        request.getRequestDispatcher("/ticket-management").forward(request, response);
                         return;
                     }
                 } catch (NumberFormatException e) {
@@ -169,6 +169,7 @@ public class TicketManagementServlet extends HttpServlet {
                 } catch (NumberFormatException e) {
                     session.setAttribute("errorMessage", "Invalid invoice ID format!");
                     response.sendRedirect(request.getContextPath() + "/ticket-management");
+                    return;
                 }
             }
 
@@ -206,6 +207,7 @@ public class TicketManagementServlet extends HttpServlet {
 
             request.getRequestDispatcher("/WEB-INF/pages/ticket-management/view-bookings.jsp")
                     .forward(request, response);
+            return;
         } catch (SQLException ex) {
             Logger.getLogger(TicketManagementServlet.class.getName()).log(Level.SEVERE, null, ex);
         }

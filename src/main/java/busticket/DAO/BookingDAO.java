@@ -33,7 +33,7 @@ public class BookingDAO extends DBContext {
      * @return a randomly generated invoice code.
      */
     public String generateInvoiceCode() {
-        return "INV-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        return "INV" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 
     /**
@@ -104,7 +104,7 @@ public class BookingDAO extends DBContext {
      * @return a randomly generated ticket code.
      */
     public String generateTicketCode() {
-        return "TKT-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        return "TKT" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 
     /**
