@@ -54,7 +54,7 @@
             <div class="grid md:grid-cols-2 gap-6">
                 <!-- Downstairs -->
                 <div class="space-y-2">
-                    <h2 class="font-medium">Downstairs Setup</h2>
+                    <h2 class="font-medium">Downstairs Setup: <span class="text-red-500 font-bold text-lg">*</span></h2>
                     <div class="flex gap-2 items-center">
                         <label>Rows×Cols:</label>
                         <input id="rowsDown" name="rowsDown" type="number" value="${rowsDown}" min="1" max="10" class="w-16 border rounded px-2 py-1" />

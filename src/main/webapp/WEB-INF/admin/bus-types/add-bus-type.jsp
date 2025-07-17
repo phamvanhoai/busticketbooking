@@ -35,20 +35,22 @@
 
             <!-- Name & Description -->
             <div>
-                <label class="block text-gray-800 font-medium mb-2">Name</label>
+                <label class="block text-gray-800 font-medium mb-2">Name: <span class="text-red-500 font-bold text-lg">*</span>
+                </label>
                 <input name="name" type="text" required
                        class="w-full border border-gray-300 rounded-xl px-5 py-4 focus:outline-none focus:ring"
                        placeholder="Enter bus type name"/>
             </div>
             <div>
-                <label class="block text-gray-800 font-medium mb-2">Description</label>
+                <label class="block text-gray-800 font-medium mb-2">Description: </label>
                 <textarea name="description" rows="3"
                           class="w-full border border-gray-300 rounded-xl px-5 py-4 focus:outline-none focus:ring resize-none"
                           placeholder="Optional description..."></textarea>
             </div>
 
             <div>
-                <label class="block text-gray-800 font-medium mb-2">Seat Type</label>
+                <label class="block text-gray-800 font-medium mb-2">Seat Type:
+                </label>
                 <select name="seatType" class="w-full border border-gray-300 rounded-xl px-5 py-4 focus:outline-none focus:ring">
                     <option value="Seat">Seat</option>
                     <option value="Bunk">Bunk</option>
@@ -61,7 +63,7 @@
             <div class="grid md:grid-cols-2 gap-6">
                 <!-- Downstairs -->
                 <div class="space-y-2">
-                    <h2 class="font-medium">Downstairs Setup</h2>
+                    <h2 class="font-medium">Downstairs Setup: <span class="text-red-500 font-bold text-lg">*</span></h2>
                     <div class="flex gap-2 items-center">
                         <label>Rows×Cols:</label>
                         <input id="rowsDown"   name="rowsDown"   type="number" value="6" min="1" max="10" class="w-16 border rounded px-2 py-1"/>

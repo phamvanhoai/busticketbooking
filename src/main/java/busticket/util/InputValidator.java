@@ -11,6 +11,16 @@ package busticket.util;
 public class InputValidator {
 
     /**
+     * Checks if the input string is null or empty.
+     *
+     * @param value the string to check
+     * @return true if the string is null or empty, false otherwise
+     */
+    public static boolean checkNull(String value) {
+        return value == null || value.isEmpty();
+    }
+
+    /**
      * Validates if a username is between 3 and 20 characters and contains only
      * letters, numbers, and underscores.
      *

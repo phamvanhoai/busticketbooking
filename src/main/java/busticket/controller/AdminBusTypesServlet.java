@@ -7,7 +7,8 @@ package busticket.controller;
 import busticket.DAO.AdminBusTypesDAO;
 import busticket.model.AdminBusTypes;
 import busticket.model.AdminSeatPosition;
-import busticket.util.SessionUtil;
+import busticket.util.InputValidator;
+import static busticket.util.InputValidator.checkNull;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
@@ -231,6 +232,14 @@ public class AdminBusTypesServlet extends HttpServlet {
                 String prefixUp = request.getParameter("prefixUp");
                 String seatType = request.getParameter("seatType");
 
+                // Kiểm tra các tham số đầu vào có null hoặc rỗng hay không
+                if (checkNull(name) || checkNull(layoutDown)
+                        || checkNull(prefixDown) || checkNull(seatType)) {
+                    session.setAttribute("error", "Please fill in all fields.");
+                    request.getRequestDispatcher("/WEB-INF/admin/bus-types/add-bus-type.jsp").forward(request, response);
+                    return;
+                }
+
                 // 2. Khởi tạo model với đủ thông số
                 AdminBusTypes model = new AdminBusTypes();
                 model.setBusTypeName(name);
@@ -334,7 +343,9 @@ public class AdminBusTypesServlet extends HttpServlet {
             }
             // TODO: edit/delete nếu cần
         } catch (Exception ex) {
-            session.setAttribute("error", "Lỗi: " + ex.getMessage());
+            session.setAttribute("error", "Error: " + ex.getMessage());
+            return;
+
         }
 
         response.sendRedirect(request.getContextPath() + "/admin/bus-types");
