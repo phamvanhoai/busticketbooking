@@ -6,6 +6,7 @@ package busticket.controller;
 
 import busticket.DAO.AdminLocationsDAO;
 import busticket.model.AdminLocations;
+import static busticket.util.InputValidator.checkNull;
 import busticket.util.SessionUtil;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -156,33 +157,83 @@ public class AdminLocationsServlet extends HttpServlet {
         HttpSession session = request.getSession();
 
         try {
+            // Kiểm tra các tham số bắt buộc
+            String locationName = request.getParameter("locationName");
+            String address = request.getParameter("address");
+            String latitudeStr = request.getParameter("latitude");
+            String longitudeStr = request.getParameter("longitude");
+            String locationType = request.getParameter("locationType");
+            String description = request.getParameter("description");
+            String status = request.getParameter("status");
+
+            if (checkNull(locationName) || checkNull(address) || checkNull(latitudeStr)
+                    || checkNull(longitudeStr) || checkNull(locationType) || checkNull(status)) {
+                session.setAttribute("error", "Please fill in all required fields.");
+
+                // Kiểm tra action và forward về trang chính xác
+                if ("edit".equals(action)) {
+                    String locationId = request.getParameter("locationId");
+                    request.setAttribute("id", locationId); // Giữ lại ID khi sửa
+                    request.setAttribute("locationName", locationName);
+                    request.setAttribute("address", address);
+                    request.setAttribute("latitude", latitudeStr);
+                    request.setAttribute("longitude", longitudeStr);
+                    request.setAttribute("locationType", locationType);
+                    request.setAttribute("description", description);
+                    request.setAttribute("status", status);
+
+                    // Forward lại trang edit
+                    request.getRequestDispatcher("/WEB-INF/admin/locations/edit-location.jsp").forward(request, response);
+                } else {
+                    // Forward về trang thêm nếu là action add
+                    request.getRequestDispatcher("/WEB-INF/admin/locations/add-location.jsp").forward(request, response);
+                }
+                return;
+            }
+
             if ("add".equals(action)) {
                 AdminLocations loc = new AdminLocations();
-                loc.setLocationName(request.getParameter("locationName"));
-                loc.setAddress(request.getParameter("address"));
-                loc.setLatitude(Double.parseDouble(request.getParameter("latitude")));
-                loc.setLongitude(Double.parseDouble(request.getParameter("longitude")));
-                loc.setLocationType(request.getParameter("locationType"));
-                loc.setLocationDescription(request.getParameter("description"));
-                loc.setLocationStatus(request.getParameter("status"));
+                loc.setLocationName(locationName);
+                loc.setAddress(address);
+                loc.setLatitude(Double.parseDouble(latitudeStr));
+                loc.setLongitude(Double.parseDouble(longitudeStr));
+                loc.setLocationType(locationType);
+                loc.setLocationDescription(description);
+                loc.setLocationStatus(status);
+
                 dao.insertLocation(loc);
                 session.setAttribute("success", "Location added successfully!");
 
             } else if ("edit".equals(action)) {
+                // Kiểm tra id, nếu có lỗi thì return
+                String locationIdStr = request.getParameter("locationId");
+                if (checkNull(locationIdStr)) {
+                    session.setAttribute("error", "Location ID is required.");
+                    request.getRequestDispatcher("/WEB-INF/admin/locations/edit-location.jsp").forward(request, response);
+                    return;
+                }
+                int locationId = Integer.parseInt(locationIdStr);
+
                 AdminLocations loc = new AdminLocations();
-                loc.setLocationId(Integer.parseInt(request.getParameter("locationId")));
-                loc.setLocationName(request.getParameter("locationName"));
-                loc.setAddress(request.getParameter("address"));
-                loc.setLatitude(Double.parseDouble(request.getParameter("latitude")));
-                loc.setLongitude(Double.parseDouble(request.getParameter("longitude")));
-                loc.setLocationType(request.getParameter("locationType"));
-                loc.setLocationDescription(request.getParameter("description"));
-                loc.setLocationStatus(request.getParameter("status"));
+                loc.setLocationId(locationId);
+                loc.setLocationName(locationName);
+                loc.setAddress(address);
+                loc.setLatitude(Double.parseDouble(latitudeStr));
+                loc.setLongitude(Double.parseDouble(longitudeStr));
+                loc.setLocationType(locationType);
+                loc.setLocationDescription(description);
+                loc.setLocationStatus(status);
                 dao.updateLocation(loc);
                 session.setAttribute("success", "Location updated successfully!");
 
             } else if ("delete".equals(action)) {
-                int id = Integer.parseInt(request.getParameter("locationId"));
+                String locationIdStr = request.getParameter("locationId");
+                if (checkNull(locationIdStr)) {
+                    session.setAttribute("error", "Location ID is required.");
+                    response.sendRedirect(request.getContextPath() + "/admin/locations");
+                    return;
+                }
+                int id = Integer.parseInt(locationIdStr);
                 dao.deleteLocation(id);
                 session.setAttribute("success", "Location deleted successfully!");
             }
