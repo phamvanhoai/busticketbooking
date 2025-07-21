@@ -13,18 +13,21 @@ import java.util.Map;
  * @author Pham Van Hoai - CE181744
  */
 public class AdminStatistics {
-    private BigDecimal monthlyRevenue;
+    private BigDecimal revenue;
     private List<Map<String, Object>> occupancyRate;
     private List<Map<String, Object>> ticketTypeBreakdown;
     private List<Map<String, Object>> topRoutesRevenue;
     private List<String> driverPerformance;
+    private List<Map<String, Object>> detailedStatistics; // Thêm thuộc tính mới
+    private String period; // day, week, month, quarter, year
+    private String dateValue;
 
-    public BigDecimal getMonthlyRevenue() {
-        return monthlyRevenue;
+    public BigDecimal getRevenue() {
+        return revenue;
     }
 
-    public void setMonthlyRevenue(BigDecimal monthlyRevenue) {
-        this.monthlyRevenue = monthlyRevenue;
+    public void setRevenue(BigDecimal revenue) {
+        this.revenue = revenue;
     }
 
     public List<Map<String, Object>> getOccupancyRate() {
@@ -57,6 +60,30 @@ public class AdminStatistics {
 
     public void setDriverPerformance(List<String> driverPerformance) {
         this.driverPerformance = driverPerformance;
+    }
+
+    public List<Map<String, Object>> getDetailedStatistics() {
+        return detailedStatistics;
+    }
+
+    public void setDetailedStatistics(List<Map<String, Object>> detailedStatistics) {
+        this.detailedStatistics = detailedStatistics;
+    }
+
+    public String getPeriod() {
+        return period;
+    }
+
+    public void setPeriod(String period) {
+        this.period = period;
+    }
+
+    public String getDateValue() {
+        return dateValue;
+    }
+
+    public void setDateValue(String dateValue) {
+        this.dateValue = dateValue;
     }
 
     
