@@ -5,12 +5,16 @@
 
 package busticket.controller;
 
+import busticket.DAO.AdminViewStatisticsDAO;
+import busticket.model.AdminStatistics;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
+import java.sql.SQLException;
 
 /**
  *
@@ -29,8 +33,26 @@ public class AdminViewStatisticsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        request.getRequestDispatcher("/WEB-INF/admin/statistics/view-statistics.jsp")
-                .forward(request, response);
+        AdminViewStatisticsDAO adminViewStatisticsDAO = new AdminViewStatisticsDAO();
+        AdminStatistics statistics = new AdminStatistics();
+
+        try {
+            // Lấy dữ liệu thống kê từ DAO
+            statistics.setMonthlyRevenue(adminViewStatisticsDAO.getMonthlyRevenue());  // Monthly Revenue
+            statistics.setOccupancyRate(adminViewStatisticsDAO.getOccupancyRate());  // Occupancy Rate
+            statistics.setTicketTypeBreakdown(adminViewStatisticsDAO.getTicketTypeBreakdown());  // Ticket Type Breakdown
+            statistics.setTopRoutesRevenue(adminViewStatisticsDAO.getTopRoutesRevenue());  // Top 5 Routes by Revenue
+            statistics.setDriverPerformance(adminViewStatisticsDAO.getDriverPerformance());  // Driver Performance
+
+            // Truyền dữ liệu vào request để JSP sử dụng
+            request.setAttribute("statistics", statistics);
+
+            // Chuyển tiếp đến JSP để hiển thị
+            request.getRequestDispatcher("/WEB-INF/admin/statistics/view-statistics.jsp").forward(request, response);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error fetching statistics");
+        }
         
     } 
 
