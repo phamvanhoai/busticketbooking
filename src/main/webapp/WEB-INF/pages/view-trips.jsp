@@ -256,7 +256,7 @@
                                     <button data-tab="policy"   class="px-3 py-1 hover:text-orange-500">Policy</button>
                                     <a href="${pageContext.servletContext.contextPath}/book-ticket?tripId=${trip.tripId}">
                                         <button class="ml-auto px-4 py-1 bg-orange-100 text-orange-600 rounded-full text-sm">Select trip</button></a>
-    
+
 
                                 </div>
 
@@ -288,7 +288,7 @@
 
                                     <!-- Choose button -->
                                     <a href="${pageContext.servletContext.contextPath}/book-ticket?tripId=${trip.tripId}"><button class="choose-btn mt-4 bg-orange-500 text-white px-8 py-2 rounded-full disabled:opacity-50" disabled>
-                                        Choose
+                                            Choose
                                         </button></a>
                                 </div>
 
@@ -552,34 +552,34 @@
                                 const seat = seats.find(s => s.row === r && s.col === c);
                                 if (seat && seat.code) {
                                     let icon = seat.booked ? disabledIcon : activeIcon;
-
+                                    cell.classList.add(seat.booked ? 'booked' : 'available');
                                     if (selectedSeats.includes(seat.code)) {
                                         icon = selectingIcon;
-                                        cell.classList.add('text-orange-600');
+                                        cell.classList.add('selected');
                                     }
-
                                     cell.innerHTML =
                                             '<div class="relative w-full h-full">' +
                                             '<img src="' + icon + '" alt="Seat ' + seat.code + '" class="w-full h-full seat-icon" data-seat="' + seat.code + '" />' +
-                                            '<span class="absolute inset-0 flex items-center justify-center text-xs font-medium ">' + seat.code + '</span>' +
+                                            '<span class="absolute inset-0 flex items-center justify-center text-xs font-medium">' + seat.code + '</span>' +
                                             '</div>';
-
-                                    cell.addEventListener('click', () => {
-                                        if (seat.booked)
-                                            return;
-                                        if (selectedSeats.includes(seat.code)) {
-                                            selectedSeats = selectedSeats.filter(s => s !== seat.code);
-                                        } else {
-                                            selectedSeats.push(seat.code);
-                                        }
-
-                                        cell.querySelector('.seat-icon').src = selectedSeats.includes(seat.code) ? selectingIcon : activeIcon;
-                                        cell.classList.toggle('text-orange-600', selectedSeats.includes(seat.code));
-
-                                        updateSelectionDisplay();
-                                        toggleChooseButton();
-                                        updateTotalAmount();
-                                    });
+                                    if (!seat.booked) {
+                                        cell.addEventListener('click', () => {
+                                            if (selectedSeats.includes(seat.code)) {
+                                                selectedSeats = selectedSeats.filter(s => s !== seat.code);
+                                                cell.classList.remove('selected');
+                                                cell.querySelector('.seat-icon').src = activeIcon;
+                                            } else {
+                                                selectedSeats.push(seat.code);
+                                                cell.classList.add('selected');
+                                                cell.querySelector('.seat-icon').src = selectingIcon;
+                                            }
+                                            updateSelectionDisplay();
+                                            toggleChooseButton();
+                                            updateTotalAmount();
+                                        });
+                                    }
+                                } else {
+                                    cell.classList.add('empty');
                                 }
                                 colDiv.appendChild(cell);
                             }

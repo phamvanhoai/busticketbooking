@@ -514,17 +514,39 @@
 
             // Payment Button Logic
             const paymentButton = document.getElementById("payment-button");
+//            if (paymentButton) {
+//                paymentButton.addEventListener("click", function () {
+//                    hasClickedPayment = true;
+//                    Toastify({
+//                        text: "Processing your payment...",
+//                        duration: 3000,
+//                        close: false,
+//                        gravity: "top",
+//                        position: "right",
+//                        style: {
+//                            background: "#EF5222",
+//                            color: "#fff",
+//                            fontWeight: "500",
+//                            borderRadius: "8px",
+//                            padding: "12px 16px",
+//                        },
+//                        stopOnFocus: false
+//                    }).showToast();
+//                    // Không dùng e.preventDefault(), để form submit
+//                });
+//            }
             if (paymentButton) {
                 paymentButton.addEventListener("click", function () {
                     hasClickedPayment = true;
+
                     Toastify({
-                        text: "Processing your payment...",
-                        duration: 3000,
+                        text: "Your payment was successful! Thank you for choosing our service.",
+                        duration: 5000,
                         close: false,
                         gravity: "top",
                         position: "right",
                         style: {
-                            background: "#EF5222",
+                            background: "#16a34a",
                             color: "#fff",
                             fontWeight: "500",
                             borderRadius: "8px",
@@ -532,7 +554,10 @@
                         },
                         stopOnFocus: false
                     }).showToast();
-                    // Không dùng e.preventDefault(), để form submit
+
+                    setTimeout(() => {
+                        window.location.href = "${pageContext.request.contextPath}/ticket-management";
+                    }, 1000);
                 });
             }
 
