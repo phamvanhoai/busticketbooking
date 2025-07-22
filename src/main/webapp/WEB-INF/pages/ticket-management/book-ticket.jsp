@@ -384,14 +384,15 @@
                         <!-- Pickup Point -->
                         <div class="relative">
                             <label class="block text-sm font-medium mb-1">Pickup Point *</label>
-                            <!-- Wrapper for select and icon -->
                             <div class="relative">
-                                <select name="pickupLocationId" class="w-full h-12 pl-3 pr-12 border rounded appearance-none" required>
-                                    <c:forEach var="stop" items="${routeStops}">
-                                        <option value="${stop.locationId}">${stop.locationName}</option>
+                                <select name="pickupLocationId" id="pickupLocationId" class="w-full h-12 pl-3 pr-12 border rounded appearance-none" required onchange="updateDropoffOptions()">
+                                    <c:forEach var="stop" items="${routeStops}" varStatus="status">
+                                        <!-- Chỉ hiển thị các điểm dừng không phải điểm cuối -->
+                                        <c:if test="${not status.last}">
+                                            <option value="${stop.locationId}" data-stop-number="${stop.stopNumber}">${stop.locationName}</option>
+                                        </c:if>
                                     </c:forEach>
                                 </select>
-                                <!-- Dropdown arrow icon -->
                                 <div class="pointer-events-none absolute top-1/2 right-3 transform -translate-y-1/2">
                                     <img src="${pageContext.request.contextPath}/assets/images/icons/arrow_down_select.svg" alt="dropdown" class="w-5 h-5" />
                                 </div>
@@ -399,18 +400,14 @@
                         </div>
 
                         <!-- Dropoff Point -->
-                        <!-- Dropoff Point -->
                         <div class="relative">
                             <label class="block text-sm font-medium mb-1">Dropoff Point *</label>
                             <div class="relative">
-                                <select name="dropoffLocationId" class="w-full h-12 pl-3 pr-12 border rounded appearance-none" required>
+                                <select name="dropoffLocationId" id="dropoffLocationId" class="w-full h-12 pl-3 pr-12 border rounded appearance-none" required>
                                     <c:forEach var="stop" items="${routeStops}" varStatus="status">
-                                        <option value="${stop.locationId}" ${status.last ? 'selected' : ''}>
-                                            ${stop.locationName}
-                                        </option>
+                                        <option value="${stop.locationId}" data-stop-number="${stop.stopNumber}" ${status.last ? 'selected' : ''}>${stop.locationName}</option>
                                     </c:forEach>
                                 </select>
-                                <!-- Dropdown icon -->
                                 <div class="pointer-events-none absolute top-1/2 right-3 transform -translate-y-1/2">
                                     <img src="${pageContext.request.contextPath}/assets/images/icons/arrow_down_select.svg" alt="dropdown" class="w-5 h-5">
                                 </div>
@@ -535,6 +532,7 @@
             const bookForm = document.getElementById("bookForm");
             const tripNoteTrigger = document.getElementById("trip-note-trigger");
             const tripNoteTooltip = document.getElementById("trip-note-tooltip");
+
 
             if (!downWrap || !upWrap) {
                 console.error("Container not found:", {downWrap, upWrap});
@@ -746,6 +744,66 @@
                 upWrap.innerHTML = '<p class="text-red-500">Error: Unable to load seat layout</p>';
             }
         });
+    </script>
+
+    <script>
+        function updateDropoffOptions() {
+            const pickupSelect = document.getElementById("pickupLocationId");
+            const dropoffSelect = document.getElementById("dropoffLocationId");
+            const pickupStopNumber = parseInt(pickupSelect.options[pickupSelect.selectedIndex].dataset.stopNumber);
+
+            // Lưu giá trị hiện tại của dropoff để khôi phục nếu hợp lệ
+            const currentDropoffValue = dropoffSelect.value;
+
+            // Xóa tất cả các option hiện tại trong dropoff
+            dropoffSelect.innerHTML = '';
+
+            // Lấy tất cả các điểm dừng từ danh sách gốc (bao gồm điểm cuối)
+            const allStops = Array.from(document.querySelectorAll('#pickupLocationId option')).map(option => ({
+                    value: option.value,
+                    text: option.text,
+                    stopNumber: parseInt(option.dataset.stopNumber)
+                }));
+
+            // Thêm điểm cuối vào danh sách allStops (vì nó không có trong pickup select)
+            const routeStops = [
+        <c:forEach var="stop" items="${routeStops}" varStatus="status">
+            { value: "${stop.locationId}", text: "${stop.locationName}", stopNumber: ${stop.stopNumber} }${status.last ? '' : ','}
+        </c:forEach>
+            ];
+            const lastStop = routeStops[routeStops.length - 1]; // Điểm cuối
+            if (!allStops.some(stop => stop.stopNumber === lastStop.stopNumber)) {
+                allStops.push(lastStop);
+            }
+
+            // Lọc các điểm dừng có stopNumber lớn hơn điểm đón
+            const validDropoffStops = allStops.filter(stop => stop.stopNumber > pickupStopNumber);
+
+            // Thêm các option hợp lệ vào dropoff select
+            validDropoffStops.forEach(stop => {
+                const option = document.createElement('option');
+                option.value = stop.value;
+                option.text = stop.text;
+                option.dataset.stopNumber = stop.stopNumber;
+                dropoffSelect.appendChild(option);
+            });
+
+            // Nếu không có điểm trả hợp lệ, hiển thị thông báo
+            if (validDropoffStops.length === 0) {
+                const option = document.createElement('option');
+                option.value = '';
+                option.text = 'No valid dropoff points';
+                option.disabled = true;
+                option.selected = true;
+                dropoffSelect.appendChild(option);
+            } else {
+                // Khôi phục giá trị dropoff nếu hợp lệ, hoặc chọn điểm cuối cùng
+                dropoffSelect.value = validDropoffStops.some(stop => stop.value === currentDropoffValue) ? currentDropoffValue : validDropoffStops[validDropoffStops.length - 1].value;
+            }
+
+            // Cập nhật thông tin hiển thị điểm trả trong Trip Information
+            document.getElementById("trip-dropoff").textContent = dropoffSelect.options[dropoffSelect.selectedIndex]?.text || '-';
+        }
     </script>
 
     <script>
