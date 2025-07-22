@@ -59,7 +59,8 @@ public class BookTicketServlet extends HttpServlet {
 
         Users users = (Users) session.getAttribute("currentUser");
         int userId = users.getUser_id();
-// Handling AJAX request: returning seat map data in JSON format
+
+        // Handling AJAX request: returning seat map data in JSON format
         String ajax = request.getParameter("ajax");
         if ("seats".equals(ajax)) {
             try {
@@ -139,6 +140,12 @@ public class BookTicketServlet extends HttpServlet {
         try {
             int tripId = Integer.parseInt(tripIdStr);
 
+            // Get selected seats from query string
+            String selectedSeatsStr = request.getParameter("selectedSeats");
+            List<String> selectedSeats = (selectedSeatsStr != null && !selectedSeatsStr.isEmpty())
+                    ? Arrays.asList(selectedSeatsStr.split(","))
+                    : new ArrayList<>();
+
             // Create DAO object to interact with the database
             BookingDAO dao = new BookingDAO();
 
@@ -172,7 +179,7 @@ public class BookTicketServlet extends HttpServlet {
 
             // Set trip and other attributes in request
             request.setAttribute("trip", trip);
-            request.setAttribute("selectedSeats", bookedSeats);
+            request.setAttribute("selectedSeats", String.join(",", selectedSeats)); // Pass selected seats as a comma-separated string
             request.setAttribute("routeStops", stops);
             request.setAttribute("stopTimes", stopTimes); // Add stopTimes attribute
             // Forward the request to book-ticket.jsp to render the booking page

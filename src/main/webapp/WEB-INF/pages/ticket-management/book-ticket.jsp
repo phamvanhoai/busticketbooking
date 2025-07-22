@@ -518,7 +518,7 @@
             console.log("Parsed price:", price);
 
             const initialSelectedSeats = "${selectedSeats}".split(",").filter(seat => seat.trim() !== "");
-            const selectedSeats = [];
+            const selectedSeats = [...initialSelectedSeats]; // Initialize with seats from query string
             console.log("Initial selected seats from server:", initialSelectedSeats);
 
             const seatActive = "${pageContext.request.contextPath}/assets/images/icons/seat_active.svg";
@@ -549,7 +549,7 @@
                 }
                 selectedSeatsInput.value = selectedSeats.join(",");
                 document.getElementById("trip-seat-count").textContent = selectedSeats.length + " Seat(s)";
-                document.getElementById("trip-seat-labels").textContent = selectedSeats.length > 0 ? selectedSeats.join(", ") : " ";
+                document.getElementById("trip-seat-labels").textContent = selectedSeats.length > 0 ? selectedSeats.join(", ") : "-";
             };
 
             const updateTotalAmount = () => {
@@ -595,7 +595,7 @@
 
                         if (seat && seat.code) {
                             let icon = document.createElement("img");
-                            icon.src = seat.booked ? seatDisabled : seatActive;
+                            icon.src = seat.booked ? seatDisabled : (selectedSeats.includes(seat.code) ? seatSelecting : seatActive);
                             icon.className = "w-full h-full seat-icon";
 
                             const wrapper = document.createElement("div");
@@ -693,7 +693,7 @@
 
             termsCheckbox.addEventListener("change", () => {
                 if (termsCheckbox.checked) {
-                    termsPopup.classList.remove("show");
+                termsPopup?.classList.remove("show");
                 }
             });
 
