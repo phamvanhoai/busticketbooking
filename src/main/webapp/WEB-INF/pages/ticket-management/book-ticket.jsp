@@ -233,7 +233,7 @@
                                 </div>
                                 <div class="tab-content p-4 hidden text-sm" id="tab-images"></div>
                                 <div class="tab-content p-4 hidden text-sm" id="tab-utilities"></div>
-                                <div class="tab-content p-ifford p-4 hidden text-sm" id="tab-policy">
+                                <div class="tab-content p-4 hidden text-sm" id="tab-policy">
                                     <div class="overflow-auto">
                                         <div class="flex flex-col">
                                             <div class="px-4 py-2">
@@ -387,7 +387,7 @@
                             <div class="relative">
                                 <select name="pickupLocationId" id="pickupLocationId" class="w-full h-12 pl-3 pr-12 border rounded appearance-none" required onchange="updateDropoffOptions()">
                                     <c:forEach var="stop" items="${routeStops}" varStatus="status">
-                                        <!-- Chỉ hiển thị các điểm dừng không phải điểm cuối -->
+                                        <!-- Loại bỏ điểm cuối khỏi danh sách điểm đón -->
                                         <c:if test="${not status.last}">
                                             <option value="${stop.locationId}" data-stop-number="${stop.stopNumber}">${stop.locationName}</option>
                                         </c:if>
@@ -405,7 +405,10 @@
                             <div class="relative">
                                 <select name="dropoffLocationId" id="dropoffLocationId" class="w-full h-12 pl-3 pr-12 border rounded appearance-none" required>
                                     <c:forEach var="stop" items="${routeStops}" varStatus="status">
-                                        <option value="${stop.locationId}" data-stop-number="${stop.stopNumber}" ${status.last ? 'selected' : ''}>${stop.locationName}</option>
+                                        <!-- Loại bỏ điểm đầu tiên khỏi danh sách điểm trả -->
+                                        <c:if test="${not status.first}">
+                                            <option value="${stop.locationId}" data-stop-number="${stop.stopNumber}" ${status.last ? 'selected' : ''}>${stop.locationName}</option>
+                                        </c:if>
                                     </c:forEach>
                                 </select>
                                 <div class="pointer-events-none absolute top-1/2 right-3 transform -translate-y-1/2">
@@ -532,7 +535,6 @@
             const bookForm = document.getElementById("bookForm");
             const tripNoteTrigger = document.getElementById("trip-note-trigger");
             const tripNoteTooltip = document.getElementById("trip-note-tooltip");
-
 
             if (!downWrap || !upWrap) {
                 console.error("Container not found:", {downWrap, upWrap});
@@ -722,6 +724,62 @@
             tooltipHandler(tripNoteTrigger, tripNoteTooltip);
             tooltipHandler(document.getElementById("price-note-trigger"), document.getElementById("price-note-tooltip"));
 
+            function updateDropoffOptions() {
+                const pickupSelect = document.getElementById("pickupLocationId");
+                const dropoffSelect = document.getElementById("dropoffLocationId");
+                const pickupStopNumber = parseInt(pickupSelect.options[pickupSelect.selectedIndex]?.dataset.stopNumber || 0);
+
+                // Lưu giá trị hiện tại của dropoff để khôi phục nếu hợp lệ
+                const currentDropoffValue = dropoffSelect.value;
+
+                // Xóa tất cả các option hiện tại trong dropoff
+                dropoffSelect.innerHTML = '';
+
+                // Lấy tất cả các điểm dừng từ routeStops
+                const routeStops = [
+                    <c:forEach var="stop" items="${routeStops}" varStatus="status">
+                        { value: "${stop.locationId}", text: "${stop.locationName}", stopNumber: ${stop.stopNumber} }${status.last ? '' : ','}
+                    </c:forEach>
+                ];
+
+                // Lọc các điểm dừng có stopNumber lớn hơn điểm đón được chọn và không phải điểm đầu tiên
+                const validDropoffStops = routeStops.filter(stop => stop.stopNumber > pickupStopNumber && stop.stopNumber !== routeStops[0].stopNumber);
+
+                // Thêm các option hợp lệ vào dropoff select
+                validDropoffStops.forEach(stop => {
+                    const option = document.createElement('option');
+                    option.value = stop.value;
+                    option.text = stop.text;
+                    option.dataset.stopNumber = stop.stopNumber;
+                    dropoffSelect.appendChild(option);
+                });
+
+                // Nếu không có điểm trả hợp lệ, hiển thị thông báo
+                if (validDropoffStops.length === 0) {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.text = 'No valid dropoff points';
+                    option.disabled = true;
+                    option.selected = true;
+                    dropoffSelect.appendChild(option);
+                } else {
+                    // Khôi phục giá trị dropoff nếu nó hợp lệ, nếu không chọn điểm cuối cùng hợp lệ
+                    dropoffSelect.value = validDropoffStops.some(stop => stop.value === currentDropoffValue) ? currentDropoffValue : validDropoffStops[validDropoffStops.length - 1].value;
+                }
+
+                // Cập nhật thông tin hiển thị điểm trả trong Trip Information
+                document.getElementById("trip-dropoff").textContent = dropoffSelect.options[dropoffSelect.selectedIndex]?.text || '-';
+            }
+
+            // Gọi hàm khi trang tải để đảm bảo danh sách điểm trả phù hợp với điểm đón mặc định
+            updateDropoffOptions();
+
+            // Cập nhật trip-dropoff khi dropoffLocationId thay đổi
+            document.getElementById("dropoffLocationId").addEventListener("change", () => {
+                const dropoffSelect = document.getElementById("dropoffLocationId");
+                document.getElementById("trip-dropoff").textContent = dropoffSelect.options[dropoffSelect.selectedIndex]?.text || '-';
+            });
+
             try {
                 const res = await fetch(apiUrl);
                 if (!res.ok)
@@ -744,69 +802,7 @@
                 upWrap.innerHTML = '<p class="text-red-500">Error: Unable to load seat layout</p>';
             }
         });
-    </script>
 
-    <script>
-        function updateDropoffOptions() {
-            const pickupSelect = document.getElementById("pickupLocationId");
-            const dropoffSelect = document.getElementById("dropoffLocationId");
-            const pickupStopNumber = parseInt(pickupSelect.options[pickupSelect.selectedIndex].dataset.stopNumber);
-
-            // Lưu giá trị hiện tại của dropoff để khôi phục nếu hợp lệ
-            const currentDropoffValue = dropoffSelect.value;
-
-            // Xóa tất cả các option hiện tại trong dropoff
-            dropoffSelect.innerHTML = '';
-
-            // Lấy tất cả các điểm dừng từ danh sách gốc (bao gồm điểm cuối)
-            const allStops = Array.from(document.querySelectorAll('#pickupLocationId option')).map(option => ({
-                    value: option.value,
-                    text: option.text,
-                    stopNumber: parseInt(option.dataset.stopNumber)
-                }));
-
-            // Thêm điểm cuối vào danh sách allStops (vì nó không có trong pickup select)
-            const routeStops = [
-        <c:forEach var="stop" items="${routeStops}" varStatus="status">
-            { value: "${stop.locationId}", text: "${stop.locationName}", stopNumber: ${stop.stopNumber} }${status.last ? '' : ','}
-        </c:forEach>
-            ];
-            const lastStop = routeStops[routeStops.length - 1]; // Điểm cuối
-            if (!allStops.some(stop => stop.stopNumber === lastStop.stopNumber)) {
-                allStops.push(lastStop);
-            }
-
-            // Lọc các điểm dừng có stopNumber lớn hơn điểm đón
-            const validDropoffStops = allStops.filter(stop => stop.stopNumber > pickupStopNumber);
-
-            // Thêm các option hợp lệ vào dropoff select
-            validDropoffStops.forEach(stop => {
-                const option = document.createElement('option');
-                option.value = stop.value;
-                option.text = stop.text;
-                option.dataset.stopNumber = stop.stopNumber;
-                dropoffSelect.appendChild(option);
-            });
-
-            // Nếu không có điểm trả hợp lệ, hiển thị thông báo
-            if (validDropoffStops.length === 0) {
-                const option = document.createElement('option');
-                option.value = '';
-                option.text = 'No valid dropoff points';
-                option.disabled = true;
-                option.selected = true;
-                dropoffSelect.appendChild(option);
-            } else {
-                // Khôi phục giá trị dropoff nếu hợp lệ, hoặc chọn điểm cuối cùng
-                dropoffSelect.value = validDropoffStops.some(stop => stop.value === currentDropoffValue) ? currentDropoffValue : validDropoffStops[validDropoffStops.length - 1].value;
-            }
-
-            // Cập nhật thông tin hiển thị điểm trả trong Trip Information
-            document.getElementById("trip-dropoff").textContent = dropoffSelect.options[dropoffSelect.selectedIndex]?.text || '-';
-        }
-    </script>
-
-    <script>
         // Get vehicle info trigger and popover elements
         const trigger = document.getElementById("vehicle-info-trigger");
         const popover = document.getElementById("vehicle-popover");
