@@ -157,6 +157,19 @@ public class AdminLocationsServlet extends HttpServlet {
         HttpSession session = request.getSession();
 
         try {
+            if ("delete".equals(action)) {
+                String locationIdStr = request.getParameter("locationId");
+                if (checkNull(locationIdStr)) {
+                    session.setAttribute("error", "Location ID is required.");
+                    response.sendRedirect(request.getContextPath() + "/admin/locations");
+                    return;
+                }
+                int id = Integer.parseInt(locationIdStr);
+                dao.deleteLocation(id);
+                session.setAttribute("success", "Location deleted successfully!");
+                response.sendRedirect(request.getContextPath() + "/admin/locations");
+                return;
+            }
             // Kiểm tra các tham số bắt buộc
             String locationName = request.getParameter("locationName");
             String address = request.getParameter("address");
@@ -226,16 +239,6 @@ public class AdminLocationsServlet extends HttpServlet {
                 dao.updateLocation(loc);
                 session.setAttribute("success", "Location updated successfully!");
 
-            } else if ("delete".equals(action)) {
-                String locationIdStr = request.getParameter("locationId");
-                if (checkNull(locationIdStr)) {
-                    session.setAttribute("error", "Location ID is required.");
-                    response.sendRedirect(request.getContextPath() + "/admin/locations");
-                    return;
-                }
-                int id = Integer.parseInt(locationIdStr);
-                dao.deleteLocation(id);
-                session.setAttribute("success", "Location deleted successfully!");
             }
 
         } catch (Exception ex) {

@@ -25,7 +25,7 @@
             }
             .nav-link:hover {
                 text-decoration: none;
-                font-weight: bold;
+/*                font-weight: bold;*/
             }
             .nav-link.active {
                 color: #ffffff; /* Màu trắng để nổi bật */
