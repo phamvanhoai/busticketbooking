@@ -6,12 +6,14 @@ package busticket.controller;
 
 import busticket.DAO.StaffSupportDriverTripDAO;
 import busticket.model.StaffSupportDriverTrip;
+import busticket.model.Users;
 import busticket.util.SessionUtil;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 /**
@@ -76,23 +78,51 @@ public class StaffSupportDriverTripServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (!SessionUtil.isStaff(request)) {
+            response.sendRedirect(request.getContextPath());
+            return;
+        }
+
+        Users currentUser = (Users) session.getAttribute("currentUser");
+        if (currentUser == null) {
+            session.setAttribute("error", "Please log in to access this page.");
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
         String action = request.getParameter("action");
         String requestIdStr = request.getParameter("requestId");
 
         if (action != null && requestIdStr != null) {
-            int requestId = Integer.parseInt(requestIdStr);
-            StaffSupportDriverTripDAO dao = new StaffSupportDriverTripDAO();
+            try {
+                int requestId = Integer.parseInt(requestIdStr);
+                int staffId = currentUser.getUser_id();
+                StaffSupportDriverTripDAO dao = new StaffSupportDriverTripDAO();
 
-            if (action.equals("approve")) {
-                dao.updateRequestStatus(requestId, "Approved");
-                dao.updateTripStatusTrip(requestId, "Cancelled");
-            } else if (action.equals("reject")) {
-                dao.updateRequestStatus(requestId, "Rejected");
-                dao.updateTripStatusTrip(requestId, "Scheduled");
+                boolean success;
+                if (action.equals("approve")) {
+                    success = dao.updateRequestAndTripStatus(requestId, "Approved", "Cancelled", staffId);
+                } else if (action.equals("reject")) {
+                    success = dao.updateRequestAndTripStatus(requestId, "Rejected", "Scheduled", staffId);
+                } else {
+                    session.setAttribute("error", "Invalid action.");
+                    response.sendRedirect(request.getContextPath() + "/staff/support-driver-trip");
+                    return;
+                }
+
+                if (success) {
+                    session.setAttribute("success", "Request " + action + " successfully!");
+                } else {
+                    session.setAttribute("error", "Failed to " + action + " request.");
+                }
+            } catch (NumberFormatException e) {
+                session.setAttribute("error", "Invalid request ID.");
             }
+        } else {
+            session.setAttribute("error", "Missing action or request ID.");
         }
 
-        // Redirect lại về danh sách
         response.sendRedirect(request.getContextPath() + "/staff/support-driver-trip");
     }
 

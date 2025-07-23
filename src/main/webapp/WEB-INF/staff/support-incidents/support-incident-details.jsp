@@ -70,6 +70,7 @@
                         <c:if test="${empty incident.photoUrl}">N/A</c:if>
                     </p>
                     <p><strong>Staff ID:</strong> ${incident.staffId != null ? incident.staffId : 'N/A'}</p>
+                    <p><strong>Staff Name:</strong> ${incident.staffId != null ? staffDAO.getStaffNameById(incident.staffId) : 'N/A'}</p>
                     <p><strong>Incident Note:</strong> ${incident.incidentNote != null ? incident.incidentNote : 'N/A'}</p>
                 </div>
             </div>
