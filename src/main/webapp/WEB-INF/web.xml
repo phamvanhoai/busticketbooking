@@ -148,6 +148,10 @@
         <servlet-name>DriverIncidentsServlet</servlet-name>
         <servlet-class>busticket.controller.DriverIncidentsServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>StaffIncidentsServlet</servlet-name>
+        <servlet-class>busticket.controller.StaffIncidentsServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
         <url-pattern>/admin/dashboard</url-pattern>
@@ -297,10 +301,13 @@
         <servlet-name>DriverIncidentsServlet</servlet-name>
         <url-pattern>/driver/incidents</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>StaffIncidentsServlet</servlet-name>
+        <url-pattern>/staff/incidents</url-pattern>
+    </servlet-mapping>
     <session-config>
         <session-timeout>
             30
         </session-timeout>
     </session-config>
-    
 </web-app>
