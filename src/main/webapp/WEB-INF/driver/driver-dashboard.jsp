@@ -8,6 +8,7 @@
 <%@include file="/WEB-INF/include/driver/driver-header.jsp" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 
 <body class="bg-[#f9fafb]">
@@ -33,7 +34,7 @@
                 <c:when test="${not empty upcomingTrip}">
                     <p class="text-gray-700 font-medium">${upcomingTrip.route}</p>
                     <p class="text-sm text-gray-600">
-                        <fmt:formatDate value="${upcomingTrip.departureTime}" pattern="yyyy-MM-dd" /> at ${upcomingTrip.time}
+                        <fmt:formatDate value="${upcomingTrip.departureTime}" pattern="dd-MM-yyyy" /> at ${upcomingTrip.time}
                     </p>
                 </c:when>
                 <c:otherwise>
@@ -47,42 +48,43 @@
         <div class="mb-6">
             <form id="timeFrameForm" method="get" action="${pageContext.servletContext.contextPath}/driver/dashboard" class="flex flex-wrap gap-4 items-center">
                 <label class="text-gray-700 font-medium mr-2">Select Time Frame:</label>
-                <button type="submit" name="timeFrame" value="all" class="px-4 py-2 rounded-lg ${timeFrame == 'all' ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-orange-600 hover:text-white transition">All</button>
-                <button type="submit" name="timeFrame" value="today" class="px-4 py-2 rounded-lg ${timeFrame == 'today' ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-orange-600 hover:text-white transition">Today</button>
-                <button type="submit" name="timeFrame" value="last7days" class="px-4 py-2 rounded-lg ${timeFrame == 'last7days' ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-orange-600 hover:text-white transition">Last 7 Days</button>
-                <button type="submit" name="timeFrame" value="thismonth" class="px-4 py-2 rounded-lg ${timeFrame == 'thismonth' ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-orange-600 hover:text-white transition">This Month</button>
-                <button type="submit" name="timeFrame" value="thisquarter" class="px-4 py-2 rounded-lg ${timeFrame == 'thisquarter' ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-orange-600 hover:text-white transition">This Quarter</button>
-                <button type="submit" name="timeFrame" value="thisyear" class="px-4 py-2 rounded-lg ${timeFrame == 'thisyear' ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-orange-600 hover:text-white transition">This Year</button>
+                <input type="hidden" name="timeFrame" id="timeFrameInput" value="${timeFrame}">
+                <button type="button" onclick="setTimeFrame('all')" class="px-4 py-2 rounded-lg ${timeFrame == 'all' ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-orange-600 hover:text-white transition">All</button>
+                <button type="button" onclick="setTimeFrame('today')" class="px-4 py-2 rounded-lg ${timeFrame == 'today' ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-orange-600 hover:text-white transition">Today</button>
+                <button type="button" onclick="setTimeFrame('last7days')" class="px-4 py-2 rounded-lg ${timeFrame == 'last7days' ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-orange-600 hover:text-white transition">Last 7 Days</button>
+                <button type="button" onclick="setTimeFrame('thismonth')" class="px-4 py-2 rounded-lg ${timeFrame == 'thismonth' ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-orange-600 hover:text-white transition">This Month</button>
+                <button type="button" onclick="setTimeFrame('thisquarter')" class="px-4 py-2 rounded-lg ${timeFrame == 'thisquarter' ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-orange-600 hover:text-white transition">This Quarter</button>
+                <button type="button" onclick="setTimeFrame('thisyear')" class="px-4 py-2 rounded-lg ${timeFrame == 'thisyear' ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-orange-600 hover:text-white transition">This Year</button>
                 <button type="button" onclick="toggleCustomInput()" class="px-4 py-2 rounded-lg ${timeFrame == 'custom' ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-orange-600 hover:text-white transition">Custom</button>
                 <div id="customInput" class="flex gap-2" style="display: ${timeFrame == 'custom' ? 'flex' : 'none'}">
-                    <select id="customTimeFrame" name="customTimeFrame" onchange="updateCustomInput()" class="border rounded-lg p-2 bg-white text-gray-700">
+                    <select id="customTimeFrame" name="customTimeFrame" onchange="updateCustomInput()" class="border rounded-lg p-2 bg-white text-gray-700" ${timeFrame != 'custom' ? 'disabled' : ''}>
                         <option value="day" <c:if test="${customTimeFrame == 'day'}">selected</c:if>>Day</option>
                         <option value="month" <c:if test="${customTimeFrame == 'month'}">selected</c:if>>Month</option>
                         <option value="quarter" <c:if test="${customTimeFrame == 'quarter'}">selected</c:if>>Quarter</option>
                         <option value="year" <c:if test="${customTimeFrame == 'year'}">selected</c:if>>Year</option>
                     </select>
-                    <input type="date" id="customTimeValueDay" name="timeValue" class="border rounded-lg p-2 bg-white text-gray-700" value="${customTimeFrame == 'day' ? timeValue : ''}" style="display: ${customTimeFrame == 'day' ? 'block' : 'none'}">
-                    <input type="month" id="customTimeValueMonth" name="timeValue" class="border rounded-lg p-2 bg-white text-gray-700" value="${customTimeFrame == 'month' ? timeValue : ''}" style="display: ${customTimeFrame == 'month' ? 'block' : 'none'}">
-                    <select id="customTimeValueQuarter" name="timeValue" class="border rounded-lg p-2 bg-white text-gray-700" style="display: ${customTimeFrame == 'quarter' ? 'block' : 'none'}">
-                        <c:forEach begin="0" end="7" var="i">
-                            <c:set var="quarter" value="${2025 - (i div 4)}-${4 - (i % 4)}"/>
-                            <option value="${quarter}" <c:if test="${timeValue == quarter}">selected</c:if>>Q${4 - (i % 4)} ${2025 - (i div 4)}</option>
+                    <input type="date" id="customTimeValueDay" name="timeValue" class="border rounded-lg p-2 bg-white text-gray-700" value="${customTimeFrame == 'day' ? timeValue : ''}" style="display: ${customTimeFrame == 'day' ? 'block' : 'none'}" ${timeFrame != 'custom' ? 'disabled' : ''} oninput="updateDisplayDate()">
+                    <input type="month" id="customTimeValueMonth" name="timeValue" class="border rounded-lg p-2 bg-white text-gray-700" value="${customTimeFrame == 'month' ? timeValue : ''}" style="display: ${customTimeFrame == 'month' ? 'block' : 'none'}" ${timeFrame != 'custom' ? 'disabled' : ''}>
+                    <select id="customTimeValueQuarter" name="timeValue" class="border rounded-lg p-2 bg-white text-gray-700" style="display: ${customTimeFrame == 'quarter' ? 'block' : 'none'}" ${timeFrame != 'custom' ? 'disabled' : ''}>
+                        <c:forEach var="year" begin="2024" end="2025" step="1">
+                            <c:forEach var="quarter" begin="1" end="4" step="1">
+                                <c:set var="quarterValue" value="${year}-${5 - quarter}"/>
+                                <option value="${quarterValue}" <c:if test="${timeValue == quarterValue}">selected</c:if>>Q${5 - quarter} ${year}</option>
+                            </c:forEach>
                         </c:forEach>
                     </select>
-                    <select id="customTimeValueYear" name="timeValue" class="border rounded-lg p-2 bg-white text-gray-700" style="display: ${customTimeFrame == 'year' ? 'block' : 'none'}">
+                    <select id="customTimeValueYear" name="timeValue" class="border rounded-lg p-2 bg-white text-gray-700" style="display: ${customTimeFrame == 'year' ? 'block' : 'none'}" ${timeFrame != 'custom' ? 'disabled' : ''}>
                         <c:forEach begin="2020" end="2025" var="year">
                             <option value="${year}" <c:if test="${timeValue == year.toString()}">selected</c:if>>${year}</option>
                         </c:forEach>
                     </select>
-                    <button type="submit" name="timeFrame" value="custom" class="px-4 py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition">Apply</button>
+                    <button type="button" onclick="applyCustomTimeFrame()" class="px-4 py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition">Apply</button>
                 </div>
                 <!-- Reset button -->
-                <a href="${pageContext.servletContext.contextPath}/driver/dashboard">
-                    <button type="button" class="text-sm px-4 py-2 border border-orange-400 text-orange-600 rounded-lg hover:bg-orange-100 transition flex items-center gap-2">
-                        <i class="fas fa-sync-alt"></i>
-                        Reset Filters
-                    </button>
-                </a>
+                <button type="button" onclick="resetFilters()" class="text-sm px-4 py-2 border border-orange-400 text-orange-600 rounded-lg hover:bg-orange-100 transition flex items-center gap-2">
+                    <i class="fas fa-sync-alt"></i>
+                    Reset Filters
+                </button>
             </form>
         </div>
 
@@ -145,18 +147,166 @@
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        function setTimeFrame(timeFrame) {
+            const form = document.getElementById('timeFrameForm');
+            const timeFrameInput = document.getElementById('timeFrameInput');
+            timeFrameInput.value = timeFrame;
+
+            // Enable/disable custom inputs
+            const customTimeFrame = document.getElementById('customTimeFrame');
+            const customTimeValueDay = document.getElementById('customTimeValueDay');
+            const customTimeValueMonth = document.getElementById('customTimeValueMonth');
+            const customTimeValueQuarter = document.getElementById('customTimeValueQuarter');
+            const customTimeValueYear = document.getElementById('customTimeValueYear');
+            const customInput = document.getElementById('customInput');
+
+            if (timeFrame !== 'custom') {
+                // Disable custom inputs to prevent submission
+                customTimeFrame.disabled = true;
+                customTimeValueDay.disabled = true;
+                customTimeValueMonth.disabled = true;
+                customTimeValueQuarter.disabled = true;
+                customTimeValueYear.disabled = true;
+                customInput.style.display = 'none';
+                // Clear custom input values
+                customTimeFrame.value = 'day';
+                customTimeValueDay.value = '';
+                customTimeValueMonth.value = '';
+                customTimeValueQuarter.value = '';
+                customTimeValueYear.value = '';
+                form.submit();
+            } else {
+                // Enable custom inputs for submission
+                customTimeFrame.disabled = false;
+                customTimeValueDay.disabled = customTimeFrame.value !== 'day';
+                customTimeValueMonth.disabled = customTimeFrame.value !== 'month';
+                customTimeValueQuarter.disabled = customTimeFrame.value !== 'quarter';
+                customTimeValueYear.disabled = customTimeFrame.value !== 'year';
+                customInput.style.display = 'flex';
+            }
+
+            // Update button styles
+            document.querySelectorAll('#timeFrameForm button').forEach(button => {
+                if (button.textContent.trim() === 'Apply' || button.textContent.includes('Reset Filters')) return;
+                button.classList.remove('bg-orange-500', 'text-white');
+                button.classList.add('bg-gray-200', 'text-gray-700');
+                if (button.textContent.trim() === timeFrameToText(timeFrame)) {
+                    button.classList.remove('bg-gray-200', 'text-gray-700');
+                    button.classList.add('bg-orange-500', 'text-white');
+                }
+            });
+        }
+
+        function applyCustomTimeFrame() {
+            const form = document.getElementById('timeFrameForm');
+            const customTimeFrame = document.getElementById('customTimeFrame').value;
+            const customTimeValueDay = document.getElementById('customTimeValueDay');
+            const customTimeValueMonth = document.getElementById('customTimeValueMonth');
+            const customTimeValueQuarter = document.getElementById('customTimeValueQuarter');
+            const customTimeValueYear = document.getElementById('customTimeValueYear');
+
+            // Validate that a timeValue is provided
+            let timeValue = '';
+            if (customTimeFrame === 'day' && customTimeValueDay.value) {
+                timeValue = customTimeValueDay.value;
+            } else if (customTimeFrame === 'month' && customTimeValueMonth.value) {
+                timeValue = customTimeValueMonth.value;
+            } else if (customTimeFrame === 'quarter' && customTimeValueQuarter.value) {
+                timeValue = customTimeValueQuarter.value;
+            } else if (customTimeFrame === 'year' && customTimeValueYear.value) {
+                timeValue = customTimeValueYear.value;
+            }
+
+            if (!timeValue) {
+                alert('Please select a valid time value for the custom time frame.');
+                return;
+            }
+
+            setTimeFrame('custom');
+            form.submit();
+        }
+
         function toggleCustomInput() {
             const customInput = document.getElementById('customInput');
-            customInput.style.display = customInput.style.display === 'none' ? 'flex' : 'none';
+            if (customInput.style.display === 'none') {
+                setTimeFrame('custom');
+            } else {
+                setTimeFrame('all');
+            }
             updateCustomInput();
         }
 
         function updateCustomInput() {
             const customTimeFrame = document.getElementById('customTimeFrame').value;
-            document.getElementById('customTimeValueDay').style.display = customTimeFrame === 'day' ? 'block' : 'none';
-            document.getElementById('customTimeValueMonth').style.display = customTimeFrame === 'month' ? 'block' : 'none';
-            document.getElementById('customTimeValueQuarter').style.display = customTimeFrame === 'quarter' ? 'block' : 'none';
-            document.getElementById('customTimeValueYear').style.display = customTimeFrame === 'year' ? 'block' : 'none';
+            const customTimeValueDay = document.getElementById('customTimeValueDay');
+            const customTimeValueMonth = document.getElementById('customTimeValueMonth');
+            const customTimeValueQuarter = document.getElementById('customTimeValueQuarter');
+            const customTimeValueYear = document.getElementById('customTimeValueYear');
+
+            // Update display
+            customTimeValueDay.style.display = customTimeFrame === 'day' ? 'block' : 'none';
+            customTimeValueMonth.style.display = customTimeFrame === 'month' ? 'block' : 'none';
+            customTimeValueQuarter.style.display = customTimeFrame === 'quarter' ? 'block' : 'none';
+            customTimeValueYear.style.display = customTimeFrame === 'year' ? 'block' : 'none';
+
+            // Enable/disable based on customTimeFrame
+            customTimeValueDay.disabled = customTimeFrame !== 'day';
+            customTimeValueMonth.disabled = customTimeFrame !== 'month';
+            customTimeValueQuarter.disabled = customTimeFrame !== 'quarter';
+            customTimeValueYear.disabled = customTimeFrame !== 'year';
+        }
+
+        function resetFilters() {
+            const form = document.getElementById('timeFrameForm');
+            const timeFrameInput = document.getElementById('timeFrameInput');
+            const customTimeFrame = document.getElementById('customTimeFrame');
+            const customTimeValueDay = document.getElementById('customTimeValueDay');
+            const customTimeValueMonth = document.getElementById('customTimeValueMonth');
+            const customTimeValueQuarter = document.getElementById('customTimeValueQuarter');
+            const customTimeValueYear = document.getElementById('customTimeValueYear');
+            const customInput = document.getElementById('customInput');
+
+            // Reset form values
+            timeFrameInput.value = 'all';
+            customTimeFrame.value = 'day';
+            customTimeValueDay.value = '';
+            customTimeValueMonth.value = '';
+            customTimeValueQuarter.value = '';
+            customTimeValueYear.value = '';
+
+            // Disable custom inputs
+            customTimeFrame.disabled = true;
+            customTimeValueDay.disabled = true;
+            customTimeValueMonth.disabled = true;
+            customTimeValueQuarter.disabled = true;
+            customTimeValueYear.disabled = true;
+            customInput.style.display = 'none';
+
+            // Reset button styles
+            document.querySelectorAll('#timeFrameForm button').forEach(button => {
+                if (button.textContent.trim() === 'Apply' || button.textContent.includes('Reset Filters')) return;
+                button.classList.remove('bg-orange-500', 'text-white');
+                button.classList.add('bg-gray-200', 'text-gray-700');
+                if (button.textContent.trim() === 'All') {
+                    button.classList.remove('bg-gray-200', 'text-gray-700');
+                    button.classList.add('bg-orange-500', 'text-white');
+                }
+            });
+
+            form.submit();
+        }
+
+        function timeFrameToText(timeFrame) {
+            switch (timeFrame) {
+                case 'all': return 'All';
+                case 'today': return 'Today';
+                case 'last7days': return 'Last 7 Days';
+                case 'thismonth': return 'This Month';
+                case 'thisquarter': return 'This Quarter';
+                case 'thisyear': return 'This Year';
+                case 'custom': return 'Custom';
+                default: return '';
+            }
         }
 
         // Render charts with initial data
@@ -248,10 +398,34 @@
             }
         });
 
+        // Debug chart data
+        console.log('Chart Data Debug:');
+        console.log('timeFrame: ${timeFrame}');
+        console.log('customTimeFrame: ${customTimeFrame}');
+        console.log('timeValue: ${timeValue}');
+        console.log('completedTrips: ${completedTrips}');
+        console.log('ongoingTrips: ${ongoingTrips}');
+        console.log('pendingChangeRequests: ${pendingChangeRequests}');
+        console.log('totalTrips: ${totalTrips}');
+        console.log('cancelledTrips: ${cancelledTrips}');
+        console.log('totalTicketsSold: ${totalTicketsSold}');
+        console.log('checkedInPassengers: ${checkedInPassengers}');
+        console.log('checkedInPassengersByTimeFrame: [<c:forEach items="${checkedInPassengersByTimeFrame}" var="count">${count},</c:forEach>]');
+        console.log('timeLabels: [<c:forEach items="${timeLabels}" var="label">${label},</c:forEach>]');
+
         window.onload = function() {
             updateCustomInput();
+            // Ensure correct initial state for custom inputs
+            if ('${timeFrame}' !== 'custom') {
+                document.getElementById('customTimeFrame').disabled = true;
+                document.getElementById('customTimeValueDay').disabled = true;
+                document.getElementById('customTimeValueMonth').disabled = true;
+                document.getElementById('customTimeValueQuarter').disabled = true;
+                document.getElementById('customTimeValueYear').disabled = true;
+            }
         };
     </script>
     <%-- CONTENT HERE--%>
 
     <%@include file="/WEB-INF/include/driver/driver-footer.jsp" %>
+

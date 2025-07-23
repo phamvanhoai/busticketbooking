@@ -7,6 +7,7 @@ package busticket.DAO;
 import busticket.db.DBContext;
 import busticket.model.DriverAssignedTrip;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -86,7 +87,7 @@ public class DriverDashboardDAO extends DBContext {
     public int countPendingChangeRequests(int userId, String timeFrame, String timeValue) {
         String query = buildTimeFrameQuery("SELECT COUNT(*) AS count FROM Driver_Trip_Change_Request r " +
                                           "JOIN Drivers d ON r.driver_id = d.driver_id " +
-                                          "WHERE d.user_id = ? AND r.request_status = 'Pending'", timeFrame, "r.request_time");
+                                          "WHERE d.user_id = ? AND r.request_status = 'Pending'", timeFrame, "r.request_date");
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, userId);
             setTimeFrameParameters(ps, timeFrame, timeValue, 2);
@@ -181,7 +182,7 @@ public class DriverDashboardDAO extends DBContext {
         String query = buildTimeFrameQuery("SELECT COUNT(*) AS count FROM Tickets t " +
                                           "JOIN Trip_Driver td ON t.trip_id = td.trip_id " +
                                           "JOIN Drivers d ON td.driver_id = d.driver_id " +
-                                          "WHERE d.user_id = ?", timeFrame, "t.purchase_date");
+                                          "WHERE d.user_id = ? AND t.check_in IS NOT NULL", timeFrame, "t.check_in");
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, userId);
             setTimeFrameParameters(ps, timeFrame, timeValue, 2);
@@ -199,10 +200,10 @@ public class DriverDashboardDAO extends DBContext {
     public double getApprovedChangeRequestRate(int userId, String timeFrame, String timeValue) {
         String query = buildTimeFrameQuery("SELECT COUNT(*) AS count FROM Driver_Trip_Change_Request r " +
                                           "JOIN Drivers d ON r.driver_id = d.driver_id " +
-                                          "WHERE d.user_id = ? AND r.request_status = 'Approved'", timeFrame, "r.request_time");
+                                          "WHERE d.user_id = ? AND r.request_status = 'Approved'", timeFrame, "r.request_date");
         String totalQuery = buildTimeFrameQuery("SELECT COUNT(*) AS count FROM Driver_Trip_Change_Request r " +
                                                "JOIN Drivers d ON r.driver_id = d.driver_id " +
-                                               "WHERE d.user_id = ?", timeFrame, "r.request_time");
+                                               "WHERE d.user_id = ?", timeFrame, "r.request_date");
         try (Connection conn = getConnection();
              PreparedStatement psApproved = conn.prepareStatement(query);
              PreparedStatement psTotal = conn.prepareStatement(totalQuery)) {
@@ -316,35 +317,55 @@ public class DriverDashboardDAO extends DBContext {
                 setTimeFrameParameters(ps, timeFrame, timeValue, 2);
             }
             try (ResultSet rs = ps.executeQuery()) {
+                // Initialize passengers list based on periodCount
                 for (int i = 0; i < periodCount; i++) {
                     passengers.add(0);
                 }
+                Calendar cal = Calendar.getInstance();
                 while (rs.next()) {
-                    int period = rs.getInt("period");
-                    int passengerCount = rs.getInt("passenger_count");
                     int index;
                     if (timeFrame.equals("all")) {
+                        int period = rs.getInt("period");
                         index = period - 2020;
                         if (index < 0 || index >= periodCount) continue;
                     } else if (timeFrame.equals("day")) {
-                        index = 0;
+                        index = 0; // Single day, always index 0
                     } else if (timeFrame.equals("week")) {
-                        long daysDiff = (rs.getDate("period").getTime() - java.sql.Date.valueOf(timeValue).getTime()) / (1000 * 60 * 60 * 24);
+                        Date periodDate = rs.getDate("period");
+                        Date startDate = timeValue != null && !timeValue.isEmpty() ? Date.valueOf(timeValue) : new Date(System.currentTimeMillis() - 6 * 24 * 60 * 60 * 1000L);
+                        long daysDiff = (periodDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
                         index = (int) daysDiff;
                         if (index < 0 || index >= periodCount) continue;
                     } else if (timeFrame.equals("month")) {
-                        int firstWeek = java.util.Calendar.getInstance().get(java.util.Calendar.WEEK_OF_YEAR);
-                        index = periodCount - 1 - (firstWeek - period);
-                        if (index < 0 || index >= periodCount) continue;
-                    } else if (timeFrame.equals("quarter")) {
+                        int period = rs.getInt("period");
                         String[] parts = timeValue.split("-");
-                        int quarterStartMonth = (Integer.parseInt(parts[1]) - 1) * 3 + 1;
+                        int year = Integer.parseInt(parts[0]);
+                        int month = Integer.parseInt(parts[1]);
+                        cal.set(year, month - 1, 1);
+                        int firstWeekOfMonth = cal.get(Calendar.WEEK_OF_YEAR);
+                        index = period - firstWeekOfMonth;
+                        if (index < 0) index = 0;
+                        if (index >= periodCount) index = periodCount - 1;
+                    } else if (timeFrame.equals("quarter")) {
+                        int period = rs.getInt("period");
+                        String[] parts = timeValue.split("-");
+                        int quarter = Integer.parseInt(parts[1]);
+                        int quarterStartMonth = (quarter - 1) * 3 + 1;
                         index = period - quarterStartMonth;
+                        if (index < 0) index = 0;
+                        if (index >= periodCount) index = periodCount - 1;
+                    } else if (timeFrame.equals("year")) {
+                        int period = rs.getInt("period");
+                        index = period - 1; // Months are 1-12
                         if (index < 0 || index >= periodCount) continue;
                     } else {
-                        index = period - 1;
+                        Date periodDate = rs.getDate("period");
+                        Date startDate = new Date(System.currentTimeMillis() - 6 * 24 * 60 * 60 * 1000L);
+                        long daysDiff = (periodDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+                        index = (int) daysDiff;
                         if (index < 0 || index >= periodCount) continue;
                     }
+                    int passengerCount = rs.getInt("passenger_count");
                     passengers.set(index, passengerCount);
                 }
                 System.out.println("Checked-In Passengers for userId " + userId + " by " + timeFrame + " (" + timeValue + "): " + passengers);
@@ -380,9 +401,9 @@ public class DriverDashboardDAO extends DBContext {
             switch (timeFrame) {
                 case "day":
                 case "week":
-                    ps.setDate(startIndex, java.sql.Date.valueOf(timeValue));
+                    ps.setDate(startIndex, Date.valueOf(timeValue));
                     if (timeFrame.equals("week")) {
-                        ps.setDate(startIndex + 1, java.sql.Date.valueOf(timeValue));
+                        ps.setDate(startIndex + 1, Date.valueOf(timeValue));
                     }
                     break;
                 case "month":

@@ -6,17 +6,18 @@ package busticket.controller;
 
 import busticket.DAO.AdminViewStatisticsDAO;
 import busticket.model.AdminStatistics;
-import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.math.BigDecimal;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.text.ParseException;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.Year;
-import java.time.YearMonth;
 
 /**
  *
@@ -36,48 +37,171 @@ public class AdminViewStatisticsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        AdminViewStatisticsDAO adminViewStatisticsDAO = new AdminViewStatisticsDAO();
+        AdminViewStatisticsDAO dao = new AdminViewStatisticsDAO();
         AdminStatistics statistics = new AdminStatistics();
 
-        // Lấy tham số period và dateValue từ request
+        // Get parameters
         String period = request.getParameter("period");
+        String customPeriod = request.getParameter("customPeriod");
         String dateValue = request.getParameter("dateValue");
 
-        // Đặt giá trị mặc định nếu period hoặc dateValue rỗng
+        // Initialize date formats
+        SimpleDateFormat displayDateFormat = new SimpleDateFormat("dd-MM-yyyy");
+        SimpleDateFormat displayMonthFormat = new SimpleDateFormat("MM-yyyy");
+        SimpleDateFormat daoDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat daoMonthFormat = new SimpleDateFormat("yyyy-MM");
+        Calendar cal = Calendar.getInstance();
+
+        // Set default period if invalid or empty
         if (period == null || period.isEmpty() || !isValidPeriod(period)) {
             period = "year";
-            dateValue = String.valueOf(Year.now().getValue()); // Mặc định: 2025
+            dateValue = String.valueOf(cal.get(Calendar.YEAR)); // e.g., "2025"
         } else if (dateValue == null || dateValue.isEmpty()) {
             dateValue = getDefaultDateValue(period);
         }
 
-        // Kiểm tra định dạng dateValue
-        try {
-            validateDateValue(period, dateValue);
-        } catch (IllegalArgumentException e) {
-            request.setAttribute("error", e.getMessage());
-            request.getRequestDispatcher("/WEB-INF/admin/statistics/view-statistics.jsp").forward(request, response);
-            return;
+        // Initialize DAO parameters
+        String daoPeriod = period;
+        String daoDateValue = dateValue;
+        String displayDateValue;
+
+        // Handle custom period
+        if (period.equals("custom") && customPeriod != null) {
+            try {
+                if (customPeriod.equals("day") && dateValue.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                    Date date = daoDateFormat.parse(dateValue);
+                    daoDateValue = daoDateFormat.format(date); // yyyy-MM-dd
+                    displayDateValue = displayDateFormat.format(date); // dd-MM-yyyy
+                } else if (customPeriod.equals("month") && dateValue.matches("\\d{4}-\\d{2}")) {
+                    Date date = daoMonthFormat.parse(dateValue);
+                    daoDateValue = daoMonthFormat.format(date); // yyyy-MM
+                    displayDateValue = displayMonthFormat.format(date); // MM-yyyy
+                } else if (customPeriod.equals("quarter") && dateValue.matches("\\d{4}-[1-4]")) {
+                    daoDateValue = dateValue; // yyyy-q
+                    String[] parts = dateValue.split("-");
+                    displayDateValue = "Q" + parts[1] + " " + parts[0]; // Q1 2025
+                } else if (customPeriod.equals("year") && dateValue.matches("\\d{4}")) {
+                    daoDateValue = dateValue; // yyyy
+                    displayDateValue = dateValue; // yyyy
+                } else {
+                    throw new IllegalArgumentException("Invalid dateValue format for custom period: " + dateValue);
+                }
+            } catch (ParseException e) {
+                System.err.println("Invalid dateValue format: " + dateValue);
+                daoPeriod = "year";
+                daoDateValue = String.valueOf(cal.get(Calendar.YEAR));
+                displayDateValue = daoDateValue;
+            }
+        } else {
+            // Handle non-custom periods
+            try {
+                switch (period.toLowerCase()) {
+                    case "day":
+                        Date date = daoDateFormat.parse(dateValue);
+                        daoDateValue = daoDateFormat.format(date); // yyyy-MM-dd
+                        displayDateValue = displayDateFormat.format(date); // dd-MM-yyyy
+                        break;
+                    case "week":
+                        date = daoDateFormat.parse(dateValue);
+                        daoDateValue = daoDateFormat.format(date); // yyyy-MM-dd
+                        displayDateValue = displayDateFormat.format(date); // dd-MM-yyyy
+                        break;
+                    case "month":
+                        date = daoMonthFormat.parse(dateValue);
+                        daoDateValue = daoMonthFormat.format(date); // yyyy-MM
+                        displayDateValue = displayMonthFormat.format(date); // MM-yyyy
+                        break;
+                    case "quarter":
+                        if (!dateValue.matches("\\d{4}-[1-4]")) {
+                            throw new IllegalArgumentException("Invalid quarter format: " + dateValue);
+                        }
+                        daoDateValue = dateValue; // yyyy-q
+                        String[] parts = dateValue.split("-");
+                        displayDateValue = "Q" + parts[1] + " " + parts[0]; // Q1 2025
+                        break;
+                    case "year":
+                        daoDateValue = dateValue; // yyyy
+                        displayDateValue = dateValue; // yyyy
+                        break;
+                    default:
+                        daoPeriod = "year";
+                        daoDateValue = String.valueOf(cal.get(Calendar.YEAR));
+                        displayDateValue = daoDateValue;
+                }
+            } catch (ParseException e) {
+                System.err.println("Invalid dateValue format: " + dateValue);
+                daoPeriod = "year";
+                daoDateValue = String.valueOf(cal.get(Calendar.YEAR));
+                displayDateValue = daoDateValue;
+            }
+        }
+
+        // Generate time labels for charts
+        List<String> timeLabels = new ArrayList<>();
+        switch (daoPeriod.toLowerCase()) {
+            case "day":
+                timeLabels.add(displayDateValue); // e.g., 23-07-2025
+                break;
+            case "week":
+                try {
+                Date startDate = daoDateFormat.parse(daoDateValue);
+                cal.setTime(startDate);
+                cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY); // Start of week
+                for (int i = 0; i < 7; i++) {
+                    timeLabels.add(displayDateFormat.format(cal.getTime()));
+                    cal.add(Calendar.DAY_OF_YEAR, 1);
+                }
+            } catch (ParseException e) {
+                timeLabels.add(displayDateFormat.format(new Date()));
+            }
+            break;
+            case "month":
+                String[] monthParts = daoDateValue.split("-");
+                int year = Integer.parseInt(monthParts[0]);
+                int month = Integer.parseInt(monthParts[1]) - 1;
+                cal.set(year, month, 1);
+                int maxDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+                for (int i = 1; i <= maxDay; i += 7) {
+                    timeLabels.add("Week " + ((i - 1) / 7 + 1));
+                }
+                break;
+            case "quarter":
+                String[] quarterParts = daoDateValue.split("-");
+                int qYear = Integer.parseInt(quarterParts[0]);
+                int quarter = Integer.parseInt(quarterParts[1]);
+                for (int i = 0; i < 3; i++) {
+                    int monthInQuarter = (quarter - 1) * 3 + i;
+                    timeLabels.add(new SimpleDateFormat("MMM yyyy").format(new Date(qYear - 1900, monthInQuarter, 1)));
+                }
+                break;
+            case "year":
+                for (int i = 0; i < 12; i++) {
+                    timeLabels.add(new SimpleDateFormat("MMM").format(new Date(Integer.parseInt(daoDateValue) - 1900, i, 1)));
+                }
+                break;
         }
 
         try {
-            // Lấy dữ liệu thống kê từ DAO
-            statistics.setRevenue(adminViewStatisticsDAO.getRevenueByPeriod(period, dateValue));
-            statistics.setOccupancyRate(adminViewStatisticsDAO.getOccupancyRateByPeriod(period, dateValue));
-            statistics.setTicketTypeBreakdown(adminViewStatisticsDAO.getTicketTypeBreakdownByPeriod(period, dateValue));
-            statistics.setTopRoutesRevenue(adminViewStatisticsDAO.getTopRoutesRevenueByPeriod(period, dateValue));
-            statistics.setDriverPerformance(adminViewStatisticsDAO.getDriverPerformanceByPeriod(period, dateValue));
-            statistics.setDetailedStatistics(adminViewStatisticsDAO.getDetailedStatisticsByPeriod(period, dateValue));
-            statistics.setPeriod(period);
-            statistics.setDateValue(dateValue);
+            // Fetch statistics
+            statistics.setRevenue(dao.getRevenueByPeriod(daoPeriod, daoDateValue));
+            statistics.setOccupancyRate(dao.getOccupancyRateByPeriod(daoPeriod, daoDateValue));
+            statistics.setTicketTypeBreakdown(dao.getTicketTypeBreakdownByPeriod(daoPeriod, daoDateValue));
+            statistics.setTopRoutesRevenue(dao.getTopRoutesRevenueByPeriod(daoPeriod, daoDateValue));
+            statistics.setDriverPerformance(dao.getDriverPerformanceByPeriod(daoPeriod, daoDateValue));
+            statistics.setDetailedStatistics(dao.getDetailedStatisticsByPeriod(daoPeriod, daoDateValue));
+            statistics.setPeriod(daoPeriod);
+            statistics.setDateValue(daoDateValue);
 
-            // In giá trị để gỡ lỗi
-            System.out.println("DEBUG: doGet period=" + period + ", dateValue=" + dateValue);
-
-            // Truyền dữ liệu vào request
+            // Set request attributes
             request.setAttribute("statistics", statistics);
+            request.setAttribute("displayDateValue", displayDateValue);
+            request.setAttribute("customPeriod", customPeriod);
+            request.setAttribute("timeLabels", timeLabels);
 
-            // Chuyển tiếp đến JSP
+            // Debug logging
+            System.out.println("DEBUG: doGet period=" + daoPeriod + ", dateValue=" + daoDateValue + ", displayDateValue=" + displayDateValue);
+
+            // Forward to JSP
             request.getRequestDispatcher("/WEB-INF/admin/statistics/view-statistics.jsp").forward(request, response);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -88,23 +212,30 @@ public class AdminViewStatisticsServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Xử lý form lọc thống kê
         String period = request.getParameter("period");
+        String customPeriod = request.getParameter("customPeriod");
         String dateValue = request.getParameter("dateValue");
 
-        // Đặt giá trị mặc định nếu rỗng
+        // Set default period if invalid
         if (period == null || period.isEmpty() || !isValidPeriod(period)) {
             period = "year";
-            dateValue = String.valueOf(Year.now().getValue());
+            dateValue = String.valueOf(Calendar.getInstance().get(Calendar.YEAR));
         } else if (dateValue == null || dateValue.isEmpty()) {
             dateValue = getDefaultDateValue(period);
         }
 
-        // In giá trị để gỡ lỗi
-        System.out.println("DEBUG: doPost period=" + period + ", dateValue=" + dateValue);
+        // Debug logging
+        System.out.println("DEBUG: doPost period=" + period + ", customPeriod=" + customPeriod + ", dateValue=" + dateValue);
 
-        // Chuyển hướng với tham số
-        response.sendRedirect(request.getContextPath() + "/admin/statistics?period=" + period + "&dateValue=" + dateValue);
+        // Redirect with parameters
+        String redirectUrl = request.getContextPath() + "/admin/statistics?period=" + period;
+        if (dateValue != null && !dateValue.isEmpty()) {
+            redirectUrl += "&dateValue=" + dateValue;
+        }
+        if (customPeriod != null && !customPeriod.isEmpty()) {
+            redirectUrl += "&customPeriod=" + customPeriod;
+        }
+        response.sendRedirect(redirectUrl);
     }
 
     @Override
@@ -112,52 +243,34 @@ public class AdminViewStatisticsServlet extends HttpServlet {
         return "Servlet for viewing admin statistics";
     }
 
-    // Kiểm tra period hợp lệ
     private boolean isValidPeriod(String period) {
         return period != null && (
             period.equalsIgnoreCase("day") ||
             period.equalsIgnoreCase("week") ||
             period.equalsIgnoreCase("month") ||
             period.equalsIgnoreCase("quarter") ||
-            period.equalsIgnoreCase("year")
+            period.equalsIgnoreCase("year") ||
+            period.equalsIgnoreCase("custom")
         );
     }
 
-    // Trả về dateValue mặc định
     private String getDefaultDateValue(String period) {
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat daoDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat daoMonthFormat = new SimpleDateFormat("yyyy-MM");
         switch (period.toLowerCase()) {
             case "day":
             case "week":
-                return LocalDate.now().toString(); // YYYY-MM-DD
+                return daoDateFormat.format(new Date()); // yyyy-MM-dd
             case "month":
-                return YearMonth.now().toString(); // YYYY-MM
+                return daoMonthFormat.format(new Date()); // yyyy-MM
             case "quarter":
-                int quarter = (LocalDate.now().getMonthValue() - 1) / 3 + 1;
-                return Year.now().getValue() + "-" + quarter; // YYYY-Q
+                int quarter = (cal.get(Calendar.MONTH) / 3) + 1;
+                return cal.get(Calendar.YEAR) + "-" + quarter; // yyyy-q
             case "year":
+            case "custom":
             default:
-                return String.valueOf(Year.now().getValue()); // YYYY
-        }
-    }
-
-    // Kiểm tra định dạng dateValue
-    private void validateDateValue(String period, String dateValue) {
-        if (period.equalsIgnoreCase("day") || period.equalsIgnoreCase("week")) {
-            if (!dateValue.matches("\\d{4}-\\d{2}-\\d{2}")) {
-                throw new IllegalArgumentException("Invalid date format for day/week. Use YYYY-MM-DD.");
-            }
-        } else if (period.equalsIgnoreCase("month")) {
-            if (!dateValue.matches("\\d{4}-\\d{2}")) {
-                throw new IllegalArgumentException("Invalid month format. Use YYYY-MM.");
-            }
-        } else if (period.equalsIgnoreCase("quarter")) {
-            if (!dateValue.matches("\\d{4}-[1-4]")) {
-                throw new IllegalArgumentException("Invalid quarter format. Use YYYY-Q (e.g., 2025-1).");
-            }
-        } else if (period.equalsIgnoreCase("year")) {
-            if (!dateValue.matches("\\d{4}")) {
-                throw new IllegalArgumentException("Invalid year format. Use YYYY.");
-            }
+                return String.valueOf(cal.get(Calendar.YEAR)); // yyyy
         }
     }
 }

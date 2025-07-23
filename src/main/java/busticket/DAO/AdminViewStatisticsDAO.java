@@ -21,8 +21,6 @@ import java.util.Map;
  */
 public class AdminViewStatisticsDAO extends DBContext {
 
-    // Lấy doanh thu theo khoảng thời gian
-    // Lấy doanh thu theo khoảng thời gian
     public BigDecimal getRevenueByPeriod(String period, String dateValue) throws SQLException {
         String sql = "";
         switch (period.toLowerCase()) {
@@ -45,25 +43,25 @@ public class AdminViewStatisticsDAO extends DBContext {
                 throw new SQLException("Invalid period: " + period);
         }
 
-        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             if (period.equalsIgnoreCase("day")) {
-                ps.setString(1, dateValue); // dateValue format: YYYY-MM-DD
+                ps.setString(1, dateValue);
             } else if (period.equalsIgnoreCase("week")) {
-                ps.setString(1, dateValue); // dateValue: any date in the week
+                ps.setString(1, dateValue);
                 ps.setString(2, dateValue);
             } else if (period.equalsIgnoreCase("month")) {
-                String[] parts = dateValue.split("-"); // dateValue format: YYYY-MM
-                ps.setInt(1, Integer.parseInt(parts[1])); // Month
-                ps.setInt(2, Integer.parseInt(parts[0])); // Year
+                String[] parts = dateValue.split("-");
+                ps.setInt(1, Integer.parseInt(parts[1]));
+                ps.setInt(2, Integer.parseInt(parts[0]));
             } else if (period.equalsIgnoreCase("quarter")) {
-                String[] parts = dateValue.split("-"); // dateValue format: YYYY-Q
-                ps.setInt(1, Integer.parseInt(parts[1])); // Quarter
-                ps.setInt(2, Integer.parseInt(parts[0])); // Year
+                String[] parts = dateValue.split("-");
+                ps.setInt(1, Integer.parseInt(parts[1]));
+                ps.setInt(2, Integer.parseInt(parts[0]));
             } else if (period.equalsIgnoreCase("year")) {
-                ps.setInt(1, Integer.parseInt(dateValue)); // dateValue: YYYY
+                ps.setInt(1, Integer.parseInt(dateValue));
             }
 
-            try ( ResultSet rs = ps.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getBigDecimal(1) != null ? rs.getBigDecimal(1) : BigDecimal.ZERO;
                 }
@@ -72,12 +70,11 @@ public class AdminViewStatisticsDAO extends DBContext {
         return BigDecimal.ZERO;
     }
 
-    // Lấy tỷ lệ chiếm chỗ (Occupancy Rate) theo khoảng thời gian
     public List<Map<String, Object>> getOccupancyRateByPeriod(String period, String dateValue) throws SQLException {
         String sql = "SELECT tr.trip_id, ls.location_name + ' → ' + le.location_name AS route_name, "
                 + "(CAST(COUNT(t.ticket_id) AS FLOAT) / CAST(b.capacity AS FLOAT)) * 100 AS occupancy_rate "
                 + "FROM Trips tr "
-                + "JOIN Tickets t ON tr.trip_id = t.trip_id "
+                + "JOIN Tickets t ON tr.trip_id = t.ticket_id "
                 + "JOIN Buses b ON tr.bus_id = b.bus_id "
                 + "JOIN Routes r ON tr.route_id = r.route_id "
                 + "JOIN Locations ls ON r.start_location_id = ls.location_id "
@@ -105,7 +102,7 @@ public class AdminViewStatisticsDAO extends DBContext {
         sql += " GROUP BY tr.trip_id, ls.location_name, le.location_name, b.capacity";
 
         List<Map<String, Object>> occupancyRates = new ArrayList<>();
-        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             if (period.equalsIgnoreCase("day")) {
                 ps.setString(1, dateValue);
             } else if (period.equalsIgnoreCase("week")) {
@@ -123,7 +120,7 @@ public class AdminViewStatisticsDAO extends DBContext {
                 ps.setInt(1, Integer.parseInt(dateValue));
             }
 
-            try ( ResultSet rs = ps.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Map<String, Object> row = new HashMap<>();
                     row.put("route_name", rs.getString("route_name"));
@@ -135,7 +132,6 @@ public class AdminViewStatisticsDAO extends DBContext {
         return occupancyRates;
     }
 
-    // Lấy phân loại vé (Ticket Type Breakdown) theo khoảng thời gian
     public List<Map<String, Object>> getTicketTypeBreakdownByPeriod(String period, String dateValue) throws SQLException {
         String sql = "SELECT ts.seat_number, COUNT(*) AS ticket_count "
                 + "FROM Tickets t "
@@ -165,7 +161,7 @@ public class AdminViewStatisticsDAO extends DBContext {
         sql += " GROUP BY ts.seat_number";
 
         List<Map<String, Object>> ticketTypeBreakdown = new ArrayList<>();
-        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             if (period.equalsIgnoreCase("day")) {
                 ps.setString(1, dateValue);
             } else if (period.equalsIgnoreCase("week")) {
@@ -183,7 +179,7 @@ public class AdminViewStatisticsDAO extends DBContext {
                 ps.setInt(1, Integer.parseInt(dateValue));
             }
 
-            try ( ResultSet rs = ps.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Map<String, Object> row = new HashMap<>();
                     row.put("seat_number", rs.getString("seat_number"));
@@ -195,7 +191,6 @@ public class AdminViewStatisticsDAO extends DBContext {
         return ticketTypeBreakdown;
     }
 
-    // Lấy doanh thu theo tuyến xe (Top Routes by Revenue) theo khoảng thời gian
     public List<Map<String, Object>> getTopRoutesRevenueByPeriod(String period, String dateValue) throws SQLException {
         String sql = "SELECT TOP 5 ls.location_name + ' → ' + le.location_name AS route_name, "
                 + "SUM(i.invoice_total_amount) AS total_revenue "
@@ -229,7 +224,7 @@ public class AdminViewStatisticsDAO extends DBContext {
         sql += " GROUP BY ls.location_name, le.location_name ORDER BY total_revenue DESC";
 
         List<Map<String, Object>> topRoutes = new ArrayList<>();
-        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             if (period.equalsIgnoreCase("day")) {
                 ps.setString(1, dateValue);
             } else if (period.equalsIgnoreCase("week")) {
@@ -247,7 +242,7 @@ public class AdminViewStatisticsDAO extends DBContext {
                 ps.setInt(1, Integer.parseInt(dateValue));
             }
 
-            try ( ResultSet rs = ps.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Map<String, Object> row = new HashMap<>();
                     row.put("route_name", rs.getString("route_name"));
@@ -259,7 +254,6 @@ public class AdminViewStatisticsDAO extends DBContext {
         return topRoutes;
     }
 
-    // Lấy hiệu suất tài xế (Driver Performance) theo khoảng thời gian
     public List<String> getDriverPerformanceByPeriod(String period, String dateValue) throws SQLException {
         String sql = "SELECT u.user_name, COUNT(DISTINCT t.ticket_id) AS trips, SUM(i.invoice_total_amount) AS revenue "
                 + "FROM Invoices i "
@@ -291,7 +285,7 @@ public class AdminViewStatisticsDAO extends DBContext {
         sql += " GROUP BY u.user_name ORDER BY revenue DESC";
 
         List<String> driverPerformance = new ArrayList<>();
-        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             if (period.equalsIgnoreCase("day")) {
                 ps.setString(1, dateValue);
             } else if (period.equalsIgnoreCase("week")) {
@@ -309,7 +303,7 @@ public class AdminViewStatisticsDAO extends DBContext {
                 ps.setInt(1, Integer.parseInt(dateValue));
             }
 
-            try ( ResultSet rs = ps.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     driverPerformance.add(rs.getString("user_name") + " - Trips: " + rs.getInt("trips") + " - Revenue: " + rs.getBigDecimal("revenue"));
                 }
@@ -318,10 +312,28 @@ public class AdminViewStatisticsDAO extends DBContext {
         return driverPerformance;
     }
 
-    // Lấy chi tiết thống kê (Detailed Statistics) theo khoảng thời gian
     public List<Map<String, Object>> getDetailedStatisticsByPeriod(String period, String dateValue) throws SQLException {
-        String sql = "SELECT CAST(tr.departure_time AS DATE) AS stat_date, "
-                + "ls.location_name + ' → ' + le.location_name AS route_name, "
+        String sql = "SELECT ";
+        switch (period.toLowerCase()) {
+            case "day":
+                sql += "CAST(i.paid_at AS DATE) AS stat_date, ";
+                break;
+            case "week":
+                sql += "DATEADD(DAY, -DATEPART(WEEKDAY, i.paid_at) + 1, CAST(i.paid_at AS DATE)) AS stat_date, ";
+                break;
+            case "month":
+                sql += "DATEADD(WEEK, DATEDIFF(WEEK, 0, i.paid_at), 0) AS stat_date, ";
+                break;
+            case "quarter":
+                sql += "DATEADD(MONTH, ((MONTH(i.paid_at) - 1) / 3) * 3, CAST(YEAR(i.paid_at) AS CHAR(4)) + '-01-01') AS stat_date, ";
+                break;
+            case "year":
+                sql += "CAST(YEAR(i.paid_at) AS CHAR(4)) + '-01-01' AS stat_date, ";
+                break;
+            default:
+                throw new SQLException("Invalid period: " + period);
+        }
+        sql += "ls.location_name + ' → ' + le.location_name AS route_name, "
                 + "COUNT(t.ticket_id) AS tickets_sold, "
                 + "SUM(i.invoice_total_amount) AS revenue, "
                 + "(CAST(COUNT(t.ticket_id) AS FLOAT) / CAST(b.capacity AS FLOAT)) * 100 AS occupancy_rate "
@@ -350,13 +362,30 @@ public class AdminViewStatisticsDAO extends DBContext {
             case "year":
                 sql += "WHERE YEAR(i.paid_at) = ?";
                 break;
-            default:
-                throw new SQLException("Invalid period: " + period);
         }
-        sql += " GROUP BY CAST(tr.departure_time AS DATE), ls.location_name, le.location_name, b.capacity";
+        sql += " GROUP BY ";
+        switch (period.toLowerCase()) {
+            case "day":
+                sql += "CAST(i.paid_at AS DATE), ";
+                break;
+            case "week":
+                sql += "DATEADD(DAY, -DATEPART(WEEKDAY, i.paid_at) + 1, CAST(i.paid_at AS DATE)), ";
+                break;
+            case "month":
+                sql += "DATEADD(WEEK, DATEDIFF(WEEK, 0, i.paid_at), 0), ";
+                break;
+            case "quarter":
+                sql += "DATEADD(MONTH, ((MONTH(i.paid_at) - 1) / 3) * 3, CAST(YEAR(i.paid_at) AS CHAR(4)) + '-01-01'), ";
+                break;
+            case "year":
+                sql += "CAST(YEAR(i.paid_at) AS CHAR(4)) + '-01-01', ";
+                break;
+        }
+        sql += "ls.location_name, le.location_name, b.capacity "
+                + "ORDER BY stat_date";
 
         List<Map<String, Object>> detailedStatistics = new ArrayList<>();
-        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             if (period.equalsIgnoreCase("day")) {
                 ps.setString(1, dateValue);
             } else if (period.equalsIgnoreCase("week")) {
@@ -374,7 +403,7 @@ public class AdminViewStatisticsDAO extends DBContext {
                 ps.setInt(1, Integer.parseInt(dateValue));
             }
 
-            try ( ResultSet rs = ps.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Map<String, Object> row = new HashMap<>();
                     row.put("stat_date", rs.getString("stat_date"));
@@ -389,10 +418,9 @@ public class AdminViewStatisticsDAO extends DBContext {
         return detailedStatistics;
     }
 
-    // Các phương thức hiện có (giữ nguyên)
     public BigDecimal getMonthlyRevenue() throws SQLException {
         String sql = "SELECT SUM(invoice_total_amount) FROM Invoices WHERE YEAR(paid_at) = YEAR(GETDATE())";
-        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 return rs.getBigDecimal(1) != null ? rs.getBigDecimal(1) : BigDecimal.ZERO;
             }
@@ -412,7 +440,7 @@ public class AdminViewStatisticsDAO extends DBContext {
                 + "GROUP BY tr.trip_id, ls.location_name, le.location_name, b.capacity";
 
         List<Map<String, Object>> occupancyRates = new ArrayList<>();
-        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Map<String, Object> row = new HashMap<>();
                 row.put("route_name", rs.getString("route_name"));
@@ -430,7 +458,7 @@ public class AdminViewStatisticsDAO extends DBContext {
                 + "GROUP BY ts.seat_number";
 
         List<Map<String, Object>> ticketTypeBreakdown = new ArrayList<>();
-        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Map<String, Object> row = new HashMap<>();
                 row.put("seat_number", rs.getString("seat_number"));
@@ -455,7 +483,7 @@ public class AdminViewStatisticsDAO extends DBContext {
                 + "ORDER BY total_revenue DESC";
 
         List<Map<String, Object>> topRoutes = new ArrayList<>();
-        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Map<String, Object> row = new HashMap<>();
                 row.put("route_name", rs.getString("route_name"));
@@ -478,7 +506,7 @@ public class AdminViewStatisticsDAO extends DBContext {
                 + "ORDER BY revenue DESC";
 
         List<String> driverPerformance = new ArrayList<>();
-        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 driverPerformance.add(rs.getString("user_name") + " - Trips: " + rs.getInt("trips") + " - Revenue: " + rs.getBigDecimal("revenue"));
             }
