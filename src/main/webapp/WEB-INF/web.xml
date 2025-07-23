@@ -144,6 +144,10 @@
         <servlet-name>StaffReviewsServlet</servlet-name>
         <servlet-class>busticket.controller.StaffReviewsServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>DriverIncidentsServlet</servlet-name>
+        <servlet-class>busticket.controller.DriverIncidentsServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>AdminDashboardServlet</servlet-name>
         <url-pattern>/admin/dashboard</url-pattern>
@@ -289,9 +293,14 @@
         <servlet-name>StaffReviewsServlet</servlet-name>
         <url-pattern>/staff/reviews</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DriverIncidentsServlet</servlet-name>
+        <url-pattern>/driver/incidents</url-pattern>
+    </servlet-mapping>
     <session-config>
         <session-timeout>
             30
         </session-timeout>
     </session-config>
+    
 </web-app>

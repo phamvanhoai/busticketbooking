@@ -79,6 +79,12 @@
                                     <span>Request Cancel Trip</span>
                                 </a>
                             </div>
+                            <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("driver-incidents.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
+                                <a href="${pageContext.servletContext.contextPath}/driver/incidents">
+                                    <span class="text-base"><i class="fas fa-table"></i></span>
+                                    <span>Incidents</span>
+                                </a>
+                            </div>
                             <div class="flex items-center gap-3 cursor-pointer px-4 py-2 <%= request.getRequestURI().endsWith("driver-license.jsp") ? "bg-[#F7F6F3] text-orange-600 font-semibold pl-6 rounded-r-xl rounded-l-none shadow -ml-4" : "text-white hover:bg-orange-300/20"%>">
                                 <a href="${pageContext.servletContext.contextPath}/driver/driver-license">
                                     <span class="text-base"><i class="fas fa-table"></i></span>
