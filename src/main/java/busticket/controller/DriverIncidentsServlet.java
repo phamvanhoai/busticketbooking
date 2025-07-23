@@ -73,11 +73,34 @@ public class DriverIncidentsServlet extends HttpServlet {
         }
         int userId = currentUser.getUser_id();
         DriverIncidentsDAO driverIncidentsDAO = new DriverIncidentsDAO();
+        request.setAttribute("driverDAO", driverIncidentsDAO); // Truyền DAO vào request scope
+        
         int driverId = driverIncidentsDAO.getDriverIdFromUser(userId);
         if (driverId == -1) {
             session.setAttribute("error", "No driver found for this account.");
             response.sendRedirect(request.getContextPath() + "/login");
             return;
+        }
+        
+        // Handle detail view
+        String detailId = request.getParameter("detail");
+        if (detailId != null) {
+            try {
+                int incidentId = Integer.parseInt(detailId);
+                DriverIncidents incident = driverIncidentsDAO.getIncidentById(incidentId);
+                if (incident == null || incident.getDriverId() != driverId) {
+                    session.setAttribute("error", "Incident not found or you are not authorized to view it.");
+                    response.sendRedirect(request.getContextPath() + "/driver/incidents");
+                    return;
+                }
+                request.setAttribute("incident", incident);
+                request.getRequestDispatcher("/WEB-INF/driver/incidents/driver-incident-details.jsp").forward(request, response);
+                return;
+            } catch (NumberFormatException e) {
+                session.setAttribute("error", "Invalid incident ID.");
+                response.sendRedirect(request.getContextPath() + "/driver/incidents");
+                return;
+            }
         }
 
         String add = request.getParameter("add");

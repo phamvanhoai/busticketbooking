@@ -41,21 +41,21 @@
                     <tr>
                         <th class="px-4 py-2">Report ID</th>
                         <th class="px-4 py-2">Trip</th>
-                        <th class="px-4 py-2">Description</th>
-                        <th class="px-4 py-2">Location</th>
                         <th class="px-4 py-2">Incident Type</th>
                         <th class="px-4 py-2">Status</th>
                         <th class="px-4 py-2">Created At</th>
-                        <th class="px-4 py-2">Photo</th>
+                        <th class="px-4 py-2">Updated At</th>
+                        <th class="px-4 py-2">Staff Name</th>
+                        <th class="px-4 py-2">Incident Note</th>
+                        <th class="px-4 py-2">Details</th>
                     </tr>
                 </thead>
                 <tbody>
                     <c:forEach var="incident" items="${incidents}">
                         <tr class="border-t hover:bg-gray-50">
                             <td class="px-4 py-2">${incident.incidentId}</td>
-                            <td class="px-4 py-2">${incident.tripId != null ? incident.tripId : 'N/A'}</td>
-                            <td class="px-4 py-2">${incident.description}</td>
-                            <td class="px-4 py-2">${incident.location != null ? incident.location : 'N/A'}</td>
+                            <td class="px-4 py-2"><c:out value="${incident.tripId != null ? driverDAO.getTripNameById(incident.tripId) : 'N/A'}"/></td>
+                            
                             <td class="px-4 py-2">${incident.incidentType}</td>
                             <td class="px-4 py-2">
                                 <c:choose>
@@ -82,20 +82,21 @@
                                 </c:choose>
                             </td>
                             <td class="px-4 py-2"><fmt:formatDate value="${incident.createdAt}" pattern="yyyy-MM-dd HH:mm:ss" /></td>
+                            <td class="px-4 py-2">${incident.updatedAt != null ? incident.updatedAt : 'N/A'}</td>
+                            <td class="px-4 py-2"><c:out value="${incident.staffId != null ? driverDAO.getStaffNameById(incident.staffId) : 'N/A'}"/></td>
+                            <td class="px-4 py-2">${incident.incidentNote != null ? incident.incidentNote : 'N/A'}</td>
                             <td class="px-4 py-2">
-                                <c:if test="${not empty incident.photoUrl}">
-                                    <a href="${pageContext.request.contextPath}${incident.photoUrl}" target="_blank" class="text-blue-600 hover:underline">View Photo</a>
-                                </c:if>
+                                <a href="${pageContext.request.contextPath}/driver/incidents?detail=${incident.incidentId}" class="text-blue-600 hover:underline">View Details</a>
                             </td>
                         </tr>
                     </c:forEach>
                     <c:if test="${empty incidents}">
                         <tr>
-                            <td colspan="8" class="py-4 px-4 text-center text-gray-500">
+                            <td colspan="12" class="py-4 px-4 text-center text-gray-500">
                                 <div class="flex flex-col items-center justify-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M9.75 9.75h.008v.008H9.75V9.75zm4.5 0h.008v.008h-.008V9.75zM9 13.5c.75 1 2.25 1 3 0m9 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M9.75 9.75h.008v.008H9.75V9.75zm4.5 0h.008v.008h-.008V9.75zM9 13.5c.75 1 2.25 1 3 0m9 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
                                     <span class="text-sm text-gray-500 font-medium">
                                         No incident reports found.
