@@ -21,7 +21,11 @@ public class DriverIncidents {
     private String incidentType;
     private String status;
     private Timestamp createdAt;
-
+    private Timestamp updatedAt; // Thêm cột incident_updated_at
+    private String incidentNote; // Thêm cột incident_note
+    private Integer staffId;    // Thêm cột staff_id
+    
+    //DRIVER
     public DriverIncidents(int incidentId, int driverId, Integer tripId, String description, String location, String photoUrl, String incidentType, String status, Timestamp createdAt) {
         this.incidentId = incidentId;
         this.driverId = driverId;
@@ -33,6 +37,65 @@ public class DriverIncidents {
         this.status = status;
         this.createdAt = createdAt;
     }
+
+    //STAFF
+    public DriverIncidents(int incidentId, int driverId, Integer tripId, String description, String location, String photoUrl, String incidentType, String status, Timestamp createdAt, String incidentNote, Integer staffId) {
+        this.incidentId = incidentId;
+        this.driverId = driverId;
+        this.tripId = tripId;
+        this.description = description;
+        this.location = location;
+        this.photoUrl = photoUrl;
+        this.incidentType = incidentType;
+        this.status = status;
+        this.createdAt = createdAt;
+        this.incidentNote = incidentNote;
+        this.staffId = staffId;
+    }
+
+    public DriverIncidents(int incidentId, int driverId, Integer tripId, String description, String location, String photoUrl, String incidentType, String status, Timestamp createdAt, Timestamp updatedAt, String incidentNote, Integer staffId) {
+        this.incidentId = incidentId;
+        this.driverId = driverId;
+        this.tripId = tripId;
+        this.description = description;
+        this.location = location;
+        this.photoUrl = photoUrl;
+        this.incidentType = incidentType;
+        this.status = status;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.incidentNote = incidentNote;
+        this.staffId = staffId;
+    }
+    
+    
+
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+    
+    
+
+    public String getIncidentNote() {
+        return incidentNote;
+    }
+
+    public void setIncidentNote(String incidentNote) {
+        this.incidentNote = incidentNote;
+    }
+
+    public Integer getStaffId() {
+        return staffId;
+    }
+
+    public void setStaffId(Integer staffId) {
+        this.staffId = staffId;
+    }
+    
 
     public int getIncidentId() {
         return incidentId;
