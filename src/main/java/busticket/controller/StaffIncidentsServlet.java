@@ -64,6 +64,8 @@ public class StaffIncidentsServlet extends HttpServlet {
                 session.removeAttribute("error");
             }
         }
+        StaffIncidentsDAO dao = new StaffIncidentsDAO();
+        request.setAttribute("staffDAO", dao); // Truyền DAO vào request scope
         
         // Handle detail view
         String detailId = request.getParameter("detail");

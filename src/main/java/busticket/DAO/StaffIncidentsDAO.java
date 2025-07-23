@@ -85,6 +85,62 @@ public class StaffIncidentsDAO extends DBContext{
         }
         return null;
     }
+    
+    public String getStaffNameById(int staffId) {
+        String query = "SELECT user_name FROM Users WHERE user_id = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, staffId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("user_name");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching staff name: staffId=" + staffId + ", error=" + e.getMessage());
+            e.printStackTrace();
+        }
+        return "N/A";
+    }
+
+    public String getDriverNameById(int driverId) {
+        String query = "SELECT u.user_name FROM Users u JOIN Drivers d ON u.user_id = d.user_id WHERE d.driver_id = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, driverId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("user_name");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching driver name: driverId=" + driverId + ", error=" + e.getMessage());
+            e.printStackTrace();
+        }
+        return "N/A";
+    }
+
+    public String getTripNameById(Integer tripId) {
+        if (tripId == null) {
+            return "N/A";
+        }
+        String query = "SELECT CONCAT(ls.location_name, N' → ', le.location_name) AS trip_name "
+                + "FROM Trips t "
+                + "JOIN Routes r ON t.route_id = r.route_id "
+                + "JOIN Locations ls ON r.start_location_id = ls.location_id "
+                + "JOIN Locations le ON r.end_location_id = le.location_id "
+                + "WHERE t.trip_id = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, tripId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("trip_name");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching trip name: tripId=" + tripId + ", error=" + e.getMessage());
+            e.printStackTrace();
+        }
+        return "N/A";
+    }
 
     public int countAllIncidents() {
         String query = "SELECT COUNT(*) AS total FROM Driver_Incidents";
@@ -107,7 +163,7 @@ public class StaffIncidentsDAO extends DBContext{
             ps.setString(1, status);
             ps.setString(2, incidentNote);
             ps.setInt(3, staffId);
-            ps.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now())); // Cập nhật thời gian hiện tại
+            ps.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
             ps.setInt(5, incidentId);
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;

@@ -30,8 +30,8 @@
             <h2 class="text-xl font-semibold text-gray-800 mb-4">Incident ID: ${incident.incidentId}</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <p><strong>Driver ID:</strong> ${incident.driverId}</p>
-                    <p><strong>Trip ID:</strong> ${incident.tripId != null ? incident.tripId : 'N/A'}</p>
+                    <p><strong>Driver:</strong> <c:out value="${staffDAO.getDriverNameById(incident.driverId)}"/></p>
+                    <p><strong>Trip:</strong> <c:out value="${incident.tripId != null ? staffDAO.getTripNameById(incident.tripId) : 'N/A'}"/></p>
                     <p><strong>Description:</strong> ${incident.description}</p>
                     <p><strong>Location:</strong> ${incident.location != null ? incident.location : 'N/A'}</p>
                     <p><strong>Incident Type:</strong> ${incident.incidentType}</p>

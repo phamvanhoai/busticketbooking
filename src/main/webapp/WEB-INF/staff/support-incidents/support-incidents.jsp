@@ -12,7 +12,7 @@
 
 <body class="bg-[#fff6f3] p-6">
     <div class="space-y-6">
-        <h1 class="text-3xl font-bold text-orange-600">Incident Management</h1>
+        <h1 class="text-3xl font-bold text-orange-600">Support Incidents</h1>
 
         <c:if test="${not empty success}">
             <div class="bg-green-100 text-green-700 p-4 rounded mb-4">
@@ -33,14 +33,11 @@
                     <tr>
                         <th class="px-4 py-2">Report ID</th>
                         <th class="px-4 py-2">Driver ID</th>
-                        <th class="px-4 py-2">Trip</th>
-                        <th class="px-4 py-2">Description</th>
-                        <th class="px-4 py-2">Location</th>
                         <th class="px-4 py-2">Incident Type</th>
                         <th class="px-4 py-2">Status</th>
                         <th class="px-4 py-2">Created At</th>
                         <th class="px-4 py-2">Updated At</th>
-                        <th class="px-4 py-2">Staff ID</th>
+                        <th class="px-4 py-2">Support Name</th>
                         <th class="px-4 py-2">Incident Note</th>
                         <th class="px-4 py-2">Details</th>
                     </tr>
@@ -49,10 +46,7 @@
                     <c:forEach var="incident" items="${incidents}">
                         <tr class="border-t hover:bg-gray-50">
                             <td class="px-4 py-2">${incident.incidentId}</td>
-                            <td class="px-4 py-2">${incident.driverId}</td>
-                            <td class="px-4 py-2">${incident.tripId != null ? incident.tripId : 'N/A'}</td>
-                            <td class="px-4 py-2">${incident.description}</td>
-                            <td class="px-4 py-2">${incident.location != null ? incident.location : 'N/A'}</td>
+                            <td class="px-4 py-2">${staffDAO.getDriverNameById(incident.driverId)}</td>
                             <td class="px-4 py-2">${incident.incidentType}</td>
                             <td class="px-4 py-2">
                                 <c:choose>
@@ -80,7 +74,7 @@
                             </td>
                             <td class="px-4 py-2"><fmt:formatDate value="${incident.createdAt}" pattern="yyyy-MM-dd HH:mm:ss" /></td>
                             <td class="px-4 py-2">${incident.updatedAt != null ? incident.updatedAt : 'N/A'}</td>
-                            <td class="px-4 py-2">${incident.staffId != null ? incident.staffId : 'N/A'}</td>
+                            <td class="px-4 py-2"><c:out value="${incident.staffId != null ? staffDAO.getStaffNameById(incident.staffId) : 'N/A'}"/></td>
                             <td class="px-4 py-2">${incident.incidentNote != null ? incident.incidentNote : 'N/A'}</td>
                             <td class="px-4 py-2">
                                 <a href="${pageContext.request.contextPath}/staff/incidents?detail=${incident.incidentId}" class="text-blue-600 hover:underline">View Details</a>
