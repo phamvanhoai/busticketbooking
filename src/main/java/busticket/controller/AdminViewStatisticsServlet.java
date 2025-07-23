@@ -5,19 +5,20 @@
 package busticket.controller;
 
 import busticket.DAO.AdminViewStatisticsDAO;
-import busticket.model.AdminStatistics;
+import busticket.util.SessionUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.text.ParseException;
-import java.sql.SQLException;
+import java.util.Locale;
 
 /**
  *
@@ -37,126 +38,166 @@ public class AdminViewStatisticsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Check if user is an admin
+        if (!SessionUtil.isAdmin(request)) {
+            response.sendRedirect(request.getContextPath());
+            return;
+        }
+
+        // Get user_id from session
+        HttpSession session = request.getSession(false);
+
         AdminViewStatisticsDAO dao = new AdminViewStatisticsDAO();
-        AdminStatistics statistics = new AdminStatistics();
 
-        // Get parameters
-        String period = request.getParameter("period");
-        String customPeriod = request.getParameter("customPeriod");
-        String dateValue = request.getParameter("dateValue");
-
-        // Initialize date formats
-        SimpleDateFormat displayDateFormat = new SimpleDateFormat("dd-MM-yyyy");
-        SimpleDateFormat displayMonthFormat = new SimpleDateFormat("MM-yyyy");
-        SimpleDateFormat daoDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        SimpleDateFormat daoMonthFormat = new SimpleDateFormat("yyyy-MM");
+        // Get timeFrame, customTimeFrame, and timeValue from request
+        String timeFrame = request.getParameter("timeFrame");
+        String customTimeFrame = request.getParameter("customTimeFrame");
+        String timeValue = request.getParameter("timeValue");
         Calendar cal = Calendar.getInstance();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat monthFormat = new SimpleDateFormat("yyyy-MM");
 
-        // Set default period if invalid or empty
-        if (period == null || period.isEmpty() || !isValidPeriod(period)) {
-            period = "year";
-            dateValue = String.valueOf(cal.get(Calendar.YEAR)); // e.g., "2025"
-        } else if (dateValue == null || dateValue.isEmpty()) {
-            dateValue = getDefaultDateValue(period);
+        // Set default timeFrame if not provided
+        if (timeFrame == null || timeFrame.isEmpty()) {
+            timeFrame = "today";
         }
 
         // Initialize DAO parameters
-        String daoPeriod = period;
-        String daoDateValue = dateValue;
-        String displayDateValue;
+        String daoTimeFrame = timeFrame;
+        String daoTimeValue = timeValue;
+        String displayTimeValue;
 
-        // Handle custom period
-        if (period.equals("custom") && customPeriod != null) {
-            try {
-                if (customPeriod.equals("day") && dateValue.matches("\\d{4}-\\d{2}-\\d{2}")) {
-                    Date date = daoDateFormat.parse(dateValue);
-                    daoDateValue = daoDateFormat.format(date); // yyyy-MM-dd
-                    displayDateValue = displayDateFormat.format(date); // dd-MM-yyyy
-                } else if (customPeriod.equals("month") && dateValue.matches("\\d{4}-\\d{2}")) {
-                    Date date = daoMonthFormat.parse(dateValue);
-                    daoDateValue = daoMonthFormat.format(date); // yyyy-MM
-                    displayDateValue = displayMonthFormat.format(date); // MM-yyyy
-                } else if (customPeriod.equals("quarter") && dateValue.matches("\\d{4}-[1-4]")) {
-                    daoDateValue = dateValue; // yyyy-q
-                    String[] parts = dateValue.split("-");
-                    displayDateValue = "Q" + parts[1] + " " + parts[0]; // Q1 2025
-                } else if (customPeriod.equals("year") && dateValue.matches("\\d{4}")) {
-                    daoDateValue = dateValue; // yyyy
-                    displayDateValue = dateValue; // yyyy
-                } else {
-                    throw new IllegalArgumentException("Invalid dateValue format for custom period: " + dateValue);
-                }
-            } catch (ParseException e) {
-                System.err.println("Invalid dateValue format: " + dateValue);
-                daoPeriod = "year";
-                daoDateValue = String.valueOf(cal.get(Calendar.YEAR));
-                displayDateValue = daoDateValue;
-            }
-        } else {
-            // Handle non-custom periods
-            try {
-                switch (period.toLowerCase()) {
+        // Set timeValue and displayTimeValue for predefined and custom time frames
+        try {
+            if (timeFrame.equals("custom") && customTimeFrame != null && timeValue != null) {
+                switch (customTimeFrame) {
                     case "day":
-                        Date date = daoDateFormat.parse(dateValue);
-                        daoDateValue = daoDateFormat.format(date); // yyyy-MM-dd
-                        displayDateValue = displayDateFormat.format(date); // dd-MM-yyyy
-                        break;
-                    case "week":
-                        date = daoDateFormat.parse(dateValue);
-                        daoDateValue = daoDateFormat.format(date); // yyyy-MM-dd
-                        displayDateValue = displayDateFormat.format(date); // dd-MM-yyyy
+                        if (!timeValue.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                            timeValue = dateFormat.format(new Date());
+                        }
+                        daoTimeFrame = "day";
+                        daoTimeValue = timeValue;
+                        displayTimeValue = timeValue;
                         break;
                     case "month":
-                        date = daoMonthFormat.parse(dateValue);
-                        daoDateValue = daoMonthFormat.format(date); // yyyy-MM
-                        displayDateValue = displayMonthFormat.format(date); // MM-yyyy
+                        if (!timeValue.matches("\\d{4}-\\d{2}")) {
+                            timeValue = monthFormat.format(new Date());
+                        }
+                        daoTimeFrame = "month";
+                        daoTimeValue = timeValue;
+                        displayTimeValue = timeValue;
                         break;
                     case "quarter":
-                        if (!dateValue.matches("\\d{4}-[1-4]")) {
-                            throw new IllegalArgumentException("Invalid quarter format: " + dateValue);
+                        if (!timeValue.matches("\\d{4}-[1-4]")) {
+                            int q = (cal.get(Calendar.MONTH) / 3) + 1;
+                            timeValue = cal.get(Calendar.YEAR) + "-" + q;
                         }
-                        daoDateValue = dateValue; // yyyy-q
-                        String[] parts = dateValue.split("-");
-                        displayDateValue = "Q" + parts[1] + " " + parts[0]; // Q1 2025
+                        daoTimeFrame = "quarter";
+                        daoTimeValue = timeValue;
+                        String[] quarterParts = timeValue.split("-");
+                        displayTimeValue = "Q" + quarterParts[1] + " " + quarterParts[0];
                         break;
                     case "year":
-                        daoDateValue = dateValue; // yyyy
-                        displayDateValue = dateValue; // yyyy
+                        if (!timeValue.matches("\\d{4}")) {
+                            timeValue = String.valueOf(cal.get(Calendar.YEAR));
+                        }
+                        daoTimeFrame = "year";
+                        daoTimeValue = timeValue;
+                        displayTimeValue = timeValue;
                         break;
                     default:
-                        daoPeriod = "year";
-                        daoDateValue = String.valueOf(cal.get(Calendar.YEAR));
-                        displayDateValue = daoDateValue;
+                        daoTimeFrame = "day";
+                        daoTimeValue = dateFormat.format(new Date());
+                        displayTimeValue = daoTimeValue;
                 }
-            } catch (ParseException e) {
-                System.err.println("Invalid dateValue format: " + dateValue);
-                daoPeriod = "year";
-                daoDateValue = String.valueOf(cal.get(Calendar.YEAR));
-                displayDateValue = daoDateValue;
+            } else {
+                switch (timeFrame) {
+                    case "all":
+                        daoTimeFrame = "all";
+                        daoTimeValue = null;
+                        displayTimeValue = "All Time";
+                        break;
+                    case "today":
+                        daoTimeFrame = "day";
+                        daoTimeValue = dateFormat.format(new Date());
+                        displayTimeValue = daoTimeValue;
+                        break;
+                    case "last7days":
+                        daoTimeFrame = "last7days";
+                        daoTimeValue = null;
+                        displayTimeValue = "Last 7 Days";
+                        break;
+                    case "thismonth":
+                        daoTimeFrame = "month";
+                        daoTimeValue = monthFormat.format(new Date());
+                        displayTimeValue = daoTimeValue;
+                        break;
+                    case "thisquarter":
+                        daoTimeFrame = "quarter";
+                        int quarter = (cal.get(Calendar.MONTH) / 3) + 1;
+                        daoTimeValue = cal.get(Calendar.YEAR) + "-" + quarter;
+                        displayTimeValue = "Q" + quarter + " " + cal.get(Calendar.YEAR);
+                        break;
+                    case "thisyear":
+                        daoTimeFrame = "year";
+                        daoTimeValue = String.valueOf(cal.get(Calendar.YEAR));
+                        displayTimeValue = daoTimeValue;
+                        break;
+                    default:
+                        daoTimeFrame = "day";
+                        daoTimeValue = dateFormat.format(new Date());
+                        displayTimeValue = daoTimeValue;
+                }
             }
+        } catch (Exception e) {
+            System.err.println("Invalid timeValue format: " + timeValue);
+            daoTimeFrame = "day";
+            daoTimeValue = dateFormat.format(new Date());
+            displayTimeValue = daoTimeValue;
         }
+
+        // Get timeValueForYear for year dropdown
+        String timeValueForYear = daoTimeValue;
+        if (daoTimeFrame.equals("day") || daoTimeFrame.equals("month") || daoTimeFrame.equals("quarter")) {
+            timeValueForYear = daoTimeValue != null ? daoTimeValue.split("-")[0] : String.valueOf(cal.get(Calendar.YEAR));
+        }
+
+        // Fetch statistics
+        int totalTrips = dao.countTotalTrips(daoTimeFrame, daoTimeValue);
+        int completedTrips = dao.countCompletedTrips(daoTimeFrame, daoTimeValue);
+        int ongoingTrips = dao.countOngoingTrips(daoTimeFrame, daoTimeValue);
+        int cancelledTrips = dao.countCancelledTrips(daoTimeFrame, daoTimeValue);
+        int totalTicketsSold = dao.countTotalTicketsSold(daoTimeFrame, daoTimeValue);
+        int checkedInPassengers = dao.countCheckedInPassengers(daoTimeFrame, daoTimeValue);
+        double totalRevenue = dao.getTotalRevenue(daoTimeFrame, daoTimeValue);
+        List<Integer> ticketsSoldByTimeFrame = dao.getTicketsSoldByTimeFrame(daoTimeFrame, daoTimeValue);
+
+        // Calculate completion rate
+        double completionRate = totalTrips > 0 ? (double) completedTrips / totalTrips * 100 : 0;
 
         // Generate time labels for charts
         List<String> timeLabels = new ArrayList<>();
-        switch (daoPeriod.toLowerCase()) {
-            case "day":
-                timeLabels.add(displayDateValue); // e.g., 23-07-2025
+        switch (daoTimeFrame) {
+            case "all":
+                int startYear = 2020;
+                int currentYear = cal.get(Calendar.YEAR);
+                for (int i = startYear; i <= currentYear; i++) {
+                    timeLabels.add(String.valueOf(i));
+                }
                 break;
-            case "week":
-                try {
-                Date startDate = daoDateFormat.parse(daoDateValue);
-                cal.setTime(startDate);
-                cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY); // Start of week
+            case "day":
+                timeLabels.add(daoTimeValue);
+                break;
+            case "last7days":
+                cal.setTime(new Date());
+                cal.add(Calendar.DAY_OF_YEAR, -6);
                 for (int i = 0; i < 7; i++) {
-                    timeLabels.add(displayDateFormat.format(cal.getTime()));
+                    timeLabels.add(dateFormat.format(cal.getTime()));
                     cal.add(Calendar.DAY_OF_YEAR, 1);
                 }
-            } catch (ParseException e) {
-                timeLabels.add(displayDateFormat.format(new Date()));
-            }
-            break;
+                break;
             case "month":
-                String[] monthParts = daoDateValue.split("-");
+                String[] monthParts = daoTimeValue.split("-");
                 int year = Integer.parseInt(monthParts[0]);
                 int month = Integer.parseInt(monthParts[1]) - 1;
                 cal.set(year, month, 1);
@@ -166,7 +207,7 @@ public class AdminViewStatisticsServlet extends HttpServlet {
                 }
                 break;
             case "quarter":
-                String[] quarterParts = daoDateValue.split("-");
+                String[] quarterParts = daoTimeValue.split("-");
                 int qYear = Integer.parseInt(quarterParts[0]);
                 int quarter = Integer.parseInt(quarterParts[1]);
                 for (int i = 0; i < 3; i++) {
@@ -176,64 +217,58 @@ public class AdminViewStatisticsServlet extends HttpServlet {
                 break;
             case "year":
                 for (int i = 0; i < 12; i++) {
-                    timeLabels.add(new SimpleDateFormat("MMM").format(new Date(Integer.parseInt(daoDateValue) - 1900, i, 1)));
+                    timeLabels.add(new SimpleDateFormat("MMM").format(new Date(Integer.parseInt(daoTimeValue) - 1900, i, 1)));
                 }
                 break;
+            default:
+                long currentTime = System.currentTimeMillis();
+                for (int i = 6; i >= 0; i--) {
+                    timeLabels.add(dateFormat.format(new Date(currentTime - i * 24 * 60 * 60 * 1000L)));
+                }
         }
+        
+        // Format totalRevenue for VND
+        NumberFormat vndFormat = NumberFormat.getNumberInstance(new Locale("vi", "VN"));
+        vndFormat.setMinimumFractionDigits(0); // No decimal places for VND
+        vndFormat.setMaximumFractionDigits(0);
+        String formattedRevenue = vndFormat.format(totalRevenue);
 
-        try {
-            // Fetch statistics
-            statistics.setRevenue(dao.getRevenueByPeriod(daoPeriod, daoDateValue));
-            statistics.setOccupancyRate(dao.getOccupancyRateByPeriod(daoPeriod, daoDateValue));
-            statistics.setTicketTypeBreakdown(dao.getTicketTypeBreakdownByPeriod(daoPeriod, daoDateValue));
-            statistics.setTopRoutesRevenue(dao.getTopRoutesRevenueByPeriod(daoPeriod, daoDateValue));
-            statistics.setDriverPerformance(dao.getDriverPerformanceByPeriod(daoPeriod, daoDateValue));
-            statistics.setDetailedStatistics(dao.getDetailedStatisticsByPeriod(daoPeriod, daoDateValue));
-            statistics.setPeriod(daoPeriod);
-            statistics.setDateValue(daoDateValue);
+        // Set request attributes
+        request.setAttribute("totalTrips", totalTrips);
+        request.setAttribute("completedTrips", completedTrips);
+        request.setAttribute("ongoingTrips", ongoingTrips);
+        request.setAttribute("cancelledTrips", cancelledTrips);
+        request.setAttribute("totalTicketsSold", totalTicketsSold);
+        request.setAttribute("checkedInPassengers", checkedInPassengers);
+        request.setAttribute("totalRevenue", formattedRevenue);
+        request.setAttribute("completionRate", String.format("%.1f", completionRate));
+        request.setAttribute("ticketsSoldByTimeFrame", ticketsSoldByTimeFrame);
+        request.setAttribute("timeLabels", timeLabels);
+        request.setAttribute("timeFrame", timeFrame);
+        request.setAttribute("timeValue", timeValue);
+        request.setAttribute("timeValueForYear", timeValueForYear);
+        request.setAttribute("customTimeFrame", customTimeFrame);
+        request.setAttribute("displayTimeValue", displayTimeValue);
 
-            // Set request attributes
-            request.setAttribute("statistics", statistics);
-            request.setAttribute("displayDateValue", displayDateValue);
-            request.setAttribute("customPeriod", customPeriod);
-            request.setAttribute("timeLabels", timeLabels);
-
-            // Debug logging
-            System.out.println("DEBUG: doGet period=" + daoPeriod + ", dateValue=" + daoDateValue + ", displayDateValue=" + displayDateValue);
-
-            // Forward to JSP
-            request.getRequestDispatcher("/WEB-INF/admin/statistics/view-statistics.jsp").forward(request, response);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error fetching statistics: " + e.getMessage());
-        }
+        // Forward to JSP
+        request.getRequestDispatcher("/WEB-INF/admin/statistics/view-statistics.jsp").forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String period = request.getParameter("period");
-        String customPeriod = request.getParameter("customPeriod");
-        String dateValue = request.getParameter("dateValue");
-
-        // Set default period if invalid
-        if (period == null || period.isEmpty() || !isValidPeriod(period)) {
-            period = "year";
-            dateValue = String.valueOf(Calendar.getInstance().get(Calendar.YEAR));
-        } else if (dateValue == null || dateValue.isEmpty()) {
-            dateValue = getDefaultDateValue(period);
-        }
-
-        // Debug logging
-        System.out.println("DEBUG: doPost period=" + period + ", customPeriod=" + customPeriod + ", dateValue=" + dateValue);
-
-        // Redirect with parameters
-        String redirectUrl = request.getContextPath() + "/admin/statistics?period=" + period;
-        if (dateValue != null && !dateValue.isEmpty()) {
-            redirectUrl += "&dateValue=" + dateValue;
-        }
-        if (customPeriod != null && !customPeriod.isEmpty()) {
-            redirectUrl += "&customPeriod=" + customPeriod;
+        String timeFrame = request.getParameter("timeFrame");
+        String timeValue = request.getParameter("timeValue");
+        String customTimeFrame = request.getParameter("customTimeFrame");
+        String redirectUrl = request.getContextPath() + "/admin/statistics";
+        if (timeFrame != null && !timeFrame.isEmpty()) {
+            redirectUrl += "?timeFrame=" + timeFrame;
+            if (timeValue != null && !timeValue.isEmpty()) {
+                redirectUrl += "&timeValue=" + timeValue;
+            }
+            if (customTimeFrame != null && !customTimeFrame.isEmpty()) {
+                redirectUrl += "&customTimeFrame=" + customTimeFrame;
+            }
         }
         response.sendRedirect(redirectUrl);
     }
@@ -241,36 +276,5 @@ public class AdminViewStatisticsServlet extends HttpServlet {
     @Override
     public String getServletInfo() {
         return "Servlet for viewing admin statistics";
-    }
-
-    private boolean isValidPeriod(String period) {
-        return period != null && (
-            period.equalsIgnoreCase("day") ||
-            period.equalsIgnoreCase("week") ||
-            period.equalsIgnoreCase("month") ||
-            period.equalsIgnoreCase("quarter") ||
-            period.equalsIgnoreCase("year") ||
-            period.equalsIgnoreCase("custom")
-        );
-    }
-
-    private String getDefaultDateValue(String period) {
-        Calendar cal = Calendar.getInstance();
-        SimpleDateFormat daoDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        SimpleDateFormat daoMonthFormat = new SimpleDateFormat("yyyy-MM");
-        switch (period.toLowerCase()) {
-            case "day":
-            case "week":
-                return daoDateFormat.format(new Date()); // yyyy-MM-dd
-            case "month":
-                return daoMonthFormat.format(new Date()); // yyyy-MM
-            case "quarter":
-                int quarter = (cal.get(Calendar.MONTH) / 3) + 1;
-                return cal.get(Calendar.YEAR) + "-" + quarter; // yyyy-q
-            case "year":
-            case "custom":
-            default:
-                return String.valueOf(cal.get(Calendar.YEAR)); // yyyy
-        }
     }
 }

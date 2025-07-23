@@ -112,7 +112,7 @@
                             <select id="panelSelector" class="bg-[#F7F6F3] text-sm text-gray-600 placeholder:text-gray-400 px-4 py-3 rounded-xl shadow-sm border border-gray-300 focus:outline-none">
                                 <option value="">Select Panel</option>
                                 <option value="${pageContext.servletContext.contextPath}/">Home Panel</option>
-                                <option value="${pageContext.servletContext.contextPath}/admin/users">Admin Panel</option>
+                                <option value="${pageContext.servletContext.contextPath}/admin/statistics">Admin Panel</option>
                                 <option value="${pageContext.servletContext.contextPath}/staff/booking-statistics">Staff Panel</option>
                                 <option value="${pageContext.servletContext.contextPath}/driver/dashboard">Driver Panel</option>
                             </select>

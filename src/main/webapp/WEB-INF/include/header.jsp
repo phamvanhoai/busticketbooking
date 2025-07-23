@@ -58,7 +58,7 @@
                     <c:when test="${not empty user}">
                         <!-- Admin Panel Link -->
                         <c:if test="${user.role eq 'Admin'}">
-                            <a href="${pageContext.servletContext.contextPath}/admin/users" class="nav-link">
+                            <a href="${pageContext.servletContext.contextPath}/admin/statistics" class="nav-link">
                                 <span>Admin Panel</span>
                             </a>
                         </c:if>

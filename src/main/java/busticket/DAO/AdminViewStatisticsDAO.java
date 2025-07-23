@@ -1,517 +1,337 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ * AdminViewStatisticsDAO.java
+ * DAO for retrieving admin statistics
  */
 package busticket.DAO;
 
 import busticket.db.DBContext;
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
- *
- * @author Pham Van Hoai - CE181744
+ * DAO for admin statistics Author: Pham Van Hoai - CE181744
  */
 public class AdminViewStatisticsDAO extends DBContext {
 
-    public BigDecimal getRevenueByPeriod(String period, String dateValue) throws SQLException {
-        String sql = "";
-        switch (period.toLowerCase()) {
-            case "day":
-                sql = "SELECT SUM(invoice_total_amount) FROM Invoices WHERE CAST(paid_at AS DATE) = ?";
-                break;
-            case "week":
-                sql = "SELECT SUM(invoice_total_amount) FROM Invoices WHERE DATEPART(WEEK, paid_at) = DATEPART(WEEK, ?) AND YEAR(paid_at) = YEAR(?)";
-                break;
-            case "month":
-                sql = "SELECT SUM(invoice_total_amount) FROM Invoices WHERE MONTH(paid_at) = ? AND YEAR(paid_at) = ?";
-                break;
-            case "quarter":
-                sql = "SELECT SUM(invoice_total_amount) FROM Invoices WHERE DATEPART(QUARTER, paid_at) = ? AND YEAR(paid_at) = ?";
-                break;
-            case "year":
-                sql = "SELECT SUM(invoice_total_amount) FROM Invoices WHERE YEAR(paid_at) = ?";
-                break;
-            default:
-                throw new SQLException("Invalid period: " + period);
-        }
-
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            if (period.equalsIgnoreCase("day")) {
-                ps.setString(1, dateValue);
-            } else if (period.equalsIgnoreCase("week")) {
-                ps.setString(1, dateValue);
-                ps.setString(2, dateValue);
-            } else if (period.equalsIgnoreCase("month")) {
-                String[] parts = dateValue.split("-");
-                ps.setInt(1, Integer.parseInt(parts[1]));
-                ps.setInt(2, Integer.parseInt(parts[0]));
-            } else if (period.equalsIgnoreCase("quarter")) {
-                String[] parts = dateValue.split("-");
-                ps.setInt(1, Integer.parseInt(parts[1]));
-                ps.setInt(2, Integer.parseInt(parts[0]));
-            } else if (period.equalsIgnoreCase("year")) {
-                ps.setInt(1, Integer.parseInt(dateValue));
-            }
-
+    public int countTotalTrips(String timeFrame, String timeValue) {
+        String query = buildTimeFrameQuery("SELECT COUNT(*) AS count FROM Trips", timeFrame, "departure_time");
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
+            setTimeFrameParameters(ps, timeFrame, timeValue, 1);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getBigDecimal(1) != null ? rs.getBigDecimal(1) : BigDecimal.ZERO;
+                    return rs.getInt("count");
                 }
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        return BigDecimal.ZERO;
+        return 0;
     }
 
-    public List<Map<String, Object>> getOccupancyRateByPeriod(String period, String dateValue) throws SQLException {
-        String sql = "SELECT tr.trip_id, ls.location_name + ' → ' + le.location_name AS route_name, "
-                + "(CAST(COUNT(t.ticket_id) AS FLOAT) / CAST(b.capacity AS FLOAT)) * 100 AS occupancy_rate "
-                + "FROM Trips tr "
-                + "JOIN Tickets t ON tr.trip_id = t.ticket_id "
-                + "JOIN Buses b ON tr.bus_id = b.bus_id "
-                + "JOIN Routes r ON tr.route_id = r.route_id "
-                + "JOIN Locations ls ON r.start_location_id = ls.location_id "
-                + "JOIN Locations le ON r.end_location_id = le.location_id ";
+    public int countCompletedTrips(String timeFrame, String timeValue) {
+        String query = buildTimeFrameQuery("SELECT COUNT(*) AS count FROM Trips WHERE trip_status = 'Completed'", timeFrame, "departure_time");
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
+            setTimeFrameParameters(ps, timeFrame, timeValue, 1);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("count");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 
-        switch (period.toLowerCase()) {
-            case "day":
-                sql += "WHERE CAST(tr.departure_time AS DATE) = ?";
+    public int countOngoingTrips(String timeFrame, String timeValue) {
+        String query = buildTimeFrameQuery("SELECT COUNT(*) AS count FROM Trips WHERE trip_status = 'Ongoing'", timeFrame, "departure_time");
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
+            setTimeFrameParameters(ps, timeFrame, timeValue, 1);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("count");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public int countCancelledTrips(String timeFrame, String timeValue) {
+        String query = buildTimeFrameQuery("SELECT COUNT(*) AS count FROM Trips WHERE trip_status = 'Cancelled'", timeFrame, "departure_time");
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
+            setTimeFrameParameters(ps, timeFrame, timeValue, 1);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("count");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public int countTotalTicketsSold(String timeFrame, String timeValue) {
+        String query = buildTimeFrameQuery("SELECT COUNT(*) AS count FROM Tickets WHERE check_in IS NOT NULL", timeFrame, "check_in");
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
+            setTimeFrameParameters(ps, timeFrame, timeValue, 1);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("count");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public int countCheckedInPassengers(String timeFrame, String timeValue) {
+        String query = buildTimeFrameQuery("SELECT COUNT(*) AS count FROM Tickets WHERE check_in IS NOT NULL", timeFrame, "check_in");
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
+            setTimeFrameParameters(ps, timeFrame, timeValue, 1);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("count");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public double getTotalRevenue(String timeFrame, String timeValue) {
+        String query = buildTimeFrameQuery(
+            "SELECT SUM(COALESCE(ii.invoice_amount, 0)) AS total_revenue " +
+            "FROM Invoice_Items ii " +
+            "JOIN Invoices inv ON ii.invoice_id = inv.invoice_id " +
+            "JOIN Tickets t ON ii.ticket_id = t.ticket_id " +
+            "JOIN Trips tr ON t.trip_id = tr.trip_id", 
+            timeFrame, "inv.paid_at");
+        System.out.println("getTotalRevenue Query: " + query + ", timeFrame: " + timeFrame + ", timeValue: " + timeValue);
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
+            setTimeFrameParameters(ps, timeFrame, timeValue, 1);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getDouble("total_revenue");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0.0;
+    }
+
+    public List<Integer> getTicketsSoldByTimeFrame(String timeFrame, String timeValue) {
+        List<Integer> tickets = new ArrayList<>();
+        String query;
+        int periodCount;
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar cal = Calendar.getInstance();
+        String defaultTimeValue = dateFormat.format(new Date());
+
+        switch (timeFrame) {
+            case "all":
+                periodCount = cal.get(Calendar.YEAR) - 2020 + 1;
+                query = "SELECT YEAR(t.check_in) AS period, COUNT(*) AS ticket_count " +
+                        "FROM Tickets t WHERE t.check_in IS NOT NULL " +
+                        "GROUP BY YEAR(t.check_in) ORDER BY period ASC";
                 break;
-            case "week":
-                sql += "WHERE DATEPART(WEEK, tr.departure_time) = DATEPART(WEEK, ?) AND YEAR(tr.departure_time) = YEAR(?)";
+            case "day":
+                periodCount = 1;
+                query = "SELECT CAST(t.check_in AS DATE) AS period, COUNT(*) AS ticket_count " +
+                        "FROM Tickets t WHERE t.check_in IS NOT NULL AND CAST(t.check_in AS DATE) = ? " +
+                        "GROUP BY CAST(t.check_in AS DATE)";
+                break;
+            case "last7days":
+                periodCount = 7;
+                query = "SELECT CAST(t.check_in AS DATE) AS period, COUNT(*) AS ticket_count " +
+                        "FROM Tickets t WHERE t.check_in IS NOT NULL AND t.check_in >= ? AND t.check_in < DATEADD(day, 7, ?) " +
+                        "GROUP BY CAST(t.check_in AS DATE) ORDER BY period ASC";
                 break;
             case "month":
-                sql += "WHERE MONTH(tr.departure_time) = ? AND YEAR(tr.departure_time) = ?";
+                periodCount = 4;
+                query = "SELECT DATEPART(week, t.check_in) AS period, COUNT(*) AS ticket_count " +
+                        "FROM Tickets t WHERE t.check_in IS NOT NULL AND YEAR(t.check_in) = ? AND MONTH(t.check_in) = ? " +
+                        "GROUP BY DATEPART(week, t.check_in) ORDER BY period ASC";
                 break;
             case "quarter":
-                sql += "WHERE DATEPART(QUARTER, tr.departure_time) = ? AND YEAR(tr.departure_time) = ?";
+                periodCount = 3;
+                query = "SELECT DATEPART(month, t.check_in) AS period, COUNT(*) AS ticket_count " +
+                        "FROM Tickets t WHERE t.check_in IS NOT NULL AND YEAR(t.check_in) = ? AND DATEPART(quarter, t.check_in) = ? " +
+                        "GROUP BY DATEPART(month, t.check_in) ORDER BY period ASC";
                 break;
             case "year":
-                sql += "WHERE YEAR(tr.departure_time) = ?";
+                periodCount = 12;
+                query = "SELECT DATEPART(month, t.check_in) AS period, COUNT(*) AS ticket_count " +
+                        "FROM Tickets t WHERE t.check_in IS NOT NULL AND YEAR(t.check_in) = ? " +
+                        "GROUP BY DATEPART(month, t.check_in) ORDER BY period ASC";
                 break;
             default:
-                throw new SQLException("Invalid period: " + period);
+                periodCount = 7;
+                query = "SELECT CAST(t.check_in AS DATE) AS period, COUNT(*) AS ticket_count " +
+                        "FROM Tickets t WHERE t.check_in IS NOT NULL AND t.check_in >= DATEADD(day, -6, GETDATE()) " +
+                        "GROUP BY CAST(t.check_in AS DATE) ORDER BY period ASC";
         }
-        sql += " GROUP BY tr.trip_id, ls.location_name, le.location_name, b.capacity";
 
-        List<Map<String, Object>> occupancyRates = new ArrayList<>();
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            if (period.equalsIgnoreCase("day")) {
-                ps.setString(1, dateValue);
-            } else if (period.equalsIgnoreCase("week")) {
-                ps.setString(1, dateValue);
-                ps.setString(2, dateValue);
-            } else if (period.equalsIgnoreCase("month")) {
-                String[] parts = dateValue.split("-");
-                ps.setInt(1, Integer.parseInt(parts[1]));
-                ps.setInt(2, Integer.parseInt(parts[0]));
-            } else if (period.equalsIgnoreCase("quarter")) {
-                String[] parts = dateValue.split("-");
-                ps.setInt(1, Integer.parseInt(parts[1]));
-                ps.setInt(2, Integer.parseInt(parts[0]));
-            } else if (period.equalsIgnoreCase("year")) {
-                ps.setInt(1, Integer.parseInt(dateValue));
-            }
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Map<String, Object> row = new HashMap<>();
-                    row.put("route_name", rs.getString("route_name"));
-                    row.put("occupancy_rate", rs.getBigDecimal("occupancy_rate"));
-                    occupancyRates.add(row);
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
+            if (!timeFrame.equals("all") && !timeFrame.equals("default")) {
+                if (timeValue == null || timeValue.isEmpty()) {
+                    timeValue = defaultTimeValue;
+                }
+                if (timeFrame.equals("last7days")) {
+                    // Set start and end date for last7days
+                    cal.setTime(new Date());
+                    cal.add(Calendar.DAY_OF_YEAR, -6);
+                    ps.setDate(1, new java.sql.Date(cal.getTimeInMillis()));
+                    ps.setDate(2, new java.sql.Date(cal.getTimeInMillis()));
+                } else {
+                    setTimeFrameParameters(ps, timeFrame, timeValue, 1);
                 }
             }
+            try (ResultSet rs = ps.executeQuery()) {
+                for (int i = 0; i < periodCount; i++) {
+                    tickets.add(0);
+                }
+                while (rs.next()) {
+                    int index;
+                    if (timeFrame.equals("all")) {
+                        int period = rs.getInt("period");
+                        index = period - 2020;
+                        if (index < 0 || index >= periodCount) continue;
+                    } else if (timeFrame.equals("day")) {
+                        index = 0;
+                    } else if (timeFrame.equals("last7days")) {
+                        Date periodDate = rs.getDate("period");
+                        cal.setTime(new Date());
+                        cal.add(Calendar.DAY_OF_YEAR, -6);
+                        long daysDiff = (periodDate.getTime() - cal.getTimeInMillis()) / (1000 * 60 * 60 * 24);
+                        index = (int) daysDiff;
+                        if (index < 0 || index >= periodCount) continue;
+                    } else if (timeFrame.equals("month")) {
+                        int period = rs.getInt("period");
+                        String[] parts = timeValue.split("-");
+                        int year = Integer.parseInt(parts[0]);
+                        int month = Integer.parseInt(parts[1]);
+                        cal.set(year, month - 1, 1);
+                        int firstWeekOfMonth = cal.get(Calendar.WEEK_OF_YEAR);
+                        index = period - firstWeekOfMonth;
+                        if (index < 0) index = 0;
+                        if (index >= periodCount) index = periodCount - 1;
+                    } else if (timeFrame.equals("quarter")) {
+                        int period = rs.getInt("period");
+                        String[] parts = timeValue.split("-");
+                        int quarter = Integer.parseInt(parts[1]);
+                        int quarterStartMonth = (quarter - 1) * 3 + 1;
+                        index = period - quarterStartMonth;
+                        if (index < 0) index = 0;
+                        if (index >= periodCount) index = periodCount - 1;
+                    } else if (timeFrame.equals("year")) {
+                        int period = rs.getInt("period");
+                        index = period - 1;
+                        if (index < 0 || index >= periodCount) continue;
+                    } else {
+                        Date periodDate = rs.getDate("period");
+                        Date startDate = new Date(System.currentTimeMillis() - 6 * 24 * 60 * 60 * 1000L);
+                        long daysDiff = (periodDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+                        index = (int) daysDiff;
+                        if (index < 0 || index >= periodCount) continue;
+                    }
+                    int ticketCount = rs.getInt("ticket_count");
+                    tickets.set(index, ticketCount);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        return occupancyRates;
+        return tickets;
     }
 
-    public List<Map<String, Object>> getTicketTypeBreakdownByPeriod(String period, String dateValue) throws SQLException {
-        String sql = "SELECT ts.seat_number, COUNT(*) AS ticket_count "
-                + "FROM Tickets t "
-                + "JOIN Ticket_Seat ts ON t.ticket_id = ts.ticket_id "
-                + "JOIN Invoice_Items ii ON t.ticket_id = ii.ticket_id "
-                + "JOIN Invoices i ON ii.invoice_id = i.invoice_id ";
-
-        switch (period.toLowerCase()) {
+    private String buildTimeFrameQuery(String baseQuery, String timeFrame, String timeColumn) {
+        String condition;
+        switch (timeFrame) {
+            case "all":
+                return baseQuery; // No WHERE clause for 'all'
             case "day":
-                sql += "WHERE CAST(i.paid_at AS DATE) = ?";
+                condition = "CAST(" + timeColumn + " AS DATE) = ?";
                 break;
-            case "week":
-                sql += "WHERE DATEPART(WEEK, i.paid_at) = DATEPART(WEEK, ?) AND YEAR(i.paid_at) = YEAR(?)";
+            case "last7days":
+                condition = timeColumn + " >= ? AND " + timeColumn + " < DATEADD(day, 7, ?)";
                 break;
             case "month":
-                sql += "WHERE MONTH(i.paid_at) = ? AND YEAR(i.paid_at) = ?";
+                condition = "YEAR(" + timeColumn + ") = ? AND MONTH(" + timeColumn + ") = ?";
                 break;
             case "quarter":
-                sql += "WHERE DATEPART(QUARTER, i.paid_at) = ? AND YEAR(i.paid_at) = ?";
+                condition = "YEAR(" + timeColumn + ") = ? AND DATEPART(quarter, " + timeColumn + ") = ?";
                 break;
             case "year":
-                sql += "WHERE YEAR(i.paid_at) = ?";
+                condition = "YEAR(" + timeColumn + ") = ?";
                 break;
             default:
-                throw new SQLException("Invalid period: " + period);
+                condition = timeColumn + " >= DATEADD(day, -6, GETDATE()) AND " + timeColumn + " < GETDATE()";
         }
-        sql += " GROUP BY ts.seat_number";
-
-        List<Map<String, Object>> ticketTypeBreakdown = new ArrayList<>();
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            if (period.equalsIgnoreCase("day")) {
-                ps.setString(1, dateValue);
-            } else if (period.equalsIgnoreCase("week")) {
-                ps.setString(1, dateValue);
-                ps.setString(2, dateValue);
-            } else if (period.equalsIgnoreCase("month")) {
-                String[] parts = dateValue.split("-");
-                ps.setInt(1, Integer.parseInt(parts[1]));
-                ps.setInt(2, Integer.parseInt(parts[0]));
-            } else if (period.equalsIgnoreCase("quarter")) {
-                String[] parts = dateValue.split("-");
-                ps.setInt(1, Integer.parseInt(parts[1]));
-                ps.setInt(2, Integer.parseInt(parts[0]));
-            } else if (period.equalsIgnoreCase("year")) {
-                ps.setInt(1, Integer.parseInt(dateValue));
-            }
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Map<String, Object> row = new HashMap<>();
-                    row.put("seat_number", rs.getString("seat_number"));
-                    row.put("ticket_count", rs.getInt("ticket_count"));
-                    ticketTypeBreakdown.add(row);
-                }
-            }
+        // Append condition to base query, handling existing WHERE clauses
+        if (baseQuery.toUpperCase().contains("WHERE")) {
+            return baseQuery + " AND " + condition;
+        } else {
+            return baseQuery + " WHERE " + condition;
         }
-        return ticketTypeBreakdown;
     }
 
-    public List<Map<String, Object>> getTopRoutesRevenueByPeriod(String period, String dateValue) throws SQLException {
-        String sql = "SELECT TOP 5 ls.location_name + ' → ' + le.location_name AS route_name, "
-                + "SUM(i.invoice_total_amount) AS total_revenue "
-                + "FROM Invoices i "
-                + "JOIN Invoice_Items ii ON i.invoice_id = ii.invoice_id "
-                + "JOIN Tickets t ON ii.ticket_id = t.ticket_id "
-                + "JOIN Trips tr ON t.trip_id = tr.trip_id "
-                + "JOIN Routes r ON tr.route_id = r.route_id "
-                + "JOIN Locations ls ON r.start_location_id = ls.location_id "
-                + "JOIN Locations le ON r.end_location_id = le.location_id ";
-
-        switch (period.toLowerCase()) {
-            case "day":
-                sql += "WHERE CAST(i.paid_at AS DATE) = ?";
-                break;
-            case "week":
-                sql += "WHERE DATEPART(WEEK, i.paid_at) = DATEPART(WEEK, ?) AND YEAR(i.paid_at) = YEAR(?)";
-                break;
-            case "month":
-                sql += "WHERE MONTH(i.paid_at) = ? AND YEAR(i.paid_at) = ?";
-                break;
-            case "quarter":
-                sql += "WHERE DATEPART(QUARTER, i.paid_at) = ? AND YEAR(i.paid_at) = ?";
-                break;
-            case "year":
-                sql += "WHERE YEAR(i.paid_at) = ?";
-                break;
-            default:
-                throw new SQLException("Invalid period: " + period);
-        }
-        sql += " GROUP BY ls.location_name, le.location_name ORDER BY total_revenue DESC";
-
-        List<Map<String, Object>> topRoutes = new ArrayList<>();
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            if (period.equalsIgnoreCase("day")) {
-                ps.setString(1, dateValue);
-            } else if (period.equalsIgnoreCase("week")) {
-                ps.setString(1, dateValue);
-                ps.setString(2, dateValue);
-            } else if (period.equalsIgnoreCase("month")) {
-                String[] parts = dateValue.split("-");
-                ps.setInt(1, Integer.parseInt(parts[1]));
-                ps.setInt(2, Integer.parseInt(parts[0]));
-            } else if (period.equalsIgnoreCase("quarter")) {
-                String[] parts = dateValue.split("-");
-                ps.setInt(1, Integer.parseInt(parts[1]));
-                ps.setInt(2, Integer.parseInt(parts[0]));
-            } else if (period.equalsIgnoreCase("year")) {
-                ps.setInt(1, Integer.parseInt(dateValue));
+    private void setTimeFrameParameters(PreparedStatement ps, String timeFrame, String timeValue, int startIndex) throws SQLException {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String defaultTimeValue = dateFormat.format(new Date());
+        
+        // Use defaultTimeValue if timeValue is null or empty, except for 'all'
+        if (timeValue == null || timeValue.isEmpty()) {
+            if (timeFrame.equals("all")) {
+                return; // No parameters needed for 'all'
             }
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Map<String, Object> row = new HashMap<>();
-                    row.put("route_name", rs.getString("route_name"));
-                    row.put("total_revenue", rs.getBigDecimal("total_revenue") != null ? rs.getBigDecimal("total_revenue") : BigDecimal.ZERO);
-                    topRoutes.add(row);
-                }
-            }
+            timeValue = defaultTimeValue;
         }
-        return topRoutes;
+
+        try {
+            switch (timeFrame) {
+                case "day":
+                    Date parsedDate = dateFormat.parse(timeValue);
+                    ps.setDate(startIndex, new java.sql.Date(parsedDate.getTime()));
+                    break;
+                case "last7days":
+                    Calendar cal = Calendar.getInstance();
+                    cal.add(Calendar.DAY_OF_YEAR, -6);
+                    ps.setDate(startIndex, new java.sql.Date(cal.getTimeInMillis()));
+                    ps.setDate(startIndex + 1, new java.sql.Date(cal.getTimeInMillis()));
+                    break;
+                case "month":
+                    String[] monthParts = timeValue.split("-");
+                    ps.setInt(startIndex, Integer.parseInt(monthParts[0]));
+                    ps.setInt(startIndex + 1, Integer.parseInt(monthParts[1]));
+                    break;
+                case "quarter":
+                    String[] quarterParts = timeValue.split("-");
+                    ps.setInt(startIndex, Integer.parseInt(quarterParts[0]));
+                    ps.setInt(startIndex + 1, Integer.parseInt(quarterParts[1]));
+                    break;
+                case "year":
+                    ps.setInt(startIndex, Integer.parseInt(timeValue));
+                    break;
+                case "all":
+                    // No parameters to set
+                    break;
+            }
+        } catch (Exception e) {
+            System.err.println("Error parsing timeValue: " + timeValue + " for timeFrame: " + timeFrame);
+            e.printStackTrace();
+        }
     }
-
-    public List<String> getDriverPerformanceByPeriod(String period, String dateValue) throws SQLException {
-        String sql = "SELECT u.user_name, COUNT(DISTINCT t.ticket_id) AS trips, SUM(i.invoice_total_amount) AS revenue "
-                + "FROM Invoices i "
-                + "JOIN Invoice_Items ii ON i.invoice_id = ii.invoice_id "
-                + "JOIN Tickets t ON ii.ticket_id = t.ticket_id "
-                + "JOIN Trip_Driver td ON t.trip_id = td.trip_id "
-                + "JOIN Drivers d ON td.driver_id = d.driver_id "
-                + "JOIN Users u ON d.user_id = u.user_id ";
-
-        switch (period.toLowerCase()) {
-            case "day":
-                sql += "WHERE CAST(i.paid_at AS DATE) = ?";
-                break;
-            case "week":
-                sql += "WHERE DATEPART(WEEK, i.paid_at) = DATEPART(WEEK, ?) AND YEAR(i.paid_at) = YEAR(?)";
-                break;
-            case "month":
-                sql += "WHERE MONTH(i.paid_at) = ? AND YEAR(i.paid_at) = ?";
-                break;
-            case "quarter":
-                sql += "WHERE DATEPART(QUARTER, i.paid_at) = ? AND YEAR(i.paid_at) = ?";
-                break;
-            case "year":
-                sql += "WHERE YEAR(i.paid_at) = ?";
-                break;
-            default:
-                throw new SQLException("Invalid period: " + period);
-        }
-        sql += " GROUP BY u.user_name ORDER BY revenue DESC";
-
-        List<String> driverPerformance = new ArrayList<>();
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            if (period.equalsIgnoreCase("day")) {
-                ps.setString(1, dateValue);
-            } else if (period.equalsIgnoreCase("week")) {
-                ps.setString(1, dateValue);
-                ps.setString(2, dateValue);
-            } else if (period.equalsIgnoreCase("month")) {
-                String[] parts = dateValue.split("-");
-                ps.setInt(1, Integer.parseInt(parts[1]));
-                ps.setInt(2, Integer.parseInt(parts[0]));
-            } else if (period.equalsIgnoreCase("quarter")) {
-                String[] parts = dateValue.split("-");
-                ps.setInt(1, Integer.parseInt(parts[1]));
-                ps.setInt(2, Integer.parseInt(parts[0]));
-            } else if (period.equalsIgnoreCase("year")) {
-                ps.setInt(1, Integer.parseInt(dateValue));
-            }
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    driverPerformance.add(rs.getString("user_name") + " - Trips: " + rs.getInt("trips") + " - Revenue: " + rs.getBigDecimal("revenue"));
-                }
-            }
-        }
-        return driverPerformance;
-    }
-
-    public List<Map<String, Object>> getDetailedStatisticsByPeriod(String period, String dateValue) throws SQLException {
-        String sql = "SELECT ";
-        switch (period.toLowerCase()) {
-            case "day":
-                sql += "CAST(i.paid_at AS DATE) AS stat_date, ";
-                break;
-            case "week":
-                sql += "DATEADD(DAY, -DATEPART(WEEKDAY, i.paid_at) + 1, CAST(i.paid_at AS DATE)) AS stat_date, ";
-                break;
-            case "month":
-                sql += "DATEADD(WEEK, DATEDIFF(WEEK, 0, i.paid_at), 0) AS stat_date, ";
-                break;
-            case "quarter":
-                sql += "DATEADD(MONTH, ((MONTH(i.paid_at) - 1) / 3) * 3, CAST(YEAR(i.paid_at) AS CHAR(4)) + '-01-01') AS stat_date, ";
-                break;
-            case "year":
-                sql += "CAST(YEAR(i.paid_at) AS CHAR(4)) + '-01-01' AS stat_date, ";
-                break;
-            default:
-                throw new SQLException("Invalid period: " + period);
-        }
-        sql += "ls.location_name + ' → ' + le.location_name AS route_name, "
-                + "COUNT(t.ticket_id) AS tickets_sold, "
-                + "SUM(i.invoice_total_amount) AS revenue, "
-                + "(CAST(COUNT(t.ticket_id) AS FLOAT) / CAST(b.capacity AS FLOAT)) * 100 AS occupancy_rate "
-                + "FROM Invoices i "
-                + "JOIN Invoice_Items ii ON i.invoice_id = ii.invoice_id "
-                + "JOIN Tickets t ON ii.ticket_id = t.ticket_id "
-                + "JOIN Trips tr ON t.trip_id = tr.trip_id "
-                + "JOIN Buses b ON tr.bus_id = b.bus_id "
-                + "JOIN Routes r ON tr.route_id = r.route_id "
-                + "JOIN Locations ls ON r.start_location_id = ls.location_id "
-                + "JOIN Locations le ON r.end_location_id = le.location_id ";
-
-        switch (period.toLowerCase()) {
-            case "day":
-                sql += "WHERE CAST(i.paid_at AS DATE) = ?";
-                break;
-            case "week":
-                sql += "WHERE DATEPART(WEEK, i.paid_at) = DATEPART(WEEK, ?) AND YEAR(i.paid_at) = YEAR(?)";
-                break;
-            case "month":
-                sql += "WHERE MONTH(i.paid_at) = ? AND YEAR(i.paid_at) = ?";
-                break;
-            case "quarter":
-                sql += "WHERE DATEPART(QUARTER, i.paid_at) = ? AND YEAR(i.paid_at) = ?";
-                break;
-            case "year":
-                sql += "WHERE YEAR(i.paid_at) = ?";
-                break;
-        }
-        sql += " GROUP BY ";
-        switch (period.toLowerCase()) {
-            case "day":
-                sql += "CAST(i.paid_at AS DATE), ";
-                break;
-            case "week":
-                sql += "DATEADD(DAY, -DATEPART(WEEKDAY, i.paid_at) + 1, CAST(i.paid_at AS DATE)), ";
-                break;
-            case "month":
-                sql += "DATEADD(WEEK, DATEDIFF(WEEK, 0, i.paid_at), 0), ";
-                break;
-            case "quarter":
-                sql += "DATEADD(MONTH, ((MONTH(i.paid_at) - 1) / 3) * 3, CAST(YEAR(i.paid_at) AS CHAR(4)) + '-01-01'), ";
-                break;
-            case "year":
-                sql += "CAST(YEAR(i.paid_at) AS CHAR(4)) + '-01-01', ";
-                break;
-        }
-        sql += "ls.location_name, le.location_name, b.capacity "
-                + "ORDER BY stat_date";
-
-        List<Map<String, Object>> detailedStatistics = new ArrayList<>();
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            if (period.equalsIgnoreCase("day")) {
-                ps.setString(1, dateValue);
-            } else if (period.equalsIgnoreCase("week")) {
-                ps.setString(1, dateValue);
-                ps.setString(2, dateValue);
-            } else if (period.equalsIgnoreCase("month")) {
-                String[] parts = dateValue.split("-");
-                ps.setInt(1, Integer.parseInt(parts[1]));
-                ps.setInt(2, Integer.parseInt(parts[0]));
-            } else if (period.equalsIgnoreCase("quarter")) {
-                String[] parts = dateValue.split("-");
-                ps.setInt(1, Integer.parseInt(parts[1]));
-                ps.setInt(2, Integer.parseInt(parts[0]));
-            } else if (period.equalsIgnoreCase("year")) {
-                ps.setInt(1, Integer.parseInt(dateValue));
-            }
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Map<String, Object> row = new HashMap<>();
-                    row.put("stat_date", rs.getString("stat_date"));
-                    row.put("route_name", rs.getString("route_name"));
-                    row.put("tickets_sold", rs.getInt("tickets_sold"));
-                    row.put("revenue", rs.getBigDecimal("revenue") != null ? rs.getBigDecimal("revenue") : BigDecimal.ZERO);
-                    row.put("occupancy_rate", rs.getBigDecimal("occupancy_rate"));
-                    detailedStatistics.add(row);
-                }
-            }
-        }
-        return detailedStatistics;
-    }
-
-    public BigDecimal getMonthlyRevenue() throws SQLException {
-        String sql = "SELECT SUM(invoice_total_amount) FROM Invoices WHERE YEAR(paid_at) = YEAR(GETDATE())";
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                return rs.getBigDecimal(1) != null ? rs.getBigDecimal(1) : BigDecimal.ZERO;
-            }
-        }
-        return BigDecimal.ZERO;
-    }
-
-    public List<Map<String, Object>> getOccupancyRate() throws SQLException {
-        String sql = "SELECT tr.trip_id, ls.location_name + ' → ' + le.location_name AS route_name, "
-                + "(CAST(COUNT(t.ticket_id) AS FLOAT) / CAST(b.capacity AS FLOAT)) * 100 AS occupancy_rate "
-                + "FROM Trips tr "
-                + "JOIN Tickets t ON tr.trip_id = t.ticket_id "
-                + "JOIN Buses b ON tr.bus_id = b.bus_id "
-                + "JOIN Routes r ON tr.route_id = r.route_id "
-                + "JOIN Locations ls ON r.start_location_id = ls.location_id "
-                + "JOIN Locations le ON r.end_location_id = le.location_id "
-                + "GROUP BY tr.trip_id, ls.location_name, le.location_name, b.capacity";
-
-        List<Map<String, Object>> occupancyRates = new ArrayList<>();
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                Map<String, Object> row = new HashMap<>();
-                row.put("route_name", rs.getString("route_name"));
-                row.put("occupancy_rate", rs.getBigDecimal("occupancy_rate"));
-                occupancyRates.add(row);
-            }
-        }
-        return occupancyRates;
-    }
-
-    public List<Map<String, Object>> getTicketTypeBreakdown() throws SQLException {
-        String sql = "SELECT ts.seat_number, COUNT(*) AS ticket_count "
-                + "FROM Tickets t "
-                + "JOIN Ticket_Seat ts ON t.ticket_id = ts.ticket_id "
-                + "GROUP BY ts.seat_number";
-
-        List<Map<String, Object>> ticketTypeBreakdown = new ArrayList<>();
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                Map<String, Object> row = new HashMap<>();
-                row.put("seat_number", rs.getString("seat_number"));
-                row.put("ticket_count", rs.getInt("ticket_count"));
-                ticketTypeBreakdown.add(row);
-            }
-        }
-        return ticketTypeBreakdown;
-    }
-
-    public List<Map<String, Object>> getTopRoutesRevenue() throws SQLException {
-        String sql = "SELECT TOP 5 ls.location_name + ' → ' + le.location_name AS route_name, "
-                + "SUM(i.invoice_total_amount) AS total_revenue "
-                + "FROM Invoices i "
-                + "JOIN Invoice_Items ii ON i.invoice_id = ii.invoice_id "
-                + "JOIN Tickets t ON ii.ticket_id = t.ticket_id "
-                + "JOIN Trips tr ON t.trip_id = tr.trip_id "
-                + "JOIN Routes r ON tr.route_id = r.route_id "
-                + "JOIN Locations ls ON r.start_location_id = ls.location_id "
-                + "JOIN Locations le ON r.end_location_id = le.location_id "
-                + "GROUP BY ls.location_name, le.location_name "
-                + "ORDER BY total_revenue DESC";
-
-        List<Map<String, Object>> topRoutes = new ArrayList<>();
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                Map<String, Object> row = new HashMap<>();
-                row.put("route_name", rs.getString("route_name"));
-                row.put("total_revenue", rs.getBigDecimal("total_revenue") != null ? rs.getBigDecimal("total_revenue") : BigDecimal.ZERO);
-                topRoutes.add(row);
-            }
-        }
-        return topRoutes;
-    }
-
-    public List<String> getDriverPerformance() throws SQLException {
-        String sql = "SELECT u.user_name, COUNT(DISTINCT t.ticket_id) AS trips, SUM(i.invoice_total_amount) AS revenue "
-                + "FROM Invoices i "
-                + "JOIN Invoice_Items ii ON i.invoice_id = ii.invoice_id "
-                + "JOIN Tickets t ON ii.ticket_id = t.ticket_id "
-                + "JOIN Trip_Driver td ON t.trip_id = td.trip_id "
-                + "JOIN Drivers d ON td.driver_id = d.driver_id "
-                + "JOIN Users u ON d.user_id = u.user_id "
-                + "GROUP BY u.user_name "
-                + "ORDER BY revenue DESC";
-
-        List<String> driverPerformance = new ArrayList<>();
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                driverPerformance.add(rs.getString("user_name") + " - Trips: " + rs.getInt("trips") + " - Revenue: " + rs.getBigDecimal("revenue"));
-            }
-        }
-        return driverPerformance;
-    }
-
 }

@@ -3,7 +3,7 @@
     Created on : Jun 18, 2025, 11:23:31 PM
     Author     : Nguyen Thanh Truong - CE180140
 --%>
-
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List" %>
 <%@ page import="busticket.model.StaffTicket" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"  %>
