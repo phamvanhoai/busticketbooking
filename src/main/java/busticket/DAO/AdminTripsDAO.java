@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  * @author Pham Van Hoai - CE181744
  */
 public class AdminTripsDAO extends DBContext {
-    
+
     private static final int BUFFER_MINUTES = 15; // Configurable buffer time between trips
 
     public List<AdminTrips> getAllTrips(String route, String busType, String driver, int offset, int limit) {
@@ -41,6 +41,7 @@ public class AdminTripsDAO extends DBContext {
                 + " CAST(t.departure_time AS date) AS trip_date, "
                 + " CONVERT(varchar(5), t.departure_time, 108) AS trip_time, "
                 + " bt.bus_type_name AS bus_type, "
+                + " b.bus_code AS bus_code, "
                 + " u.user_name AS driver, "
                 + " t.bus_id, "
                 + " t.trip_status AS status "
@@ -68,7 +69,7 @@ public class AdminTripsDAO extends DBContext {
 
         sql.append(" ORDER BY t.trip_id ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
 
-        try (PreparedStatement ps = getConnection().prepareStatement(sql.toString())) {
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql.toString())) {
             int idx = 1;
             if (route != null && !route.isEmpty()) {
                 ps.setString(idx++, "%" + route + "%");
@@ -82,7 +83,7 @@ public class AdminTripsDAO extends DBContext {
             ps.setInt(idx++, offset);
             ps.setInt(idx, limit);
 
-            try (ResultSet rs = ps.executeQuery()) {
+            try ( ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     trips.add(new AdminTrips(
                             rs.getInt("trip_id"),
@@ -90,6 +91,7 @@ public class AdminTripsDAO extends DBContext {
                             rs.getDate("trip_date"),
                             rs.getString("trip_time"),
                             rs.getString("bus_type"),
+                            rs.getString("bus_code"),
                             rs.getString("driver"),
                             rs.getInt("bus_id"),
                             rs.getString("status")
@@ -127,7 +129,7 @@ public class AdminTripsDAO extends DBContext {
             sql.append(" AND u.user_name LIKE ?");
         }
 
-        try (PreparedStatement ps = getConnection().prepareStatement(sql.toString())) {
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql.toString())) {
             int idx = 1;
             if (route != null && !route.isEmpty()) {
                 ps.setString(idx++, "%" + route + "%");
@@ -139,7 +141,7 @@ public class AdminTripsDAO extends DBContext {
                 ps.setString(idx++, "%" + driver + "%");
             }
 
-            try (ResultSet rs = ps.executeQuery()) {
+            try ( ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1);
                 }
@@ -154,8 +156,8 @@ public class AdminTripsDAO extends DBContext {
         AdminRoutesDAO routesDAO = new AdminRoutesDAO();
         int newTripDuration = routesDAO.getEstimatedTimeByRouteId(routeId); // Duration in minutes
         if (newTripDuration <= 0) {
-            Logger.getLogger(AdminTripsDAO.class.getName()).log(Level.WARNING, 
-                "Invalid duration for routeId={0}: {1} minutes", new Object[]{routeId, newTripDuration});
+            Logger.getLogger(AdminTripsDAO.class.getName()).log(Level.WARNING,
+                    "Invalid duration for routeId={0}: {1} minutes", new Object[]{routeId, newTripDuration});
             throw new SQLException("Invalid route duration for route ID: " + routeId);
         }
         Timestamp newTripEndTime = new Timestamp(departureTime.getTime() + (newTripDuration + BUFFER_MINUTES) * 60 * 1000);
@@ -168,33 +170,33 @@ public class AdminTripsDAO extends DBContext {
                 + "AND t.trip_status NOT IN ('Cancelled', 'Completed') "
                 + "AND t.trip_id != ?";
 
-        Logger.getLogger(AdminTripsDAO.class.getName()).log(Level.INFO, 
-            "Checking driver conflict: driverId={0}, routeId={1}, departureTime={2}, duration={3}, endTime={4}, excludeTripId={5}", 
-            new Object[]{driverId, routeId, departureTime, newTripDuration, newTripEndTime, excludeTripId});
+        Logger.getLogger(AdminTripsDAO.class.getName()).log(Level.INFO,
+                "Checking driver conflict: driverId={0}, routeId={1}, departureTime={2}, duration={3}, endTime={4}, excludeTripId={5}",
+                new Object[]{driverId, routeId, departureTime, newTripDuration, newTripEndTime, excludeTripId});
 
-        try (PreparedStatement ps = getConnection().prepareStatement(driverSql)) {
+        try ( PreparedStatement ps = getConnection().prepareStatement(driverSql)) {
             ps.setInt(1, driverId);
             ps.setInt(2, excludeTripId);
-            try (ResultSet rs = ps.executeQuery()) {
+            try ( ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     int existingRouteId = rs.getInt("route_id");
                     Timestamp existingDepartureTime = rs.getTimestamp("departure_time");
                     int existingTripDuration = routesDAO.getEstimatedTimeByRouteId(existingRouteId);
                     if (existingTripDuration <= 0) {
-                        Logger.getLogger(AdminTripsDAO.class.getName()).log(Level.WARNING, 
-                            "Invalid duration for existing routeId={0}: {1} minutes", 
-                            new Object[]{existingRouteId, existingTripDuration});
+                        Logger.getLogger(AdminTripsDAO.class.getName()).log(Level.WARNING,
+                                "Invalid duration for existing routeId={0}: {1} minutes",
+                                new Object[]{existingRouteId, existingTripDuration});
                         continue; // Skip invalid durations
                     }
                     Timestamp existingTripEndTime = new Timestamp(existingDepartureTime.getTime() + (existingTripDuration + BUFFER_MINUTES) * 60 * 1000);
 
-                    Logger.getLogger(AdminTripsDAO.class.getName()).log(Level.INFO, 
-                        "Existing driver trip: tripId={0}, routeId={1}, departureTime={2}, duration={3}, endTime={4}", 
-                        new Object[]{rs.getInt("trip_id"), existingRouteId, existingDepartureTime, existingTripDuration, existingTripEndTime});
+                    Logger.getLogger(AdminTripsDAO.class.getName()).log(Level.INFO,
+                            "Existing driver trip: tripId={0}, routeId={1}, departureTime={2}, duration={3}, endTime={4}",
+                            new Object[]{rs.getInt("trip_id"), existingRouteId, existingDepartureTime, existingTripDuration, existingTripEndTime});
 
                     if (!newTripEndTime.before(existingDepartureTime) && !existingTripEndTime.before(departureTime)) {
-                        Logger.getLogger(AdminTripsDAO.class.getName()).log(Level.INFO, 
-                            "Driver conflict found for tripId={0}", new Object[]{rs.getInt("trip_id")});
+                        Logger.getLogger(AdminTripsDAO.class.getName()).log(Level.INFO,
+                                "Driver conflict found for tripId={0}", new Object[]{rs.getInt("trip_id")});
                         throw new SQLException("Driver is already assigned to another trip (ID: " + rs.getInt("trip_id") + ") with an overlapping time window (including a " + BUFFER_MINUTES + "-minute buffer).");
                     }
                 }
@@ -208,33 +210,33 @@ public class AdminTripsDAO extends DBContext {
                 + "AND t.trip_status NOT IN ('Cancelled', 'Completed') "
                 + "AND t.trip_id != ?";
 
-        Logger.getLogger(AdminTripsDAO.class.getName()).log(Level.INFO, 
-            "Checking bus conflict: busId={0}, routeId={1}, departureTime={2}, duration={3}, endTime={4}, excludeTripId={5}", 
-            new Object[]{busId, routeId, departureTime, newTripDuration, newTripEndTime, excludeTripId});
+        Logger.getLogger(AdminTripsDAO.class.getName()).log(Level.INFO,
+                "Checking bus conflict: busId={0}, routeId={1}, departureTime={2}, duration={3}, endTime={4}, excludeTripId={5}",
+                new Object[]{busId, routeId, departureTime, newTripDuration, newTripEndTime, excludeTripId});
 
-        try (PreparedStatement ps = getConnection().prepareStatement(busSql)) {
+        try ( PreparedStatement ps = getConnection().prepareStatement(busSql)) {
             ps.setInt(1, busId);
             ps.setInt(2, excludeTripId);
-            try (ResultSet rs = ps.executeQuery()) {
+            try ( ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     int existingRouteId = rs.getInt("route_id");
                     Timestamp existingDepartureTime = rs.getTimestamp("departure_time");
                     int existingTripDuration = routesDAO.getEstimatedTimeByRouteId(existingRouteId);
                     if (existingTripDuration <= 0) {
-                        Logger.getLogger(AdminTripsDAO.class.getName()).log(Level.WARNING, 
-                            "Invalid duration for existing routeId={0}: {1} minutes", 
-                            new Object[]{existingRouteId, existingTripDuration});
+                        Logger.getLogger(AdminTripsDAO.class.getName()).log(Level.WARNING,
+                                "Invalid duration for existing routeId={0}: {1} minutes",
+                                new Object[]{existingRouteId, existingTripDuration});
                         continue; // Skip invalid durations
                     }
                     Timestamp existingTripEndTime = new Timestamp(existingDepartureTime.getTime() + (existingTripDuration + BUFFER_MINUTES) * 60 * 1000);
 
-                    Logger.getLogger(AdminTripsDAO.class.getName()).log(Level.INFO, 
-                        "Existing bus trip: tripId={0}, routeId={1}, departureTime={2}, duration={3}, endTime={4}", 
-                        new Object[]{rs.getInt("trip_id"), existingRouteId, existingDepartureTime, existingTripDuration, existingTripEndTime});
+                    Logger.getLogger(AdminTripsDAO.class.getName()).log(Level.INFO,
+                            "Existing bus trip: tripId={0}, routeId={1}, departureTime={2}, duration={3}, endTime={4}",
+                            new Object[]{rs.getInt("trip_id"), existingRouteId, existingDepartureTime, existingTripDuration, existingTripEndTime});
 
                     if (!newTripEndTime.before(existingDepartureTime) && !existingTripEndTime.before(departureTime)) {
-                        Logger.getLogger(AdminTripsDAO.class.getName()).log(Level.INFO, 
-                            "Bus conflict found for tripId={0}", new Object[]{rs.getInt("trip_id")});
+                        Logger.getLogger(AdminTripsDAO.class.getName()).log(Level.INFO,
+                                "Bus conflict found for tripId={0}", new Object[]{rs.getInt("trip_id")});
                         throw new SQLException("Bus is already assigned to another trip (ID: " + rs.getInt("trip_id") + ") with an overlapping time window (including a " + BUFFER_MINUTES + "-minute buffer).");
                     }
                 }
@@ -250,7 +252,7 @@ public class AdminTripsDAO extends DBContext {
         }
 
         String sqlTrip = "INSERT INTO Trips(route_id, bus_id, departure_time, trip_status) VALUES(?, ?, ?, ?)";
-        try (PreparedStatement ps = getConnection().prepareStatement(sqlTrip, PreparedStatement.RETURN_GENERATED_KEYS)) {
+        try ( PreparedStatement ps = getConnection().prepareStatement(sqlTrip, PreparedStatement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, routeId);
             ps.setInt(2, busId);
             ps.setTimestamp(3, departureTime);
@@ -265,7 +267,7 @@ public class AdminTripsDAO extends DBContext {
 
             if (tripId != -1) {
                 String sqlDriver = "INSERT INTO Trip_Driver(trip_id, driver_id) VALUES(?, ?)";
-                try (PreparedStatement psDriver = getConnection().prepareStatement(sqlDriver)) {
+                try ( PreparedStatement psDriver = getConnection().prepareStatement(sqlDriver)) {
                     psDriver.setInt(1, tripId);
                     psDriver.setInt(2, driverId);
                     psDriver.executeUpdate();
@@ -283,7 +285,7 @@ public class AdminTripsDAO extends DBContext {
                 + "SET route_id = ?, bus_id = ?, departure_time = ?, trip_status = ? "
                 + "WHERE trip_id = ?";
 
-        try (PreparedStatement ps = getConnection().prepareStatement(sqlTrip)) {
+        try ( PreparedStatement ps = getConnection().prepareStatement(sqlTrip)) {
             ps.setInt(1, routeId);
             ps.setInt(2, busId);
             ps.setTimestamp(3, departureTime);
@@ -300,7 +302,7 @@ public class AdminTripsDAO extends DBContext {
                 + "WHEN NOT MATCHED THEN "
                 + "    INSERT (trip_id, driver_id) VALUES (source.trip_id, source.driver_id);";
 
-        try (PreparedStatement psDriver = getConnection().prepareStatement(sqlDriver)) {
+        try ( PreparedStatement psDriver = getConnection().prepareStatement(sqlDriver)) {
             psDriver.setInt(1, tripId);
             psDriver.setInt(2, driverId);
             psDriver.executeUpdate();
@@ -330,9 +332,9 @@ public class AdminTripsDAO extends DBContext {
                 + " LEFT JOIN Users u ON d.user_id = u.user_id "
                 + "WHERE t.trip_id = ?";
 
-        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, tripId);
-            try (ResultSet rs = ps.executeQuery()) {
+            try ( ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return new AdminTrips(
                             rs.getInt("trip_id"),
@@ -378,9 +380,9 @@ public class AdminTripsDAO extends DBContext {
                 + " LEFT JOIN Users u ON d.user_id = u.user_id "
                 + " WHERE t.trip_id = ?";
 
-        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, tripId);
-            try (ResultSet rs = ps.executeQuery()) {
+            try ( ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     AdminTrips detail = new AdminTrips();
                     detail.setTripId(rs.getInt("trip_id"));
@@ -404,8 +406,8 @@ public class AdminTripsDAO extends DBContext {
                     // Calculate arrival date and time
                     String tripTime = detail.getTripTime();
                     LocalDateTime departureDateTime = LocalDateTime.of(
-                        detail.getTripDate().toLocalDate(),
-                        LocalTime.parse(tripTime)
+                            detail.getTripDate().toLocalDate(),
+                            LocalTime.parse(tripTime)
                     );
                     LocalDateTime arrivalDateTime = departureDateTime.plusMinutes(duration);
                     detail.setArrivalDate(Date.valueOf(arrivalDateTime.toLocalDate()));
@@ -422,7 +424,7 @@ public class AdminTripsDAO extends DBContext {
         List<String> locations = new ArrayList<>();
         String query = "SELECT DISTINCT location_name FROM Locations";
 
-        try (PreparedStatement ps = getConnection().prepareStatement(query); ResultSet rs = ps.executeQuery()) {
+        try ( PreparedStatement ps = getConnection().prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 locations.add(rs.getString("location_name"));
             }
@@ -436,7 +438,7 @@ public class AdminTripsDAO extends DBContext {
     public List<String> getAllBusTypes() {
         List<String> busTypes = new ArrayList<>();
         String query = "SELECT bus_type_name FROM Bus_Types";
-        try (PreparedStatement ps = getConnection().prepareStatement(query); ResultSet rs = ps.executeQuery()) {
+        try ( PreparedStatement ps = getConnection().prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 busTypes.add(rs.getString("bus_type_name"));
             }
@@ -454,9 +456,9 @@ public class AdminTripsDAO extends DBContext {
                 + "WHERE t.trip_id = ? AND t.ticket_status = 'Booked'";
 
         List<AdminUsers> list = new ArrayList<>();
-        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, tripId);
-            try (ResultSet rs = ps.executeQuery()) {
+            try ( ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     list.add(new AdminUsers(
                             rs.getInt("user_id"),
@@ -471,13 +473,13 @@ public class AdminTripsDAO extends DBContext {
 
     public void deleteTrip(int tripId) throws SQLException {
         String sqlDriver = "DELETE FROM Trip_Driver WHERE trip_id = ?";
-        try (PreparedStatement psDriver = getConnection().prepareStatement(sqlDriver)) {
+        try ( PreparedStatement psDriver = getConnection().prepareStatement(sqlDriver)) {
             psDriver.setInt(1, tripId);
             psDriver.executeUpdate();
         }
 
         String sqlTrip = "DELETE FROM Trips WHERE trip_id = ?";
-        try (PreparedStatement psTrip = getConnection().prepareStatement(sqlTrip)) {
+        try ( PreparedStatement psTrip = getConnection().prepareStatement(sqlTrip)) {
             psTrip.setInt(1, tripId);
             psTrip.executeUpdate();
         }
@@ -493,7 +495,7 @@ public class AdminTripsDAO extends DBContext {
                 + "JOIN Locations ls ON r.start_location_id = ls.location_id "
                 + "JOIN Locations le ON r.end_location_id = le.location_id "
                 + "ORDER BY r.route_id";
-        try (PreparedStatement ps = getConnection().prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(new AdminRoutes(
                         rs.getInt("route_id"),
@@ -509,12 +511,13 @@ public class AdminTripsDAO extends DBContext {
 
     public List<AdminBuses> getAllBuses() {
         List<AdminBuses> list = new ArrayList<>();
-        String sql = "SELECT bus_id, plate_number FROM Buses WHERE bus_status = 'Active'";
-        try (PreparedStatement ps = getConnection().prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        String sql = "SELECT bus_id, plate_number, bus_code FROM Buses WHERE bus_status = 'Active'";
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(new AdminBuses(
                         rs.getInt("bus_id"),
-                        rs.getString("plate_number")
+                        rs.getString("plate_number"),
+                        rs.getString("bus_code")
                 ));
             }
         } catch (SQLException ex) {
@@ -529,7 +532,7 @@ public class AdminTripsDAO extends DBContext {
                 + "FROM Drivers d "
                 + "JOIN Users u ON d.user_id = u.user_id "
                 + "WHERE d.driver_status = 'Active'";
-        try (PreparedStatement ps = getConnection().prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(new AdminDrivers(
                         rs.getInt("driver_id"),
@@ -550,9 +553,9 @@ public class AdminTripsDAO extends DBContext {
                 + "JOIN Locations l ON rs.location_id = l.location_id "
                 + "WHERE rs.route_id = ? "
                 + "ORDER BY rs.route_stop_number ASC";
-        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
+        try ( PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, routeId);
-            try (ResultSet rs = ps.executeQuery()) {
+            try ( ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     AdminRouteStop stop = new AdminRouteStop();
                     stop.setRouteId(rs.getInt("route_id"));

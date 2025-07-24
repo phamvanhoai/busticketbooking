@@ -21,10 +21,13 @@ public class AdminBuses {
     }
 
     //get bus for Admin add trip
-    public AdminBuses(int busId, String plateNumber) {
+    public AdminBuses(int busId, String plateNumber, String busCode) {
         this.busId = busId;
         this.plateNumber = plateNumber;
+        this.busCode = busCode;
     }
+    
+    
 
     public AdminBuses(String busCode, String plateNumber, int busTypeId, int capacity, String busStatus) {
         this.busCode = busCode;

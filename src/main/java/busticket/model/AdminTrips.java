@@ -25,6 +25,7 @@ public class AdminTrips {
     private int busId;
     private String busType;
     private String plateNumber;
+    private String busCode;
     private int capacity;
     private int bookedSeats;
     private int driverId;
@@ -35,12 +36,13 @@ public class AdminTrips {
     }
     
     //get all
-    public AdminTrips(int tripId, String route, Date tripDate, String tripTime, String busType, String driver, int busId, String status) {
+    public AdminTrips(int tripId, String route, Date tripDate, String tripTime, String busType, String busCode, String driver, int busId, String status) {
         this.tripId = tripId;
         this.route = route;
         this.tripDate = tripDate;
         this.tripTime = tripTime;
         this.busType = busType;
+        this.busCode = busCode;
         this.driver = driver;
         this.busId = busId;
         this.status = status;
@@ -77,7 +79,17 @@ public class AdminTrips {
         this.driver = driver;
         this.status = status;
     }
+    
+    
 
+    public String getBusCode() {
+        return busCode;
+    }
+
+    public void setBusCode(String busCode) {
+        this.busCode = busCode;
+    }
+    
     public Date getArrivalDate() {
         return arrivalDate;
     }

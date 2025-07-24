@@ -28,6 +28,7 @@ public class StaffTripStatusDAO extends DBContext {
                 + " CAST(t.departure_time AS date) AS trip_date, "
                 + " CONVERT(varchar(5), t.departure_time, 108) AS trip_time, "
                 + " bt.bus_type_name AS bus_type, "
+                + " b.bus_code AS bus_code, "
                 + " u.user_name AS driver, "
                 + " t.bus_id, "
                 + " t.trip_status AS status "
@@ -79,6 +80,7 @@ public class StaffTripStatusDAO extends DBContext {
                             rs.getDate("trip_date"),
                             rs.getString("trip_time"),
                             rs.getString("bus_type"),
+                            rs.getString("bus_code"),
                             rs.getString("driver"), // driver có thể là null
                             rs.getInt("bus_id"),
                             rs.getString("status")

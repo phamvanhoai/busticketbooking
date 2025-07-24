@@ -31,7 +31,7 @@
                     required
                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-[#EF5222]"
                     >
-                    <option value="" disabled>Chọn tuyến</option>
+                    <option value="" disabled>Select Route</option>
                     <c:forEach var="r" items="${routes}">
                         <option value="${r.routeId}"
                                 <c:if test="${r.routeId == (not empty route ? route : trip.routeId)}">selected</c:if>
@@ -110,12 +110,12 @@
                         required
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-[#EF5222]"
                         >
-                        <option value="" disabled>Chọn xe</option>
+                        <option value="" disabled>Select Bus</option>
                         <c:forEach var="b" items="${buses}">
                             <option value="${b.busId}"
                                     <c:if test="${b.busId == (not empty bus ? bus : trip.busId)}">selected</c:if>
                                         >
-                                    ${b.plateNumber}
+                                    ${b.busCode} - ${b.plateNumber}
                             </option>
                         </c:forEach>
                     </select>

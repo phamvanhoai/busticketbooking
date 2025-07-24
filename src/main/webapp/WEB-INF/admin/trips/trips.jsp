@@ -120,6 +120,7 @@
                         <th class="py-2 px-4">Date</th>
                         <th class="py-2 px-4">Time</th>
                         <th class="py-2 px-4">Bus Type</th>
+                        <th class="py-2 px-4">Bus Code</th>
                         <th class="py-2 px-4">Driver</th>
                         <th class="py-2 px-4">Status</th>
                         <th class="py-2 px-4">Actions</th>
@@ -133,6 +134,7 @@
                             <td class="py-2 px-4">${trip.tripDate}</td>
                             <td class="py-2 px-4">${trip.tripTime}</td>
                             <td class="py-2 px-4">${trip.busType}</td>
+                            <td class="py-2 px-4">${trip.busCode}</td>
                             <td class="py-2 px-4">${trip.driver}</td>
                             <td class="py-2 px-4">
                                 <c:choose>
