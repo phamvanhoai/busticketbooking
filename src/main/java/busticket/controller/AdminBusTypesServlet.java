@@ -9,6 +9,7 @@ import busticket.model.AdminBusTypes;
 import busticket.model.AdminSeatPosition;
 import busticket.util.InputValidator;
 import static busticket.util.InputValidator.checkNull;
+import busticket.util.SessionUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
@@ -45,10 +46,10 @@ public class AdminBusTypesServlet extends HttpServlet {
             throws ServletException, IOException {
 
         // Check if the user is an admin; redirect to home if not
-//        if (!SessionUtil.isAdmin(request)) {
-//            response.sendRedirect(request.getContextPath());
-//            return;
-//        }
+        if (!SessionUtil.isAdmin(request)) {
+            response.sendRedirect(request.getContextPath());
+            return;
+        }
         AdminBusTypesDAO adminBusTypesDAO = new AdminBusTypesDAO();
         // Lấy tham số hành động (action)
         String action = request.getParameter("action");

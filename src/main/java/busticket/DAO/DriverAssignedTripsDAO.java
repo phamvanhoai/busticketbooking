@@ -330,15 +330,38 @@ public class DriverAssignedTripsDAO extends DBContext {
         return null;
     }
 
-    public void updateTripStatus(int tripId, String status) {
+    public boolean updateTripStatus(int tripId, String status) {
         String query = "UPDATE Trips SET trip_status = ? WHERE trip_id = ?";
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setString(1, status);
             ps.setInt(2, tripId);
-            ps.executeUpdate();
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
         } catch (SQLException e) {
+            System.err.println("Error updating trip status: tripId=" + tripId + ", status=" + status + ", error=" + e.getMessage());
             e.printStackTrace();
+            return false;
         }
     }
 
+    public boolean hasOngoingTrip(int driverId) {
+        String query = "SELECT COUNT(*) "
+                + "FROM Trips t "
+                + "JOIN Trip_Driver td ON t.trip_id = td.trip_id "
+                + "JOIN Drivers d ON td.driver_id = d.driver_id "
+                + "JOIN Users u ON d.user_id = u.user_id "
+                + "WHERE u.user_id = ? AND t.trip_status = 'Ongoing'";
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, driverId);
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error checking ongoing trips: driverId=" + driverId + ", error=" + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

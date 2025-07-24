@@ -51,6 +51,8 @@ public class DriverAssignedTripsServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath());
             return;
         }
+        
+        DriverAssignedTripsDAO driverAssignedTripsDAO = new DriverAssignedTripsDAO();
 
         // Kiểm tra thông báo trong session
         if (session != null) {
@@ -77,10 +79,7 @@ public class DriverAssignedTripsServlet extends HttpServlet {
         if (request.getParameter("roll-call") != null) {
             try {
                 int tripId = Integer.parseInt(request.getParameter("roll-call"));
-                DriverAssignedTripsDAO driverAssignedTripsDAO = new DriverAssignedTripsDAO();
                 List<DriverPassenger> passengers = driverAssignedTripsDAO.getPassengers(tripId);
-
-                // Lấy trip_status từ cơ sở dữ liệu
                 String tripStatus = driverAssignedTripsDAO.getTripStatus(tripId);
 
                 request.setAttribute("passengers", passengers);
@@ -89,7 +88,7 @@ public class DriverAssignedTripsServlet extends HttpServlet {
                 request.getRequestDispatcher("/WEB-INF/driver/assigned-trips/passenger-roll-call.jsp").forward(request, response);
                 return;
             } catch (NumberFormatException e) {
-                e.printStackTrace();
+                session.setAttribute("error", "Invalid Trip ID.");
                 response.sendRedirect(request.getContextPath() + "/driver/assigned-trips");
                 return;
             }
@@ -99,20 +98,34 @@ public class DriverAssignedTripsServlet extends HttpServlet {
         String start = request.getParameter("start");
         if (start != null) {
             try {
-                int tripId = Integer.parseInt(request.getParameter("start"));
-                DriverAssignedTripsDAO driverAssignedTripsDAO = new DriverAssignedTripsDAO();
+                int tripId = Integer.parseInt(start);
+                // Check if driver has an ongoing trip
+                if (driverAssignedTripsDAO.hasOngoingTrip(driverId)) {
+                    session.setAttribute("error", "You cannot start a new trip while another trip is ongoing.");
+                    response.sendRedirect(request.getContextPath() + "/driver/assigned-trips");
+                    return;
+                }
+
+                // Check if trip is in Scheduled status and departure time is valid
+                String tripStatus = driverAssignedTripsDAO.getTripStatus(tripId);
+                if (!"Scheduled".equals(tripStatus)) {
+                    session.setAttribute("error", "Trip cannot be started. It must be in Scheduled status.");
+                    response.sendRedirect(request.getContextPath() + "/driver/assigned-trips");
+                    return;
+                }
 
                 // Update the status of the trip to "Ongoing"
-                driverAssignedTripsDAO.updateTripStatus(tripId, "Ongoing");
-
-                // Set success message and redirect
-                session.setAttribute("success", "Trip status updated to 'Ongoing'.");
+                if (driverAssignedTripsDAO.updateTripStatus(tripId, "Ongoing")) {
+                    session.setAttribute("success", "Trip status updated to 'Ongoing'.");
+                } else {
+                    session.setAttribute("error", "Failed to start trip.");
+                }
                 response.sendRedirect(request.getContextPath() + "/driver/assigned-trips");
                 return;
             } catch (NumberFormatException e) {
-                e.printStackTrace();
                 session.setAttribute("error", "Invalid Trip ID.");
                 response.sendRedirect(request.getContextPath() + "/driver/assigned-trips");
+                return;
             }
         }
 
@@ -120,19 +133,27 @@ public class DriverAssignedTripsServlet extends HttpServlet {
         String end = request.getParameter("end");
         if (end != null) {
             try {
-                int tripId = Integer.parseInt(request.getParameter("end"));
-                DriverAssignedTripsDAO driverAssignedTripsDAO = new DriverAssignedTripsDAO();
+                int tripId = Integer.parseInt(end);
+                // Check if trip is in Ongoing status
+                String tripStatus = driverAssignedTripsDAO.getTripStatus(tripId);
+                if (!"Ongoing".equals(tripStatus)) {
+                    session.setAttribute("error", "Trip cannot be ended. It must be in Ongoing status.");
+                    response.sendRedirect(request.getContextPath() + "/driver/assigned-trips");
+                    return;
+                }
 
                 // Update the status of the trip to "Completed"
-                driverAssignedTripsDAO.updateTripStatus(tripId, "Completed");
-
-                session.setAttribute("success", "Trip status updated to 'Completed'.");
+                if (driverAssignedTripsDAO.updateTripStatus(tripId, "Completed")) {
+                    session.setAttribute("success", "Trip status updated to 'Completed'.");
+                } else {
+                    session.setAttribute("error", "Failed to end trip.");
+                }
                 response.sendRedirect(request.getContextPath() + "/driver/assigned-trips");
                 return;
             } catch (NumberFormatException e) {
-                e.printStackTrace();
                 session.setAttribute("error", "Invalid Trip ID.");
                 response.sendRedirect(request.getContextPath() + "/driver/assigned-trips");
+                return;
             }
         }
 
@@ -154,7 +175,6 @@ public class DriverAssignedTripsServlet extends HttpServlet {
         int offset = (currentPage - 1) * tripsPerPage;
 
 // Lấy danh sách chuyến theo bộ lọc và phân trang
-        DriverAssignedTripsDAO driverAssignedTripsDAO = new DriverAssignedTripsDAO();
         List<DriverAssignedTrip> assignedTrips = driverAssignedTripsDAO.getAssignedTrips(driverId, route, status, date, offset, tripsPerPage);
         int totalTrips = driverAssignedTripsDAO.getTotalAssignedTripsCount(driverId, route, status, date);
         int totalPages = (int) Math.ceil((double) totalTrips / tripsPerPage);
