@@ -39,7 +39,7 @@
             </div>
             <div class="bg-white p-4 rounded-xl shadow">
                 <p class="text-xs text-gray-500">Arrival Time</p>
-                <p class="font-semibold text-gray-800">${trip.arrivalTime}</p>
+                <p class="font-semibold text-gray-800">${trip.arrivalDate} ${trip.arrivalTime}</p>
             </div>
             <div class="bg-white p-4 rounded-xl shadow">
                 <p class="text-xs text-gray-500">Duration</p>
@@ -68,6 +68,11 @@
             <div class="bg-white p-4 rounded-xl shadow">
                 <p class="text-xs text-gray-500">Bus Type</p>
                 <p class="font-semibold text-gray-800">${trip.busType}</p>
+            </div>
+            
+            <div class="bg-white p-4 rounded-xl shadow">
+                <p class="text-xs text-gray-500">Plate Number</p>
+                <p class="font-semibold text-gray-800">${trip.plateNumber}</p>
             </div>
             <div class="bg-white p-4 rounded-xl shadow">
                 <p class="text-xs text-gray-500">Seats</p>
@@ -110,15 +115,16 @@
                             <p class="text-sm text-gray-500">
                                 ${stop.address}
                             </p>
+                            <c:if test="${stop.dwellMinutes > 0}">
+                                <p class="text-sm text-gray-500">
+                                    Dwell: ${stop.dwellMinutes}m
+                                </p>
+                            </c:if>
                         </div>
                     </div>
                 </c:forEach>
             </div>
         </section>
-
-
-
-
 
         <!-- Passenger List -->
         <section class="bg-white p-6 rounded-xl shadow">
@@ -127,7 +133,6 @@
                 <c:forEach var="p" items="${passengers}">
                     <li class="py-3 flex justify-between items-center">
                         <span class="text-gray-700">${p.name}</span>
-                        <!-- Hiển thị seat number -->
                         <span class="text-gray-500">Seat: ${p.seatNumber}</span>
                         <a href="${pageContext.request.contextPath}/admin/users/view?id=${p.user_id}"
                            class="text-blue-600 text-sm hover:underline">View Profile</a>
@@ -135,8 +140,6 @@
                 </c:forEach>
             </ul>
         </section>
-
-
 
         <!-- Actions -->
         <div class="mt-6 flex justify-end gap-4">

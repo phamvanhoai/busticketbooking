@@ -19,6 +19,7 @@ public class AdminTrips {
     private String endLocation;
     private Date tripDate;
     private String tripTime;
+    private Date arrivalDate; // New field for arrival date
     private String arrivalTime;
     private int duration;
     private int busId;
@@ -77,8 +78,13 @@ public class AdminTrips {
         this.status = status;
     }
 
-   
-    
+    public Date getArrivalDate() {
+        return arrivalDate;
+    }
+
+    public void setArrivalDate(Date arrivalDate) {
+        this.arrivalDate = arrivalDate;
+    }
 
     public int getTripId() {
         return tripId;
