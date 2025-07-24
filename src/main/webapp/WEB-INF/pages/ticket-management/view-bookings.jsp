@@ -37,7 +37,7 @@
         <form action="${pageContext.servletContext.contextPath}/ticket-management" method="get" class="bg-white rounded-xl shadow p-6 mb-6 grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
             <!-- Ticket Code -->
             <div>
-                <label class="block text-sm font-medium mb-1">Ticket Code</label>
+                <label class="block text-sm font-medium mb-1">Invoice Code</label>
                 <input
                     type="text"
                     placeholder="Enter Ticket Code"

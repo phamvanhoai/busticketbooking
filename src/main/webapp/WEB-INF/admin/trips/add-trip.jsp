@@ -73,7 +73,7 @@
                         <option value="" disabled <c:if test="${empty bus}">selected</c:if>>Select Bus</option>
                         <c:forEach var="b" items="${buses}">
                             <option value="${b.busId}" <c:if test="${b.busId == bus}">selected</c:if>>
-                                ${b.plateNumber}
+                                ${b.busCode} - ${b.plateNumber}
                             </option>
                         </c:forEach>
                     </select>

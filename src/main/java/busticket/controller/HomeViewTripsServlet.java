@@ -112,7 +112,7 @@ public class HomeViewTripsServlet extends HttpServlet {
         boolean hasOrigin = origin != null;
         boolean hasDestination = destination != null;
         if (hasOrigin ^ hasDestination || (origin != null && origin.equals(destination))) {
-            request.setAttribute("error", "Vui lòng chọn cả điểm đi và điểm đến, và chúng không thể giống nhau.");
+            request.setAttribute("error", "Please select both departure and destination, and they cannot be the same.");
             request.getRequestDispatcher("/WEB-INF/pages/view-trips.jsp").forward(request, response);
             return;
         }
