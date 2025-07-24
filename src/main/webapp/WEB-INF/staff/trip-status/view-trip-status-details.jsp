@@ -39,7 +39,7 @@
             </div>
             <div class="bg-white p-4 rounded-xl shadow">
                 <p class="text-xs text-gray-500">Arrival Time</p>
-                <p class="font-semibold text-gray-800">${trip.arrivalTime}</p>
+                <p class="font-semibold text-gray-800">${trip.arrivalDate} ${trip.arrivalTime}</p>
             </div>
             <div class="bg-white p-4 rounded-xl shadow">
                 <p class="text-xs text-gray-500">Duration</p>
@@ -62,6 +62,14 @@
             <div class="bg-white p-4 rounded-xl shadow">
                 <p class="text-xs text-gray-500">Bus Type</p>
                 <p class="font-semibold text-gray-800">${trip.busType}</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow">
+                <p class="text-xs text-gray-500">Plate Number</p>
+                <p class="font-semibold text-gray-800">${trip.plateNumber}</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow">
+                <p class="text-xs text-gray-500">Bus Code</p>
+                <p class="font-semibold text-gray-800">${trip.busCode}</p>
             </div>
             <div class="bg-white p-4 rounded-xl shadow">
                 <p class="text-xs text-gray-500">Seats</p>
@@ -103,6 +111,11 @@
                             <p class="text-sm text-gray-500">
                                 ${stop.address}
                             </p>
+                            <c:if test="${stop.dwellMinutes > 0}">
+                                <p class="text-sm text-gray-500">
+                                    Dwell: ${stop.dwellMinutes}m
+                                </p>
+                            </c:if>
                         </div>
                     </div>
                 </c:forEach>

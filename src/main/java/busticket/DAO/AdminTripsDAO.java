@@ -365,6 +365,7 @@ public class AdminTripsDAO extends DBContext {
                 + " CONVERT(VARCHAR(5), t.departure_time, 108) AS tripTime, "
                 + " bt.bus_type_name AS busType, "
                 + " b.plate_number AS plateNumber, "
+                + " b.bus_code AS busCode, "
                 + " b.capacity AS capacity, "
                 + " (SELECT COUNT(*) FROM Tickets tk WHERE tk.trip_id = t.trip_id AND tk.ticket_status = 'Booked') AS bookedSeats, "
                 + " u.user_name AS driver, "
@@ -394,6 +395,7 @@ public class AdminTripsDAO extends DBContext {
                     detail.setTripTime(rs.getString("tripTime"));
                     detail.setBusType(rs.getString("busType"));
                     detail.setPlateNumber(rs.getString("plateNumber"));
+                    detail.setBusCode(rs.getString("busCode"));
                     detail.setCapacity(rs.getInt("capacity"));
                     detail.setBookedSeats(rs.getInt("bookedSeats"));
                     detail.setDriver(rs.getString("driver"));

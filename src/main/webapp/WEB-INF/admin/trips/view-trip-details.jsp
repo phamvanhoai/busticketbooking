@@ -75,6 +75,10 @@
                 <p class="font-semibold text-gray-800">${trip.plateNumber}</p>
             </div>
             <div class="bg-white p-4 rounded-xl shadow">
+                <p class="text-xs text-gray-500">Bus Code</p>
+                <p class="font-semibold text-gray-800">${trip.busCode}</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow">
                 <p class="text-xs text-gray-500">Seats</p>
                 <p class="font-semibold text-gray-800">${trip.bookedSeats} / ${trip.capacity}</p>
             </div>
