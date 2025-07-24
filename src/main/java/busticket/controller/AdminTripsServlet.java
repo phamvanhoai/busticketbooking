@@ -17,6 +17,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -47,6 +48,20 @@ public class AdminTripsServlet extends HttpServlet {
         if (!SessionUtil.isAdmin(request)) {
             response.sendRedirect(request.getContextPath());
             return;
+        }
+
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            Object success = session.getAttribute("success");
+            Object error = session.getAttribute("error");
+            if (success != null) {
+                request.setAttribute("success", success);
+                session.removeAttribute("success");
+            }
+            if (error != null) {
+                request.setAttribute("error", error);
+                session.removeAttribute("error");
+            }
         }
 
         AdminTripsDAO adminTripsDAO = new AdminTripsDAO();

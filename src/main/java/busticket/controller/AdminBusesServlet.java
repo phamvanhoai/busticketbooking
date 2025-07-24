@@ -13,6 +13,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 /**
@@ -37,6 +38,19 @@ public class AdminBusesServlet extends HttpServlet {
         if (!SessionUtil.isAdmin(request)) {
             response.sendRedirect(request.getContextPath());
             return;
+        }
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            Object success = session.getAttribute("success");
+            Object error = session.getAttribute("error");
+            if (success != null) {
+                request.setAttribute("success", success);
+                session.removeAttribute("success");
+            }
+            if (error != null) {
+                request.setAttribute("error", error);
+                session.removeAttribute("error");
+            }
         }
 
         AdminBusesDAO adminBusesDAO = new AdminBusesDAO();
@@ -163,8 +177,10 @@ public class AdminBusesServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
         String action = request.getParameter("action");
         AdminBusesDAO adminBusesDAO = new AdminBusesDAO();
+        HttpSession session = request.getSession();
 
         try {
             if ("add".equals(action)) {
@@ -179,8 +195,8 @@ public class AdminBusesServlet extends HttpServlet {
 
                 if (isBusExist) {
                     // Lưu thông báo lỗi vào session và chuyển hướng về trang add-bus.jsp
-                    String errorMessage = "Bus Code or Plate Number already exists!";
-                    request.getSession().setAttribute("error", errorMessage);
+                    String error = "Bus Code or Plate Number already exists!";
+                    request.getSession().setAttribute("error", error);
                     response.sendRedirect(request.getContextPath() + "/admin/buses?add");
                     return;
                 }
@@ -190,7 +206,7 @@ public class AdminBusesServlet extends HttpServlet {
                 try {
                     adminBusesDAO.addBus(bus);
                     // Sau khi thêm xe buýt thành công, lưu thông báo thành công vào session
-                    request.getSession().setAttribute("message", "Bus added successfully!");
+                    request.getSession().setAttribute("success", "Bus added successfully!");
                     response.sendRedirect(request.getContextPath() + "/admin/buses"); // Chuyển hướng về trang add-bus.jsp
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -244,7 +260,7 @@ public class AdminBusesServlet extends HttpServlet {
                     adminBusesDAO.updateBus(bus); // Cập nhật xe buýt
 
                     // Lưu thông báo thành công vào session
-                    request.getSession().setAttribute("message", "Bus updated successfully!");
+                    request.getSession().setAttribute("success", "Bus updated successfully!");
 
                     // Sau khi cập nhật thành công, chuyển hướng về trang danh sách xe buýt
                     response.sendRedirect(request.getContextPath() + "/admin/buses");
@@ -262,8 +278,8 @@ public class AdminBusesServlet extends HttpServlet {
                     request.getRequestDispatcher("/WEB-INF/admin/buses/edit-bus.jsp").forward(request, response);
                 }
 
-                // Loại bỏ message và error khỏi session sau khi forward hoặc redirect
-                request.getSession().removeAttribute("message");
+                // Loại bỏ success và error khỏi session sau khi forward hoặc redirect
+                request.getSession().removeAttribute("success");
                 request.getSession().removeAttribute("error");
             } else if ("delete".equals(action)) {  // Nếu action là "delete"
                 try {
@@ -276,7 +292,7 @@ public class AdminBusesServlet extends HttpServlet {
                         adminBusesDAO.deleteBus(busId);  // Thực hiện xóa xe buýt
 
                         // Lưu thông báo thành công vào session
-                        request.getSession().setAttribute("message", "Bus deleted successfully!");
+                        request.getSession().setAttribute("success", "Bus deleted successfully!");
 
                         // Sau khi xóa thành công, chuyển hướng về trang danh sách xe buýt
                         response.sendRedirect(request.getContextPath() + "/admin/buses");
