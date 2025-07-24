@@ -38,11 +38,10 @@
     .icon-orange img {
         filter: invert(47%) sepia(42%) saturate(6373%) hue-rotate(349deg) brightness(96%) contrast(94%);
     }
-    /* CSS for popup */
     .terms-popup {
         position: fixed;
         top: 20%;
-        right: -300px; /* Initially hidden outside the viewport */
+        right: -300px;
         width: 280px;
         padding: 1rem;
         background-color: #fef2f2;
@@ -55,12 +54,12 @@
         transition: right 0.3s ease-in-out;
     }
     .terms-popup.show {
-        right: 20px; /* Slides in from the right */
+        right: 20px;
     }
     .seat-limit-popup {
         position: fixed;
         top: 20%;
-        right: -300px; /* Initially hidden outside the viewport */
+        right: -300px;
         width: 280px;
         padding: 1rem;
         background-color: #fef2f2;
@@ -73,9 +72,8 @@
         transition: right 0.3s ease-in-out;
     }
     .seat-limit-popup.show {
-        right: 20px; /* Slides in from the right */
+        right: 20px;
     }
-    /* CSS for tooltip */
     .trip-note-tooltip {
         z-index: 99999;
     }
@@ -83,7 +81,7 @@
         padding-bottom: 14.3137085px;
     }
     .ant-tooltip-hidden {
-        display: none !important; /* Ensure completely hidden */
+        display: none !important;
     }
     .ant-tooltip {
         box-sizing: border-box;
@@ -132,7 +130,7 @@
     }
     .has-bullet ul {
         list-style-type: disc;
-        padding-left: 1.25rem; /* Equivalent to pl-5 */
+        padding-left: 1.25rem;
     }
     .has-bullet ul li p {
         display: list-item;
@@ -140,27 +138,24 @@
         margin-left: 0;
     }
     .text-gray {
-        color: #666; /* Or the color you prefer */
+        color: #666;
     }
-    /* Fix the tab bar at the top of the popover */
     #vehicle-popover .p-4.border-b {
         position: sticky;
         top: 0;
-        background-color: #fff; /* Ensure background doesn't become transparent */
-        z-index: 30; /* Ensure it stays above other content */
+        background-color: #fff;
+        z-index: 30;
     }
-    /* Ensure #tab-schedule is a positioning context and has enough padding to avoid overlap */
     #tab-schedule {
         position: relative;
-        padding-bottom: 80px; /* Adjust based on the height of the Noted section */
+        padding-bottom: 80px;
     }
-    /* Fix the Noted section at the bottom of #tab-schedule */
     #tab-schedule .w-full.bg-\[\#F7F7F7\] {
         position: absolute;
         bottom: 0;
         left: 0;
         right: 0;
-        z-index: 30; /* Ensure it stays above other content */
+        z-index: 30;
     }
     @keyframes fade-in-up {
         0% {
@@ -192,7 +187,6 @@
                             <div id="vehicle-info-trigger" class="cursor-pointer text-sm text-blue-500 underline hover:text-blue-600">
                                 Vehicle information
                             </div>
-                            <!-- Popover -->
                             <div id="vehicle-popover" class="absolute right-0 mt-2 w-[450px] max-h-[500px] overflow-y-auto hidden z-20 ant-popover-inner">
                                 <div class="p-4 border-b flex gap-2">
                                     <button class="tab-btn px-3 py-1 rounded-full text-sm font-medium bg-orange-500 text-white" data-tab="schedule">Schedule</button>
@@ -298,7 +292,7 @@
                                                 <div class="pb-2 text-lg font-medium">Pick-up ticket</div>
                                                 <div class="content-editor has-bullet no-margin text-sm">
                                                     <ul>
-                                                        <li><p>Please contact the hotline at 19006067 to register at least 2 hours before the scheduled departure time and kindly prepare small and compact luggage (maximum 20kg).</p></li>
+                                                        <li><p>Please contact the hotline at 1900 6067 to register at least 2 hours before the scheduled departure time and kindly prepare small and compact luggage (maximum 20kg).</p></li>
                                                         <li><p>Please note that we only provide pick-up services at some convenient locations along the route.</p></li>
                                                     </ul>
                                                 </div>
@@ -385,9 +379,8 @@
                         <div class="relative">
                             <label class="block text-sm font-medium mb-1">Pickup Point *</label>
                             <div class="relative">
-                                <select name="pickupLocationId" id="pickupLocationId" class="w-full h-12 pl-3 pr-12 border rounded appearance-none" required onchange="updateDropoffOptions()">
+                                <select name="pickupLocationId" id="pickupLocationId" class="w-full h-12 pl-3 pr-12 border rounded appearance-none" required>
                                     <c:forEach var="stop" items="${routeStops}" varStatus="status">
-                                        <!-- Loại bỏ điểm cuối khỏi danh sách điểm đón -->
                                         <c:if test="${not status.last}">
                                             <option value="${stop.locationId}" data-stop-number="${stop.stopNumber}">${stop.locationName}</option>
                                         </c:if>
@@ -405,7 +398,6 @@
                             <div class="relative">
                                 <select name="dropoffLocationId" id="dropoffLocationId" class="w-full h-12 pl-3 pr-12 border rounded appearance-none" required>
                                     <c:forEach var="stop" items="${routeStops}" varStatus="status">
-                                        <!-- Loại bỏ điểm đầu tiên khỏi danh sách điểm trả -->
                                         <c:if test="${not status.first}">
                                             <option value="${stop.locationId}" data-stop-number="${stop.stopNumber}" ${status.last ? 'selected' : ''}>${stop.locationName}</option>
                                         </c:if>
@@ -442,7 +434,7 @@
                     <div class="flex justify-between mb-2"><span>Routes</span><span>${trip.origin} – ${trip.destination}</span></div>
                     <div class="flex justify-between mb-2">
                         <span>Departure time</span>
-                        <span class="text-green-700">${trip.tripTime} <fmt:formatDate value="${trip.tripDate}" pattern="dd/MM/yyyy" /></span>
+                        <span class="text-green-700">${trip.tripTime} <fmt:formatDate value="${trip.tripDate}" pattern="dd-MM-yyyy" /></span>
                     </div>
                     <div class="flex justify-between mb-2"><span>Number of seats</span><span id="trip-seat-count">0 Seat</span></div>
                     <div class="flex justify-between mb-2"><span>Seat</span><span id="trip-seat-labels">-</span></div>
@@ -503,6 +495,69 @@
     </div>
 
     <script>
+        // Define updateDropoffOptions in global scope
+        function updateDropoffOptions() {
+            const pickupSelect = document.getElementById("pickupLocationId");
+            const dropoffSelect = document.getElementById("dropoffLocationId");
+            const pickupStopNumber = parseInt(pickupSelect.options[pickupSelect.selectedIndex]?.dataset.stopNumber || 0);
+            console.log("Selected Pickup Stop Number:", pickupStopNumber);
+
+            // Store current dropoff value
+            const currentDropoffValue = dropoffSelect.value;
+            console.log("Current Dropoff Value:", currentDropoffValue);
+
+            // Clear existing dropoff options
+            dropoffSelect.innerHTML = '';
+
+            // Get all route stops
+            const routeStops = [
+                <c:forEach var="stop" items="${routeStops}" varStatus="status">
+                    { value: "${stop.locationId}", text: "${stop.locationName}", stopNumber: ${stop.stopNumber} }${status.last ? '' : ','}
+                </c:forEach>
+            ];
+            console.log("Route Stops:", routeStops);
+
+            // Get the locationId of the first stop to exclude it
+            const firstStopId = routeStops[0]?.value;
+            console.log("First Stop ID to exclude:", firstStopId);
+
+            // Filter stops: exclude first stop and stops with stopNumber <= pickupStopNumber
+            const validDropoffStops = routeStops.filter(stop => 
+                stop.stopNumber > pickupStopNumber && stop.value !== firstStopId
+            );
+            console.log("Valid Dropoff Stops:", validDropoffStops);
+
+            // Add valid dropoff options
+            validDropoffStops.forEach(stop => {
+                const option = document.createElement('option');
+                option.value = stop.value;
+                option.text = stop.text;
+                option.dataset.stopNumber = stop.stopNumber;
+                dropoffSelect.appendChild(option);
+            });
+
+            // If no valid dropoff stops, show placeholder
+            if (validDropoffStops.length === 0) {
+                const option = document.createElement('option');
+                option.value = '';
+                option.text = 'No valid dropoff points';
+                option.disabled = true;
+                option.selected = true;
+                dropoffSelect.appendChild(option);
+                console.log("No valid dropoff points available");
+            } else {
+                // Restore current dropoff value if valid, else select first valid stop
+                const isCurrentValid = validDropoffStops.some(stop => stop.value === currentDropoffValue);
+                dropoffSelect.value = isCurrentValid ? currentDropoffValue : validDropoffStops[0].value;
+                console.log("Selected Dropoff Value:", dropoffSelect.value);
+            }
+
+            // Update trip-dropoff display
+            const selectedDropoffText = dropoffSelect.options[dropoffSelect.selectedIndex]?.text || '-';
+            document.getElementById("trip-dropoff").textContent = selectedDropoffText;
+            console.log("Updated trip-dropoff text:", selectedDropoffText);
+        }
+
         // Initialize page after DOM is fully loaded
         document.addEventListener("DOMContentLoaded", async () => {
             const tripId = parseInt("${trip.tripId}") || 0;
@@ -518,7 +573,7 @@
             console.log("Parsed price:", price);
 
             const initialSelectedSeats = "${selectedSeats}".split(",").filter(seat => seat.trim() !== "");
-            const selectedSeats = [...initialSelectedSeats]; // Initialize with seats from query string
+            const selectedSeats = [...initialSelectedSeats];
             console.log("Initial selected seats from server:", initialSelectedSeats);
 
             const seatActive = "${pageContext.request.contextPath}/assets/images/icons/seat_active.svg";
@@ -535,6 +590,8 @@
             const bookForm = document.getElementById("bookForm");
             const tripNoteTrigger = document.getElementById("trip-note-trigger");
             const tripNoteTooltip = document.getElementById("trip-note-tooltip");
+            const pickupSelect = document.getElementById("pickupLocationId");
+            const dropoffSelect = document.getElementById("dropoffLocationId");
 
             if (!downWrap || !upWrap) {
                 console.error("Container not found:", {downWrap, upWrap});
@@ -693,7 +750,7 @@
 
             termsCheckbox.addEventListener("change", () => {
                 if (termsCheckbox.checked) {
-                termsPopup?.classList.remove("show");
+                    termsPopup?.classList.remove("show");
                 }
             });
 
@@ -724,61 +781,18 @@
             tooltipHandler(tripNoteTrigger, tripNoteTooltip);
             tooltipHandler(document.getElementById("price-note-trigger"), document.getElementById("price-note-tooltip"));
 
-            function updateDropoffOptions() {
-                const pickupSelect = document.getElementById("pickupLocationId");
-                const dropoffSelect = document.getElementById("dropoffLocationId");
-                const pickupStopNumber = parseInt(pickupSelect.options[pickupSelect.selectedIndex]?.dataset.stopNumber || 0);
+            // Attach onchange event listener for pickupLocationId
+            pickupSelect.addEventListener("change", updateDropoffOptions);
 
-                // Lưu giá trị hiện tại của dropoff để khôi phục nếu hợp lệ
-                const currentDropoffValue = dropoffSelect.value;
-
-                // Xóa tất cả các option hiện tại trong dropoff
-                dropoffSelect.innerHTML = '';
-
-                // Lấy tất cả các điểm dừng từ routeStops
-                const routeStops = [
-                    <c:forEach var="stop" items="${routeStops}" varStatus="status">
-                        { value: "${stop.locationId}", text: "${stop.locationName}", stopNumber: ${stop.stopNumber} }${status.last ? '' : ','}
-                    </c:forEach>
-                ];
-
-                // Lọc các điểm dừng có stopNumber lớn hơn điểm đón được chọn và không phải điểm đầu tiên
-                const validDropoffStops = routeStops.filter(stop => stop.stopNumber > pickupStopNumber && stop.stopNumber !== routeStops[0].stopNumber);
-
-                // Thêm các option hợp lệ vào dropoff select
-                validDropoffStops.forEach(stop => {
-                    const option = document.createElement('option');
-                    option.value = stop.value;
-                    option.text = stop.text;
-                    option.dataset.stopNumber = stop.stopNumber;
-                    dropoffSelect.appendChild(option);
-                });
-
-                // Nếu không có điểm trả hợp lệ, hiển thị thông báo
-                if (validDropoffStops.length === 0) {
-                    const option = document.createElement('option');
-                    option.value = '';
-                    option.text = 'No valid dropoff points';
-                    option.disabled = true;
-                    option.selected = true;
-                    dropoffSelect.appendChild(option);
-                } else {
-                    // Khôi phục giá trị dropoff nếu nó hợp lệ, nếu không chọn điểm cuối cùng hợp lệ
-                    dropoffSelect.value = validDropoffStops.some(stop => stop.value === currentDropoffValue) ? currentDropoffValue : validDropoffStops[validDropoffStops.length - 1].value;
-                }
-
-                // Cập nhật thông tin hiển thị điểm trả trong Trip Information
-                document.getElementById("trip-dropoff").textContent = dropoffSelect.options[dropoffSelect.selectedIndex]?.text || '-';
-            }
-
-            // Gọi hàm khi trang tải để đảm bảo danh sách điểm trả phù hợp với điểm đón mặc định
-            updateDropoffOptions();
-
-            // Cập nhật trip-dropoff khi dropoffLocationId thay đổi
-            document.getElementById("dropoffLocationId").addEventListener("change", () => {
-                const dropoffSelect = document.getElementById("dropoffLocationId");
-                document.getElementById("trip-dropoff").textContent = dropoffSelect.options[dropoffSelect.selectedIndex]?.text || '-';
+            // Update trip-dropoff when dropoffLocationId changes
+            dropoffSelect.addEventListener("change", () => {
+                const selectedDropoffText = dropoffSelect.options[dropoffSelect.selectedIndex]?.text || '-';
+                document.getElementById("trip-dropoff").textContent = selectedDropoffText;
+                console.log("Dropoff changed, updated trip-dropoff text:", selectedDropoffText);
             });
+
+            // Call when page loads to ensure dropoff options match default pickup
+            updateDropoffOptions();
 
             try {
                 const res = await fetch(apiUrl);
@@ -803,34 +817,26 @@
             }
         });
 
-        // Get vehicle info trigger and popover elements
+        // Vehicle info popover handling
         const trigger = document.getElementById("vehicle-info-trigger");
         const popover = document.getElementById("vehicle-popover");
 
-        // Toggle popover visibility on click
         trigger.addEventListener("click", () => {
             popover.classList.toggle("hidden");
         });
 
-        // Handle tab switching
         document.querySelectorAll(".tab-btn").forEach(btn => {
             btn.addEventListener("click", function () {
                 const tab = this.dataset.tab;
-
-                // Hide all tab content and show selected tab
                 document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
                 document.getElementById("tab-" + tab).classList.remove("hidden");
-
-                // Update tab button styles
                 document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("bg-orange-500", "text-white"));
                 this.classList.add("bg-orange-500", "text-white");
             });
         });
 
-        // Open the schedule tab by default
         document.querySelector('.tab-btn[data-tab="schedule"]')?.click();
 
-        // Close popover when clicking outside
         document.addEventListener("click", function (e) {
             if (!trigger.contains(e.target) && !popover.contains(e.target)) {
                 popover.classList.add("hidden");
