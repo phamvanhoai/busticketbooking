@@ -6,7 +6,7 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
   <!-- Footer -->
-  <footer class="mt-20 bg-white text-center py-6 text-sm text-gray-500 border-t border-gray-200">
+  <footer class="mt-60 bg-white text-center py-6 text-sm text-gray-500 border-t border-gray-200">
     <p>© 2025 FUTA Bus Lines - All rights reserved.</p>
     <div class="flex justify-center gap-6 mt-2">
       <a href="#" class="hover:underline">Facebook</a>
