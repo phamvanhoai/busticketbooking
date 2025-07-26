@@ -21,12 +21,15 @@ GROUP 1 - SE1817 - SWP391
 **Customer:**
 phamvanhoai600@gmail.com
 123456
+
 **Driver:**
 tu@example.com
 123456
+
 **Staff:**
 lan@example.com
 123456
+
 **Admin:**
 admin@gmail.com
 123456
