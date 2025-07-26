@@ -17,6 +17,21 @@ GROUP 1 - SE1817 - SWP391
 4. **Customer**
 
 
+## Accounts
+**Customer:**
+phamvanhoai600@gmail.com
+123456
+**Driver:**
+tu@example.com
+123456
+**Staff:**
+lan@example.com
+123456
+**Admin:**
+admin@gmail.com
+123456
+
+
 ## Prerequisites
 - [JDK](https://www.oracle.com/java/technologies/javase/javase8-archive-downloads.html) (version 1.8 or higher)
 - [SQL Server 2022](https://www.microsoft.com/en-us/sql-server/sql-server-2022) SQL Server 2022 or later
